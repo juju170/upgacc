@@ -287,10 +287,23 @@
                         postsContainer.appendChild(postElement);
                     });
                 }
-                if (window.tiktok) window.tiktok.load();
+                // ... (bagian atas fungsi listenForPosts tetap sama)
+                }
+                
+                // BARIS BARU: Fungsi untuk memuat embed TikTok dengan andal
+                const loadTikTokEmbeds = () => {
+                    if (typeof window.tiktok?.load === 'function') {
+                        window.tiktok.load();
+                    } else {
+                        // Jika skrip belum siap, coba lagi dalam 100 milidetik
+                        setTimeout(loadTikTokEmbeds, 100);
+                    }
+                };
+                loadTikTokEmbeds();
+
             });
         }
-
+        
         onAuthStateChanged(auth, (user) => {
             loadingOverlay.classList.add('hidden');
             currentUser = user;
