@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Guru - Admin Panel</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .sidebar::-webkit-scrollbar { width: 6px; }
+        .sidebar::-webkit-scrollbar-thumb { background-color: #4338ca; border-radius: 10px; }
+        .sidebar::-webkit-scrollbar-track { background-color: #1e1b4b; }
+        .modal {
+            transition: opacity 0.25s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="flex h-screen bg-gray-100">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar hidden md:flex flex-col w-64 bg-indigo-900 text-white transition-all duration-300">
+            <div class="flex items-center justify-center h-16 bg-indigo-950">
+                <svg class="h-8 w-8 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.906 59.906 0 0112 3.493a59.903 59.903 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5Zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" /></svg>
+                <span class="ml-2 font-bold text-lg">Admin Panel</span>
+            </div>
+            <nav class="flex-1 px-2 py-4 space-y-2">
+                <a href="dashboard_admin.html" class="flex items-center px-4 py-2 text-indigo-200 hover:bg-indigo-700 rounded-md">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                    <span class="ml-3">Dashboard</span>
+                </a>
+                <a href="data_siswa.html" class="flex items-center px-4 py-2 text-indigo-200 hover:bg-indigo-700 rounded-md">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-4.69c.125-.314.25-.627.375-.935m4.375 2.375v.003l.01.01m8.242 0l-.01-.01M15 19.128L15 15.07M4.5 7.5L4.5 12m0 0l3 3m-3-3l-3 3" /></svg>
+                    <span class="ml-3">Data Siswa</span>
+                </a>
+                <a href="data_guru.html" class="flex items-center px-4 py-2 bg-indigo-800 text-white rounded-md">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    <span class="ml-3">Data Guru</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main content -->
+        <div class="flex flex-col flex-1 overflow-y-auto">
+            <header class="h-16 bg-white shadow-md flex items-center justify-between px-6 sticky top-0 z-10">
+                <button id="sidebar-toggle" class="md:hidden text-gray-600">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                </button>
+                <div class="flex items-center">
+                    <span class="text-lg font-semibold text-gray-700">Admin Area</span>
+                </div>
+                <div class="flex items-center">
+                    <a href="login.html" class="text-sm font-medium text-gray-600 hover:text-red-500">Logout</a>
+                </div>
+            </header>
+            
+            <main class="p-6 sm:p-10 space-y-10">
+                <!-- Hero Section -->
+                <section>
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800">Manajemen Data Guru</h1>
+                        <p class="text-gray-500 mt-1">Tambah, lihat, ubah, dan hapus data guru.</p>
+                    </div>
+                </section>
+
+                <!-- Konten Utama -->
+                <section class="bg-white p-6 rounded-xl shadow-lg">
+                    <!-- Tombol Aksi & Search -->
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+                        <div class="relative w-full sm:max-w-xs">
+                            <input type="text" placeholder="Cari guru..." class="w-full border rounded-md px-4 py-2 text-sm pl-10">
+                            <svg class="h-5 w-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg text-sm transition">Import</button>
+                            <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg text-sm transition">Export</button>
+                            <button id="add-teacher-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg text-sm transition">+ Tambah Guru</button>
+                        </div>
+                    </div>
+
+                    <!-- Tabel Data Guru -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-gray-500">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                                <tr>
+                                    <th class="px-6 py-3">No</th>
+                                    <th class="px-6 py-3">NIP</th>
+                                    <th class="px-6 py-3">Nama Lengkap</th>
+                                    <th class="px-6 py-3">Mapel</th>
+                                    <th class="px-6 py-3">Email</th>
+                                    <th class="px-6 py-3 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="odd:bg-white even:bg-gray-50 border-b">
+                                    <td class="px-6 py-4">1</td>
+                                    <td class="px-6 py-4 font-medium text-gray-900">198505102010012001</td>
+                                    <td class="px-6 py-4 font-medium text-gray-900">Dra. Indah Puspitasari, M.Pd.</td>
+                                    <td class="px-6 py-4">Matematika, Fisika</td>
+                                    <td class="px-6 py-4">indah.p@sekolah.xyz</td>
+                                    <td class="px-6 py-4 text-center flex justify-center gap-2">
+                                        <button class="edit-btn text-blue-600 hover:text-blue-800" title="Edit"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd"></path></svg></button>
+                                        <button class="delete-btn text-red-600 hover:text-red-800" title="Hapus"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg></button>
+                                    </td>
+                                </tr>
+                                <tr class="odd:bg-white even:bg-gray-50 border-b">
+                                    <td class="px-6 py-4">2</td>
+                                    <td class="px-6 py-4 font-medium text-gray-900">199001152015031002</td>
+                                    <td class="px-6 py-4 font-medium text-gray-900">Bambang Wijoyo, S.Kom.</td>
+                                    <td class="px-6 py-4">TIK, Informatika</td>
+                                    <td class="px-6 py-4">bambang.w@sekolah.xyz</td>
+                                    <td class="px-6 py-4 text-center flex justify-center gap-2">
+                                        <button class="edit-btn text-blue-600 hover:text-blue-800" title="Edit"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd"></path></svg></button>
+                                        <button class="delete-btn text-red-600 hover:text-red-800" title="Hapus"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <footer class="text-center pt-10">
+                    <p class="text-sm text-gray-500">&copy; 2025 Sekolah XYZ. Semua Hak Cipta Dilindungi.</p>
+                </footer>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal Form Tambah/Edit Guru -->
+    <div id="form-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Tambah Data Guru Baru</h3>
+                <button id="close-modal-btn" class="text-gray-500 hover:text-gray-800">&times;</button>
+            </div>
+            <form class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="nip" class="block text-sm font-medium text-gray-700">NIP / ID Guru</label>
+                        <input type="text" id="nip" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                    </div>
+                     <div>
+                        <label for="nama" class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+                        <input type="text" id="nama" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                    </div>
+                </div>
+                <div>
+                    <label for="mapel" class="block text-sm font-medium text-gray-700">Mata Pelajaran</label>
+                    <input type="text" id="mapel" placeholder="Pisahkan dengan koma, cth: Matematika, Fisika" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" id="email" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                    </div>
+                     <div>
+                        <label for="telepon" class="block text-sm font-medium text-gray-700">Telepon</label>
+                        <input type="tel" id="telepon" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 pt-4">
+                    <button type="button" id="cancel-modal-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg">Batal</button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Hapus -->
+    <div id="delete-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm text-center">
+            <h3 class="text-lg font-bold text-gray-800">Konfirmasi Hapus</h3>
+            <p class="text-gray-600 my-4">Apakah Anda yakin ingin menghapus data guru ini? Tindakan ini tidak dapat dibatalkan.</p>
+            <div class="flex justify-center gap-4">
+                <button id="cancel-delete-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg">Batal</button>
+                <button id="confirm-delete-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">Hapus</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Sidebar Toggle
+            document.getElementById('sidebar-toggle').addEventListener('click', function() {
+                document.getElementById('sidebar').classList.toggle('hidden');
+            });
+
+            // Form Modal Elements
+            const formModal = document.getElementById('form-modal');
+            const addBtn = document.getElementById('add-teacher-btn');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const cancelModalBtn = document.getElementById('cancel-modal-btn');
+            const editBtns = document.querySelectorAll('.edit-btn');
+
+            // Delete Modal Elements
+            const deleteModal = document.getElementById('delete-modal');
+            const deleteBtns = document.querySelectorAll('.delete-btn');
+            const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+            const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+
+            // Function to open a modal
+            const openModal = (modal) => modal.classList.remove('hidden');
+            // Function to close a modal
+            const closeModal = (modal) => modal.classList.add('hidden');
+
+            // Event Listeners for Form Modal
+            addBtn.addEventListener('click', () => openModal(formModal));
+            editBtns.forEach(btn => btn.addEventListener('click', () => openModal(formModal)));
+            closeModalBtn.addEventListener('click', () => closeModal(formModal));
+            cancelModalBtn.addEventListener('click', () => closeModal(formModal));
+
+            // Event Listeners for Delete Modal
+            deleteBtns.forEach(btn => btn.addEventListener('click', () => openModal(deleteModal)));
+            cancelDeleteBtn.addEventListener('click', () => closeModal(deleteModal));
+            confirmDeleteBtn.addEventListener('click', () => {
+                console.log('Data guru dihapus!');
+                closeModal(deleteModal);
+            });
+
+             // Close modal on outside click
+            window.addEventListener('click', (event) => {
+                if (event.target === formModal) closeModal(formModal);
+                if (event.target === deleteModal) closeModal(deleteModal);
+            });
+        });
+    </script>
+</body>
+</html>
+
