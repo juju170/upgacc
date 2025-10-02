@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Guru - Sekolah XYZ</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="flex h-screen bg-gray-100">
+        <!-- 2. Sidebar -->
+        <aside id="sidebar" class="fixed z-40 inset-y-0 left-0 w-64 bg-blue-900 text-white flex-col flex transition-transform duration-300 transform -translate-x-full md:relative md:translate-x-0">
+            <!-- Logo di Sidebar -->
+            <div class="flex items-center justify-center h-20 border-b border-blue-800">
+                <svg class="h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.627 48.627 0 0 1 12 20.904a48.627 48.627 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.57 50.57 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" />
+                </svg>
+                <span class="ml-2 text-xl font-bold">Sekolah XYZ</span>
+            </div>
+
+            <!-- Menu Sidebar -->
+            <nav class="flex-1 px-4 py-6 space-y-2">
+                <a href="#" class="flex items-center px-4 py-2.5 bg-blue-800 rounded-lg">
+                    <svg class="h-5 w-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                    Dashboard
+                </a>
+                <a href="#" class="flex items-center px-4 py-2.5 text-blue-100 hover:bg-blue-800 rounded-lg">
+                    <svg class="h-5 w-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2z" /></svg>
+                    Kelola Program
+                </a>
+                <a href="#" class="flex items-center px-4 py-2.5 text-blue-100 hover:bg-blue-800 rounded-lg">
+                    <svg class="h-5 w-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                    Upload Materi & Tugas
+                </a>
+                <a href="#" class="flex items-center px-4 py-2.5 text-blue-100 hover:bg-blue-800 rounded-lg">
+                    <svg class="h-5 w-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                    Input Nilai
+                </a>
+                <a href="#" class="flex items-center px-4 py-2.5 text-blue-100 hover:bg-blue-800 rounded-lg">
+                    <svg class="h-5 w-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688 0-1.25-.562-1.25-1.25s.562-1.25 1.25-1.25h3.32c.688 0 1.25.562 1.25 1.25s-.562 1.25-1.25 1.25h-3.32zM9.09 11.84v-.002a3.752 3.752 0 01.002-7.098 3.752 3.752 0 017.096 0v.002a3.752 3.752 0 01-.002 7.098 3.752 3.752 0 01-7.096 0z" /></svg>
+                    Buat Pengumuman
+                </a>
+                 <a href="#" class="flex items-center px-4 py-2.5 text-blue-100 hover:bg-blue-800 rounded-lg">
+                    <svg class="h-5 w-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    Monitoring Kehadiran
+                </a>
+                <!-- Divider -->
+                <div class="pt-4 mt-4 border-t border-blue-800 space-y-2">
+                     <a href="#" class="flex items-center px-4 py-2.5 text-blue-100 hover:bg-blue-800 rounded-lg">
+                       <svg class="h-5 w-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        Pengaturan Akun
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- 1. Navbar -->
+            <header class="bg-white shadow-md">
+                 <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                     <div class="flex items-center justify-between h-16">
+                         <!-- Tombol Sidebar Mobile -->
+                         <button id="sidebar-toggle" class="md:hidden text-gray-600 focus:outline-none">
+                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                             </svg>
+                         </button>
+                         <div class="flex-1 text-center md:text-left text-xl font-bold text-gray-800">Dashboard</div>
+                         <div class="flex items-center">
+                              <a href="index.html" class="px-4 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition text-sm">Logout</a>
+                         </div>
+                     </div>
+                 </div>
+            </header>
+            
+            <!-- 3. Main Content -->
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+                <!-- Hero Section -->
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-800">Selamat Datang, Budi Setiawan!</h1>
+                    <p class="text-gray-600">Berikut ringkasan aktivitas Anda hari ini.</p>
+                </div>
+
+                <!-- Grid Card Ringkasan Cepat -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Card 1: Jumlah Siswa -->
+                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center justify-between transition-transform transform hover:scale-105">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Jumlah Siswa</p>
+                            <p class="text-3xl font-bold text-blue-600">120</p>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-full">
+                            <svg class="h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-4.68c.11-.324.17-.668.17-1.012v-.003c0-1.113-.285-2.16-.786-3.07M3 15.75l2.625.372a9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493m1.423-4.994a6.375 6.375 0 0111.964-4.68c.11.324.17.668.17 1.012v.003c0 1.113-.285 2.16-.786 3.07M3 15.75v-.106A12.318 12.318 0 008.624 21c2.331 0 4.512-.645 6.374-1.766l.001.109a6.375 6.375 0 00-11.964-4.68c-.11-.324-.17-.668-.17-1.012v-.003c0-1.113.285-2.16.786-3.07" /></svg>
+                        </div>
+                    </div>
+                     <!-- Card 2: Jumlah Program -->
+                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center justify-between transition-transform transform hover:scale-105">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Jumlah Program</p>
+                            <p class="text-3xl font-bold text-green-600">15</p>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-full">
+                           <svg class="h-8 w-8 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>
+                        </div>
+                    </div>
+                     <!-- Card 3: Tugas Diupload -->
+                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center justify-between transition-transform transform hover:scale-105">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Tugas Diupload</p>
+                            <p class="text-3xl font-bold text-orange-600">8</p>
+                        </div>
+                        <div class="bg-orange-100 p-3 rounded-full">
+                           <svg class="h-8 w-8 text-orange-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                        </div>
+                    </div>
+                     <!-- Card 4: Pengumuman Aktif -->
+                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center justify-between transition-transform transform hover:scale-105">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Pengumuman Aktif</p>
+                            <p class="text-3xl font-bold text-purple-600">3</p>
+                        </div>
+                        <div class="bg-purple-100 p-3 rounded-full">
+                           <svg class="h-8 w-8 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688 0-1.25-.562-1.25-1.25s.562-1.25 1.25-1.25h3.32c.688 0 1.25.562 1.25 1.25s-.562 1.25-1.25 1.25h-3.32zM9.09 11.84v-.002a3.752 3.752 0 01.002-7.098 3.752 3.752 0 017.096 0v.002a3.752 3.752 0 01-.002 7.098 3.752 3.752 0 01-7.096 0z" /></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Bagian Tambahan (2 kolom) -->
+                <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Kolom Kiri: Pengumuman Terbaru -->
+                    <div class="bg-white p-6 rounded-xl shadow-md">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Pengumuman Terbaru</h3>
+                        <ul class="space-y-4">
+                            <li class="border-l-4 border-blue-500 pl-4">
+                                <p class="font-semibold">Jadwal Ujian Semester Ganjil</p>
+                                <p class="text-sm text-gray-500">Dipublikasikan pada: 1 Oktober 2025</p>
+                            </li>
+                            <li class="border-l-4 border-green-500 pl-4">
+                                <p class="font-semibold">Pendaftaran Ekstrakurikuler Dibuka</p>
+                                <p class="text-sm text-gray-500">Dipublikasikan pada: 20 September 2025</p>
+                            </li>
+                             <li class="border-l-4 border-yellow-500 pl-4">
+                                <p class="font-semibold">Kegiatan Bakti Sosial Sekolah</p>
+                                <p class="text-sm text-gray-500">Dipublikasikan pada: 15 September 2025</p>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Kolom Kanan: Aktivitas Terbaru -->
+                     <div class="bg-white p-6 rounded-xl shadow-md">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Aktivitas Terbaru Anda</h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <div class="bg-blue-100 p-2 rounded-full mr-4 mt-1">
+                                     <svg class="h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                </div>
+                                <div>
+                                    <p class="font-semibold">Upload Materi Matematika - Bab 3</p>
+                                    <p class="text-sm text-gray-500">2 jam yang lalu</p>
+                                </div>
+                            </li>
+                             <li class="flex items-start">
+                                <div class="bg-green-100 p-2 rounded-full mr-4 mt-1">
+                                    <svg class="h-5 w-5 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                                </div>
+                                <div>
+                                    <p class="font-semibold">Input Nilai Kelas X IPA</p>
+                                    <p class="text-sm text-gray-500">Kemarin</p>
+                                </div>
+                            </li>
+                             <li class="flex items-start">
+                                 <div class="bg-purple-100 p-2 rounded-full mr-4 mt-1">
+                                    <svg class="h-5 w-5 text-purple-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688 0-1.25-.562-1.25-1.25s.562-1.25 1.25-1.25h3.32c.688 0 1.25.562 1.25 1.25s-.562 1.25-1.25 1.25h-3.32zM9.09 11.84v-.002a3.752 3.752 0 01.002-7.098 3.752 3.752 0 017.096 0v.002a3.752 3.752 0 01-.002 7.098 3.752 3.752 0 01-7.096 0z" /></svg>
+                                </div>
+                                <div>
+                                    <p class="font-semibold">Membuat pengumuman jadwal remedial</p>
+                                    <p class="text-sm text-gray-500">3 hari yang lalu</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                 <!-- 5. Footer -->
+                 <footer class="bg-white mt-8 p-6 rounded-xl shadow-md text-center text-gray-600">
+                    <p>&copy; 2024 Sekolah XYZ. Semua Hak Cipta Dilindungi.</p>
+                </footer>
+
+            </main>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const sidebar = document.getElementById('sidebar');
+
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('-translate-x-full');
+            });
+        });
+    </script>
+</body>
+</html>
+

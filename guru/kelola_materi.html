@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Materi & Tugas - Dashboard Guru</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .sidebar::-webkit-scrollbar { width: 6px; }
+        .sidebar::-webkit-scrollbar-thumb { background-color: #4f46e5; border-radius: 10px; }
+        .sidebar::-webkit-scrollbar-track { background-color: #1e1b4b; }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="flex h-screen bg-gray-100">
+        <!-- Sidebar -->
+        <aside class="sidebar hidden md:flex flex-col w-64 bg-gray-800 text-white overflow-y-auto">
+            <div class="flex items-center justify-center h-16 bg-gray-900">
+                <svg class="h-8 w-8 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.906 59.906 0 0112 3.493a59.903 59.903 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5Zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" /></svg>
+                <span class="ml-2 font-bold text-lg">Dashboard Guru</span>
+            </div>
+            <nav class="flex-1 px-2 py-4 space-y-2">
+                <a href="dashboard_guru.html" class="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 rounded-md">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                    <span class="ml-3">Dashboard</span>
+                </a>
+                <a href="guru_jadwal.html" class="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 rounded-md">
+                     <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0h18" /></svg>
+                    <span class="ml-3">Kelola Jadwal</span>
+                </a>
+                <a href="guru_materi_tugas.html" class="flex items-center px-4 py-2 bg-gray-900 text-white rounded-md">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>
+                    <span class="ml-3">Materi & Tugas</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main content -->
+        <div class="flex flex-col flex-1 overflow-y-auto">
+            <header class="h-16 bg-white shadow-md flex items-center justify-between px-6 sticky top-0 z-10">
+                 <button class="md:hidden text-gray-600">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                </button>
+                <div class="flex items-center">
+                    <input type="text" placeholder="Cari..." class="border rounded-md px-4 py-1.5 text-sm">
+                </div>
+                <div class="flex items-center">
+                    <a href="login.html" class="text-sm font-medium text-gray-600 hover:text-red-500">Logout</a>
+                </div>
+            </header>
+            
+            <main class="p-6 sm:p-10 space-y-10">
+                <!-- 2. Hero Section -->
+                <section>
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800">Kelola Materi & Tugas</h1>
+                        <p class="text-gray-500 mt-1">Upload materi pelajaran dan buat tugas untuk siswa.</p>
+                    </div>
+                </section>
+
+                <!-- 3. Konten Utama -->
+                <section>
+                    <!-- Tab Menu -->
+                    <div class="mb-6">
+                        <div class="border-b border-gray-200">
+                            <nav class="-mb-px flex space-x-6" aria-label="Tabs">
+                                <button id="tab-materi" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-blue-500 text-blue-600">
+                                    Kelola Materi
+                                </button>
+                                <button id="tab-tugas" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                    Kelola Tugas
+                                </button>
+                            </nav>
+                        </div>
+                    </div>
+
+                    <!-- Konten Tab -->
+                    <div>
+                        <!-- Tab Materi -->
+                        <div id="content-materi" class="space-y-8">
+                            <!-- Form Upload Materi -->
+                            <div class="bg-white p-6 rounded-xl shadow-lg">
+                                <h3 class="text-xl font-bold text-gray-800 mb-4">Form Upload Materi Baru</h3>
+                                <form class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label for="materi-kelas" class="block text-sm font-medium text-gray-700">Kelas</label>
+                                            <select id="materi-kelas" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                                                <option>X IPA 1</option><option>XI IPS 2</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label for="materi-mapel" class="block text-sm font-medium text-gray-700">Mata Pelajaran</label>
+                                            <input type="text" id="materi-mapel" placeholder="e.g., Matematika" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                                        </div>
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label for="materi-judul" class="block text-sm font-medium text-gray-700">Judul Materi</label>
+                                        <input type="text" id="materi-judul" placeholder="e.g., Bab 1: Persamaan Linear" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label for="materi-deskripsi" class="block text-sm font-medium text-gray-700">Deskripsi Singkat</label>
+                                        <textarea id="materi-deskripsi" rows="3" class="mt-1 block w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label for="materi-file" class="block text-sm font-medium text-gray-700">Upload File</label>
+                                        <input type="file" id="materi-file" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                                    </div>
+                                    <div class="md:col-span-2 text-right">
+                                        <button type="submit" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg shadow-md hover:bg-blue-700 transition">Simpan Materi</button>
+                                    </div>
+                                </form>
+                            </div>
+                            <!-- Daftar Materi -->
+                             <div class="bg-white p-6 rounded-xl shadow-lg">
+                                <h3 class="text-xl font-bold text-gray-800 mb-4">Daftar Materi Terupload</h3>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm">
+                                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                            <tr><th class="px-6 py-3">Judul</th><th class="px-6 py-3">Mapel</th><th class="px-6 py-3">Kelas</th><th class="px-6 py-3">File</th><th class="px-6 py-3">Aksi</th></tr>
+                                        </thead>
+                                        <tbody>
+                                             <tr class="border-b"><td class="px-6 py-4">Persamaan Linear</td><td class="px-6 py-4">Matematika</td><td class="px-6 py-4">X IPA 1</td><td class="px-6 py-4">bab1.pdf</td><td class="px-6 py-4 flex gap-3"><button class="text-yellow-500">Edit</button><button class="text-red-500">Hapus</button></td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab Tugas -->
+                        <div id="content-tugas" class="hidden space-y-8">
+                            <!-- Form Buat Tugas -->
+                            <div class="bg-white p-6 rounded-xl shadow-lg">
+                                <h3 class="text-xl font-bold text-gray-800 mb-4">Form Buat Tugas Baru</h3>
+                                <form class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label for="tugas-kelas" class="block text-sm font-medium text-gray-700">Kelas</label>
+                                        <select id="tugas-kelas" class="mt-1 block w-full p-2 border-gray-300 rounded-md"><option>X IPA 1</option></select>
+                                    </div>
+                                     <div>
+                                        <label for="tugas-mapel" class="block text-sm font-medium text-gray-700">Mata Pelajaran</label>
+                                        <input type="text" id="tugas-mapel" class="mt-1 block w-full p-2 border-gray-300 rounded-md">
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label for="tugas-judul" class="block text-sm font-medium text-gray-700">Judul Tugas</label>
+                                        <input type="text" id="tugas-judul" class="mt-1 block w-full p-2 border-gray-300 rounded-md">
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label for="tugas-deskripsi" class="block text-sm font-medium text-gray-700">Deskripsi Tugas</label>
+                                        <textarea id="tugas-deskripsi" rows="3" class="mt-1 block w-full p-2 border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                    <div>
+                                        <label for="tugas-deadline" class="block text-sm font-medium text-gray-700">Deadline</label>
+                                        <input type="datetime-local" id="tugas-deadline" class="mt-1 block w-full p-2 border-gray-300 rounded-md">
+                                    </div>
+                                    <div>
+                                        <label for="tugas-file" class="block text-sm font-medium text-gray-700">Lampiran (Opsional)</label>
+                                        <input type="file" id="tugas-file" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                                    </div>
+                                    <div class="md:col-span-2 text-right">
+                                        <button type="submit" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg shadow-md hover:bg-blue-700 transition">Simpan Tugas</button>
+                                    </div>
+                                </form>
+                            </div>
+                            <!-- Daftar Tugas -->
+                             <div class="bg-white p-6 rounded-xl shadow-lg">
+                                <h3 class="text-xl font-bold text-gray-800 mb-4">Daftar Tugas Dibuat</h3>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm">
+                                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                            <tr><th class="px-6 py-3">Judul</th><th class="px-6 py-3">Kelas</th><th class="px-6 py-3">Deadline</th><th class="px-6 py-3">Status</th><th class="px-6 py-3">Aksi</th></tr>
+                                        </thead>
+                                        <tbody>
+                                             <tr class="border-b"><td class="px-6 py-4">Latihan Soal Bab 1</td><td class="px-6 py-4">X IPA 1</td><td class="px-6 py-4">10 Okt 2025, 23:59</td><td class="px-6 py-4"><span class="px-2 py-1 text-xs font-semibold text-yellow-800 bg-yellow-100 rounded-full">Segera Dikumpulkan</span></td><td class="px-6 py-4 flex gap-3"><button class="text-yellow-500">Edit</button><button class="text-red-500">Hapus</button></td></tr>
+                                             <tr class="border-b"><td class="px-6 py-4">Rangkuman Sejarah</td><td class="px-6 py-4">XI IPS 2</td><td class="px-6 py-4">28 Sep 2025, 23:59</td><td class="px-6 py-4"><span class="px-2 py-1 text-xs font-semibold text-red-800 bg-red-100 rounded-full">Terlambat</span></td><td class="px-6 py-4 flex gap-3"><button class="text-yellow-500">Edit</button><button class="text-red-500">Hapus</button></td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <footer class="text-center mt-10">
+                    <p class="text-sm text-gray-500">&copy; 2024 Sekolah XYZ. Semua Hak Cipta Dilindungi.</p>
+                </footer>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabMateri = document.getElementById('tab-materi');
+            const tabTugas = document.getElementById('tab-tugas');
+            const contentMateri = document.getElementById('content-materi');
+            const contentTugas = document.getElementById('content-tugas');
+            const tabs = [tabMateri, tabTugas];
+            const contents = [contentMateri, contentTugas];
+
+            function switchTab(activeIndex) {
+                tabs.forEach((tab, index) => {
+                    const isActive = index === activeIndex;
+                    tab.classList.toggle('border-blue-500', isActive);
+                    tab.classList.toggle('text-blue-600', isActive);
+                    tab.classList.toggle('border-transparent', !isActive);
+                    tab.classList.toggle('text-gray-500', !isActive);
+                    contents[index].classList.toggle('hidden', !isActive);
+                });
+            }
+
+            tabMateri.addEventListener('click', () => switchTab(0));
+            tabTugas.addEventListener('click', () => switchTab(1));
+        });
+    </script>
+</body>
+</html>
+
