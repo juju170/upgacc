@@ -17,32 +17,37 @@
         .sidebar::-webkit-scrollbar { width: 6px; }
         .sidebar::-webkit-scrollbar-thumb { background-color: #4338ca; border-radius: 10px; }
         .sidebar::-webkit-scrollbar-track { background-color: #1e1b4b; }
+        /* Transisi untuk modal */
         .modal {
             transition: opacity 0.25s ease;
+        }
+        .modal-content {
+            transition: transform 0.25s ease;
         }
     </style>
 </head>
 <body class="bg-gray-100">
 
     <div class="flex h-screen bg-gray-100">
-      <!-- Sidebar Container -->
+      <!-- Sidebar akan dimuat di sini oleh main_admin.js -->
         <div id="sidebar-container"></div>
-        <!-- Main content -->
+
+        <!-- Konten Utama -->
         <div class="flex flex-col flex-1 overflow-y-auto">
-            <header class="h-16 bg-white shadow-md flex items-center justify-between px-6 sticky top-0 z-10">
-                <button id="sidebar-toggle" class="md:hidden text-gray-600">
+            <header class="h-16 bg-white shadow-md flex items-center justify-between px-6 sticky top-0 z-20">
+                <button id="sidebar-toggle" class="md:hidden text-gray-600 focus:outline-none">
                     <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
                 </button>
-                <div class="flex items-center">
+                <div class="hidden md:flex items-center">
                     <span class="text-lg font-semibold text-gray-700">Admin Area</span>
                 </div>
                 <div class="flex items-center">
-                    <a href="../login.html" class="text-sm font-medium text-gray-600 hover:text-red-500">Logout</a>
+                    <a href="../login.html" class="text-sm font-medium text-gray-600 hover:text-red-500 transition">Logout</a>
                 </div>
             </header>
             
             <main class="p-6 sm:p-10 space-y-10">
-                <!-- Hero Section -->
+                <!-- Judul Halaman -->
                 <section>
                     <div>
                         <h1 class="text-3xl font-bold text-gray-800">Manajemen Data Siswa</h1>
@@ -50,25 +55,23 @@
                     </div>
                 </section>
 
-                <!-- Konten Utama -->
+                <!-- Konten Utama: Tabel dan Aksi -->
                 <section class="bg-white p-6 rounded-xl shadow-lg">
                     <!-- Tombol Aksi & Search -->
                     <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
                         <div class="relative w-full sm:max-w-xs">
-                            <input type="text" placeholder="Cari siswa..." class="w-full border rounded-md px-4 py-2 text-sm pl-10">
+                            <input type="text" placeholder="Cari siswa..." class="w-full border rounded-lg px-4 py-2 text-sm pl-10 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
                             <svg class="h-5 w-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg text-sm transition">Import</button>
-                            <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg text-sm transition">Export</button>
-                            <button id="add-student-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg text-sm transition">+ Tambah Siswa</button>
+                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                            <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg text-sm transition w-full sm:w-auto" id="add-student-btn">+ Tambah Siswa</button>
                         </div>
                     </div>
 
                     <!-- Tabel Data Siswa -->
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left text-gray-500">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-100 rounded-t-lg">
                                 <tr>
                                     <th class="px-6 py-3">No</th>
                                     <th class="px-6 py-3">NIS</th>
@@ -79,27 +82,40 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr class="odd:bg-white even:bg-gray-50 border-b">
+                                <!-- Data Dummy 1 -->
+                                <tr class="odd:bg-white even:bg-gray-50 border-b hover:bg-indigo-50" data-id="1" data-nis="1234567890" data-nama="Ahmad Budi Santoso" data-kelas="XI IPA 1" data-email="ahmad.budi@email.com">
                                     <td class="px-6 py-4">1</td>
                                     <td class="px-6 py-4 font-medium text-gray-900">1234567890</td>
                                     <td class="px-6 py-4 font-medium text-gray-900">Ahmad Budi Santoso</td>
                                     <td class="px-6 py-4">XI IPA 1</td>
                                     <td class="px-6 py-4">ahmad.budi@email.com</td>
-                                    <td class="px-6 py-4 text-center flex justify-center gap-2">
-                                        <button class="edit-btn text-blue-600 hover:text-blue-800" title="Edit"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd"></path></svg></button>
-                                        <button class="delete-btn text-red-600 hover:text-red-800" title="Hapus"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg></button>
+                                    <td class="px-6 py-4 text-center flex justify-center items-center gap-2">
+                                        <button class="edit-btn text-blue-600 hover:text-blue-800" title="Edit"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button>
+                                        <button class="delete-btn text-red-600 hover:text-red-800" title="Hapus"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                                     </td>
                                 </tr>
-                                <!-- Add more rows as needed -->
-                                <tr class="odd:bg-white even:bg-gray-50 border-b">
+                                <!-- Data Dummy 2 -->
+                                <tr class="odd:bg-white even:bg-gray-50 border-b hover:bg-indigo-50" data-id="2" data-nis="1234567891" data-nama="Citra Lestari Dewi" data-kelas="XI IPS 2" data-email="citra.lestari@email.com">
                                     <td class="px-6 py-4">2</td>
                                     <td class="px-6 py-4 font-medium text-gray-900">1234567891</td>
                                     <td class="px-6 py-4 font-medium text-gray-900">Citra Lestari Dewi</td>
                                     <td class="px-6 py-4">XI IPS 2</td>
                                     <td class="px-6 py-4">citra.lestari@email.com</td>
-                                    <td class="px-6 py-4 text-center flex justify-center gap-2">
-                                        <button class="edit-btn text-blue-600 hover:text-blue-800" title="Edit"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd"></path></svg></button>
-                                        <button class="delete-btn text-red-600 hover:text-red-800" title="Hapus"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg></button>
+                                    <td class="px-6 py-4 text-center flex justify-center items-center gap-2">
+                                        <button class="edit-btn text-blue-600 hover:text-blue-800" title="Edit"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button>
+                                        <button class="delete-btn text-red-600 hover:text-red-800" title="Hapus"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                                    </td>
+                                </tr>
+                                <!-- Data Dummy 3 -->
+                                 <tr class="odd:bg-white even:bg-gray-50 border-b hover:bg-indigo-50" data-id="3" data-nis="1234567892" data-nama="Eko Prasetyo" data-kelas="X-A" data-email="eko.prasetyo@email.com">
+                                    <td class="px-6 py-4">3</td>
+                                    <td class="px-6 py-4 font-medium text-gray-900">1234567892</td>
+                                    <td class="px-6 py-4 font-medium text-gray-900">Eko Prasetyo</td>
+                                    <td class="px-6 py-4">X-A</td>
+                                    <td class="px-6 py-4">eko.prasetyo@email.com</td>
+                                    <td class="px-6 py-4 text-center flex justify-center items-center gap-2">
+                                        <button class="edit-btn text-blue-600 hover:text-blue-800" title="Edit"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button>
+                                        <button class="delete-btn text-red-600 hover:text-red-800" title="Hapus"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -115,61 +131,57 @@
     </div>
 
     <!-- Modal Form Tambah/Edit Siswa -->
-    <div id="student-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-gray-800">Tambah Data Siswa Baru</h3>
-                <button class="modal-close text-gray-500 hover:text-gray-800">&times;</button>
+    <div id="student-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-30">
+        <div class="modal-content bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg transform scale-95">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 id="modal-title" class="text-xl font-bold text-gray-800">Tambah Data Siswa Baru</h3>
+                <button class="modal-close text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
             </div>
-            <form class="space-y-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="nis" class="block text-sm font-medium text-gray-700">NIS</label>
-                        <input type="text" id="nis" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                    </div>
-                     <div>
-                        <label for="nama" class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
-                        <input type="text" id="nama" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                    </div>
-                     <div>
-                        <label for="kelas" class="block text-sm font-medium text-gray-700">Kelas</label>
-                        <input type="text" id="kelas" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                    </div>
-                    <div>
-                        <label for="jurusan" class="block text-sm font-medium text-gray-700">Jurusan</label>
-                        <input type="text" id="jurusan" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                    </div>
+            <form id="student-form" class="space-y-4">
+                <!-- Hidden input untuk menyimpan ID saat mode edit -->
+                <input type="hidden" id="student-id" name="student-id">
+                <div>
+                    <label for="nis" class="block text-sm font-medium text-gray-700">NIS</label>
+                    <input type="text" id="nis" name="nis" class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" required>
                 </div>
                 <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                    <input type="email" id="email" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                    <label for="nama" class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+                    <input type="text" id="nama" name="nama" class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" required>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="kelas" class="block text-sm font-medium text-gray-700">Kelas</label>
+                        <input type="text" id="kelas" name="kelas" class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" required>
+                    </div>
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" id="email" name="email" class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" required>
+                    </div>
                 </div>
                 <div class="flex justify-end gap-3 pt-4">
-                    <button type="button" class="modal-cancel bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg">Batal</button>
-                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Simpan</button>
+                    <button type="button" class="modal-cancel bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg transition">Batal</button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition">Simpan</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Modal Konfirmasi Hapus -->
-    <div id="delete-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm text-center">
-            <h3 class="text-lg font-bold text-gray-800">Konfirmasi Hapus</h3>
-            <p class="text-gray-600 my-4">Apakah Anda yakin ingin menghapus data siswa ini? Tindakan ini tidak dapat dibatalkan.</p>
-            <div class="flex justify-center gap-4">
-                <button class="modal-cancel bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg">Batal</button>
-                <button id="confirm-delete-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">Hapus</button>
+    <div id="delete-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-30">
+        <div class="modal-content bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm text-center transform scale-95">
+             <div class="flex justify-center items-center mx-auto bg-red-100 rounded-full h-16 w-16">
+                <svg class="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-800 mt-4">Konfirmasi Hapus</h3>
+            <p class="text-gray-600 my-2">Apakah Anda yakin ingin menghapus data siswa ini? Tindakan ini tidak dapat dibatalkan.</p>
+            <div class="flex justify-center gap-4 mt-6">
+                <button class="modal-cancel bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg transition">Batal</button>
+                <button id="confirm-delete-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition">Hapus</button>
             </div>
         </div>
     </div>
-
-    <!-- 
-    PERUBAHAN PENTING:
-    - Seluruh blok <script>...</script> yang ada di sini sebelumnya telah dihapus.
-    - Logika untuk sidebar dan modal sekarang sepenuhnya dikontrol oleh 'main_admin.js'.
-    - Tag script di bawah ini diperbaiki agar memuat file 'main_admin.js' dengan benar.
-    -->
+    
+    <!-- Memuat file JavaScript utama yang akan mengontrol semua interaksi -->
     <script src="./main_admin.js"></script>
 </body>
 </html>
