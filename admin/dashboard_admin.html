@@ -117,7 +117,7 @@
         // Logika untuk tombol toggle sidebar di tampilan mobile
         document.getElementById('sidebar-toggle').addEventListener('click', function() {
             // Cari sidebar di dalam container-nya
-            const sidebar = document.querySelector('#sidebar-container #sidebar');
+            const sidebar = document.querySelector('sidebar-container');
             if (sidebar) {
                 sidebar.classList.toggle('hidden');
             }
