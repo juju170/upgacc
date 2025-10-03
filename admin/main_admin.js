@@ -1,7 +1,7 @@
 // Event listener ini akan memastikan skrip berjalan setelah seluruh halaman dimuat
 document.addEventListener('DOMContentLoaded', () => {
     // Path ke file sidebar Anda.
-    const sidebarPath = './_sidebar_admin.html';
+    const sidebarPath = 'admin/_sidebar_admin.html';
     // ID dari elemen container tempat sidebar akan dimuat.
     const sidebarContainerId = 'sidebar-container';
     // ID dari tombol toggle.
