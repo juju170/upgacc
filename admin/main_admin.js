@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
  * Fungsi untuk memuat sidebar secara dinamis dan menginisialisasi fungsinya.
  */
 function loadSidebar() {
-    const sidebarPath = 'admin/_sidebar_admin.html';
+    const sidebarPath = 'https://github.com/juju170/upgacc/blob/e4c774cb8caa8712d0d0ff88c226cf479f947808/admin/main_admin.js';
     const sidebarContainerId = 'sidebar-container';
     const sidebarToggleId = 'sidebar-toggle';
 
