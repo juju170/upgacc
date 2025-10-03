@@ -4,21 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Guru - Admin Panel</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        #sidebar-container .sidebar::-webkit-scrollbar { width: 6px; }
-        #sidebar-container .sidebar::-webkit-scrollbar-thumb { background-color: #4338ca; border-radius: 10px; }
-        #sidebar-container .sidebar::-webkit-scrollbar-track { background-color: #1e1b4b; }
-        .modal { transition: opacity 0.25s ease; }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Styling untuk scrollbar sidebar sekarang dipindah ke main_admin.js atau CSS global jika perlu */
+        .modal {
+            transition: opacity 0.25s ease;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
+
     <div class="flex h-screen bg-gray-100">
-        <!-- Sidebar Container -->
+        <!-- 
+        PERUBAHAN 1: Sidebar yang ditulis langsung (hardcoded) dihapus.
+        Digantikan dengan div container ini, yang akan diisi secara dinamis oleh main_admin.js
+        -->
         <div id="sidebar-container"></div>
 
         <!-- Main content -->
@@ -27,31 +35,42 @@
                 <button id="sidebar-toggle" class="md:hidden text-gray-600">
                     <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
                 </button>
-                <div class="flex items-center"><span class="text-lg font-semibold text-gray-700">Admin Area</span></div>
-                <div class="flex items-center"><a href="../login.html" class="text-sm font-medium text-gray-600 hover:text-red-500">Logout</a></div>
+                <div class="flex items-center">
+                    <span class="text-lg font-semibold text-gray-700">Admin Area</span>
+                </div>
+                <div class="flex items-center">
+                    <a href="../login.html" class="text-sm font-medium text-gray-600 hover:text-red-500">Logout</a>
+                </div>
             </header>
             
             <main class="p-6 sm:p-10 space-y-10">
-                <!-- Konten utama tidak berubah -->
+                <!-- Hero Section -->
                 <section>
                     <div>
                         <h1 class="text-3xl font-bold text-gray-800">Manajemen Data Guru</h1>
                         <p class="text-gray-500 mt-1">Tambah, lihat, ubah, dan hapus data guru.</p>
                     </div>
                 </section>
+
+                <!-- Konten Utama -->
                 <section class="bg-white p-6 rounded-xl shadow-lg">
+                    <!-- Tombol Aksi & Search -->
                     <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
                         <div class="relative w-full sm:max-w-xs">
                             <input type="text" placeholder="Cari guru..." class="w-full border rounded-md px-4 py-2 text-sm pl-10">
-                             <svg class="h-5 w-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+                            <svg class="h-5 w-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
                         </div>
                         <div class="flex items-center gap-2">
+                            <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg text-sm transition">Import</button>
+                            <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg text-sm transition">Export</button>
                             <button id="add-teacher-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg text-sm transition">+ Tambah Guru</button>
                         </div>
                     </div>
+
+                    <!-- Tabel Data Guru -->
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left text-gray-500">
-                             <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-100">
                                 <tr>
                                     <th class="px-6 py-3">No</th>
                                     <th class="px-6 py-3">NIP</th>
@@ -61,7 +80,7 @@
                                     <th class="px-6 py-3 text-center">Aksi</th>
                                 </tr>
                             </thead>
-                             <tbody>
+                            <tbody>
                                 <tr class="odd:bg-white even:bg-gray-50 border-b">
                                     <td class="px-6 py-4">1</td>
                                     <td class="px-6 py-4 font-medium text-gray-900">198505102010012001</td>
@@ -73,24 +92,61 @@
                                         <button class="delete-btn text-red-600 hover:text-red-800" title="Hapus"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg></button>
                                     </td>
                                 </tr>
+                                <tr class="odd:bg-white even:bg-gray-50 border-b">
+                                    <td class="px-6 py-4">2</td>
+                                    <td class="px-6 py-4 font-medium text-gray-900">199001152015031002</td>
+                                    <td class="px-6 py-4 font-medium text-gray-900">Bambang Wijoyo, S.Kom.</td>
+                                    <td class="px-6 py-4">TIK, Informatika</td>
+                                    <td class="px-6 py-4">bambang.w@sekolah.xyz</td>
+                                    <td class="px-6 py-4 text-center flex justify-center gap-2">
+                                        <button class="edit-btn text-blue-600 hover:text-blue-800" title="Edit"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd"></path></svg></button>
+                                        <button class="delete-btn text-red-600 hover:text-red-800" title="Hapus"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg></button>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
                 </section>
-                <footer class="text-center pt-10"><p class="text-sm text-gray-500">&copy; 2025 Sekolah XYZ. Semua Hak Cipta Dilindungi.</p></footer>
+
+                <footer class="text-center pt-10">
+                    <p class="text-sm text-gray-500">&copy; 2025 Sekolah XYZ. Semua Hak Cipta Dilindungi.</p>
+                </footer>
             </main>
         </div>
     </div>
 
-    <!-- Modal Form -->
+    <!-- Modal Form Tambah/Edit Guru -->
     <div id="form-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-        <!-- Isi modal tidak berubah -->
         <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg">
-             <div class="flex justify-between items-center mb-4">
+            <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold text-gray-800">Tambah Data Guru Baru</h3>
-                <button class="modal-close text-gray-500 hover:text-gray-800 text-3xl leading-none">&times;</button>
+                <button class="modal-close text-gray-500 hover:text-gray-800">&times;</button>
             </div>
             <form class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="nip" class="block text-sm font-medium text-gray-700">NIP / ID Guru</label>
+                        <input type="text" id="nip" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                    </div>
+                     <div>
+                        <label for="nama" class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+                        <input type="text" id="nama" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                    </div>
+                </div>
+                <div>
+                    <label for="mapel" class="block text-sm font-medium text-gray-700">Mata Pelajaran</label>
+                    <input type="text" id="mapel" placeholder="Pisahkan dengan koma, cth: Matematika, Fisika" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" id="email" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                    </div>
+                     <div>
+                        <label for="telepon" class="block text-sm font-medium text-gray-700">Telepon</label>
+                        <input type="tel" id="telepon" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                    </div>
+                </div>
                 <div class="flex justify-end gap-3 pt-4">
                     <button type="button" class="modal-cancel bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg">Batal</button>
                     <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Simpan</button>
@@ -101,18 +157,20 @@
 
     <!-- Modal Konfirmasi Hapus -->
     <div id="delete-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-       <!-- Isi modal tidak berubah -->
-       <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm text-center">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm text-center">
             <h3 class="text-lg font-bold text-gray-800">Konfirmasi Hapus</h3>
-            <p class="text-gray-600 my-4">Apakah Anda yakin ingin menghapus data guru ini?</p>
+            <p class="text-gray-600 my-4">Apakah Anda yakin ingin menghapus data guru ini? Tindakan ini tidak dapat dibatalkan.</p>
             <div class="flex justify-center gap-4">
-                <button type="button" class="modal-cancel bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg">Batal</button>
+                <button class="modal-cancel bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg">Batal</button>
                 <button id="confirm-delete-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">Hapus</button>
             </div>
         </div>
     </div>
 
-    <!-- Panggil satu skrip ini saja -->
+    <!-- 
+    PERUBAHAN 2: Seluruh blok <script>...</script> dihapus dari sini.
+    Cukup panggil file main_admin.js yang akan mengurus semuanya.
+    -->
     <script src="./main_admin.js"></script>
 </body>
 </html>
