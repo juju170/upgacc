@@ -3,10 +3,10 @@
  * termasuk memuat sidebar, fungsionalitas tombol, dan manajemen modal.
  */
 document.addEventListener('DOMContentLoaded', () => {
-    // --- BAGIAN SIDEBAR ---
+    // Memuat sidebar dan fungsionalitasnya
     loadSidebar();
 
-    // --- BAGIAN MODAL (Logika dipindahkan ke sini agar terpusat) ---
+    // Menginisialisasi semua modal di halaman
     initializeModals();
 });
 
@@ -14,15 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
  * Fungsi untuk memuat sidebar secara dinamis dan menginisialisasi fungsinya.
  */
 function loadSidebar() {
-    const sidebarPath = 'https://github.com/juju170/upgacc/blob/6b4bbf5ca092bf2dcb5e52c567c1f1ddd16af96a/admin/_sidebar_admin.html';
-    const sidebarContainerId = 'sidebar-container';
-    const sidebarToggleId = 'sidebar-toggle';
-
-    const sidebarContainer = document.getElementById(sidebarContainerId);
-    const sidebarToggleButton = document.getElementById(sidebarToggleId);
+    const sidebarPath = './_sidebar_admin.html';
+    const sidebarContainer = document.getElementById('sidebar-container');
+    const sidebarToggleButton = document.getElementById('sidebar-toggle');
 
     if (!sidebarContainer || !sidebarToggleButton) {
-        console.error(`PENTING: Pastikan ada elemen dengan id="${sidebarContainerId}" dan id="${sidebarToggleId}" di file HTML Anda.`);
+        console.error('PENTING: Pastikan ada elemen dengan id="sidebar-container" dan id="sidebar-toggle" di file HTML Anda.');
         return;
     }
 
@@ -43,9 +40,9 @@ function loadSidebar() {
 }
 
 /**
- * Menginisialisasi fungsionalitas sidebar setelah dimuat.
- * @param {HTMLElement} container - Elemen container sidebar.
- * @param {HTMLElement} toggleButton - Tombol untuk membuka/menutup sidebar.
+ * Menginisialisasi fungsionalitas sidebar (tombol toggle) setelah sidebar berhasil dimuat.
+ * @param {HTMLElement} container - Elemen div yang berisi sidebar.
+ * @param {HTMLElement} toggleButton - Tombol burger untuk tampilan mobile.
  */
 function initializeSidebarFunctionality(container, toggleButton) {
     const sidebar = container.querySelector('#sidebar');
@@ -59,8 +56,8 @@ function initializeSidebarFunctionality(container, toggleButton) {
 }
 
 /**
- * Menandai link navigasi yang sedang aktif di sidebar.
- * @param {HTMLElement} container - Elemen container sidebar.
+ * Menandai link navigasi yang sedang aktif di sidebar sesuai dengan halaman yang dibuka.
+ * @param {HTMLElement} container - Elemen div yang berisi sidebar.
  */
 function setActiveLink(container) {
     const currentPage = window.location.pathname.split('/').pop();
@@ -75,37 +72,21 @@ function setActiveLink(container) {
 }
 
 /**
- * Menginisialisasi semua fungsionalitas modal di halaman.
+ * Menginisialisasi semua fungsionalitas modal di halaman (buka/tutup).
  */
 function initializeModals() {
     const allModals = document.querySelectorAll('.modal');
-    if (allModals.length === 0) return; // Jika tidak ada modal, hentikan
+    if (allModals.length === 0) return; // Jika tidak ada modal di halaman ini, hentikan fungsi.
 
     const openModal = (modal) => modal.classList.remove('hidden');
     const closeModal = (modal) => modal.classList.add('hidden');
 
-    // Umum: Tombol batal atau 'X' untuk menutup modal
-    document.querySelectorAll('.modal-cancel, .modal-close').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const modalToClose = btn.closest('.modal');
-            if(modalToClose) closeModal(modalToClose);
-        });
-    });
-
-    // Umum: Klik di luar area modal untuk menutup
-    allModals.forEach(modal => {
-        modal.addEventListener('click', (event) => {
-            if (event.target === modal) {
-                closeModal(modal);
-            }
-        });
-    });
-
-    // Logika spesifik per tombol pembuka modal
+    // Menambahkan fungsionalitas untuk semua tombol yang bisa membuka modal
     const modalTriggers = {
-        'add-student-btn': 'student-modal',
-        'add-teacher-btn': 'form-modal', // di data_guru
-        'add-class-btn': 'form-modal', // di data_kelas
+        'add-student-btn': 'student-modal', // Untuk data_siswa.html
+        'add-teacher-btn': 'form-modal',    // Untuk data_guru.html
+        'add-class-btn': 'form-modal',      // Untuk data_kelas.html
+        'add-btn': 'form-modal'             // Untuk data_program.html dan data_berita.html
     };
 
     for (const [btnId, modalId] of Object.entries(modalTriggers)) {
@@ -116,9 +97,9 @@ function initializeModals() {
         }
     }
 
-    // Tombol-tombol aksi dalam tabel (edit, hapus, detail)
+    // Menangani tombol aksi umum di dalam tabel (edit, hapus, detail)
     document.querySelectorAll('.edit-btn').forEach(btn => {
-        const modal = document.getElementById('student-modal') || document.getElementById('form-modal');
+        const modal = document.getElementById('form-modal') || document.getElementById('student-modal');
         if (modal) btn.addEventListener('click', () => openModal(modal));
     });
 
@@ -130,5 +111,19 @@ function initializeModals() {
     document.querySelectorAll('.detail-btn').forEach(btn => {
         const modal = document.getElementById('detail-modal');
         if (modal) btn.addEventListener('click', () => openModal(modal));
+    });
+
+    // Menangani semua cara untuk menutup modal
+    allModals.forEach(modal => {
+        // Klik tombol 'batal' atau 'x'
+        modal.querySelectorAll('.modal-cancel, .modal-close').forEach(btn => {
+            btn.addEventListener('click', () => closeModal(modal));
+        });
+        // Klik di luar area modal
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                closeModal(modal);
+            }
+        });
     });
 }
