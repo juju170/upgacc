@@ -40,13 +40,13 @@
                 </div>
                 <!-- Menu Navigasi (Desktop) -->
                 <div class="hidden md:block">
-    <div class="ml-10 flex items-baseline space-x-4">
-        <a href="index.html" class="text-gray-600 hover:bg-blue-500 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Home</a>
-        <a href="./public/program.html" class="text-gray-600 hover:bg-blue-500 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Program</a>
-        <a href="./public/berita.html" class="text-gray-600 hover:bg-blue-500 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Berita</a>
-        <a href="login.html" class="bg-blue-600 text-white px-3 py-2 rounded-md text-sm font-medium">Login</a>
-    </div>
-</div>
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="index.html" class="text-gray-600 hover:bg-blue-500 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Home</a>
+                        <a href="./public/program.html" class="text-gray-600 hover:bg-blue-500 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Program</a>
+                        <a href="./public/berita.html" class="text-gray-600 hover:bg-blue-500 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Berita</a>
+                        <a href="login.html" class="bg-blue-600 text-white px-3 py-2 rounded-md text-sm font-medium">Login</a>
+                    </div>
+                </div>
                 <!-- Tombol Menu (Mobile) -->
                 <div class="-mr-2 flex md:hidden">
                     <button type="button" class="bg-gray-200 inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-white hover:bg-blue-500 focus:outline-none">
@@ -60,18 +60,20 @@
         </div>
     </nav>
 
-    <!-- 2. Hero Section & Form Wrapper -->
+    <!-- 2. Konten Utama -->
     <main class="w-full flex flex-col items-center justify-center bg-gray-50 px-4 py-12">
-        <!-- Hero Text -->
+        <!-- Teks Judul -->
         <div class="text-center mb-8">
             <h1 class="text-4xl md:text-5xl font-extrabold text-gray-800">Login Portal Sekolah</h1>
             <p class="mt-3 text-lg text-gray-600">Masuk sebagai Guru atau Siswa untuk mengakses dashboard</p>
         </div>
 
-        <!-- 3. Form Login -->
+        <!-- 3. Form Login Wrapper -->
         <div class="w-full max-w-sm bg-white p-8 rounded-xl shadow-lg">
-            <form class="space-y-6">
-                <!-- Pilihan Role -->
+            <!-- Tag form yang sudah diperbaiki -->
+            <form action="/proses-login" method="POST" class="space-y-6">
+                
+                <!-- Pilihan Role (Siswa/Guru) -->
                 <div>
                     <label class="text-sm font-medium text-gray-700">Login sebagai:</label>
                     <div class="mt-2 grid grid-cols-2 gap-3">
@@ -99,20 +101,40 @@
                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                             </svg>
                         </div>
-                        <input id="email" name="email" type="text" required class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        <input id="email" name="email" type="text" placeholder="Masukkan email atau username" required class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                     </div>
                 </div>
 
-                <!-- Input Password -->
-                     <div class="text-center">
+                <!-- Input Password (BARU) -->
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <div class="mt-1 relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                            </svg>
+                        </div>
+                        <input id="password" name="password" type="password" placeholder="Masukkan password" required class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    </div>
+                </div>
+                
+                <!-- Tombol Login -->
+                <div>
+                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-300">
+                        Login
+                    </button>
+                </div>
+                
+                <!-- Link Lupa Password -->
+                <div class="text-center">
                     <a href="#" class="text-sm font-medium text-blue-600 hover:text-blue-500">
                         Lupa Password?
                     </a>
                 </div>
             </form>
         </div>
-                </div>
 
+        <!-- 4. Shortcut untuk Development -->
         <div class="w-full max-w-sm mt-6 text-center">
             <div class="p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded-lg">
                 <p class="font-bold">Hanya untuk Development</p>
@@ -129,50 +151,12 @@
                     Siswa
                 </a>
             </div>
-        </main>     
-
-                <!-- Tombol Login -->
-                <div>
-                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-300">
-                        Login
-                    </button>
-                </div>
-                
-                <!-- Link Lupa Password -->
-                <div class="text-center">
-                    <a href="#" class="text-sm font-medium text-blue-600 hover:text-blue-500">
-                        Lupa Password?
-                    </a>
-                </div>
-            </form>
         </div>
-    </main>
+    </main>     
 
     <!-- 5. Footer -->
     <footer class="bg-gray-800 text-white">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
-                <!-- Alamat -->
-                <div>
-                    <h4 class="font-bold text-lg mb-2">Sekolah XYZ</h4>
-                    <p class="text-gray-400">Jl. Pendidikan No. 123, Kota Ilmu,<br>Provinsi Cerdas, Indonesia</p>
-                </div>
-                <!-- Kontak -->
-                <div>
-                    <h4 class="font-bold text-lg mb-2">Hubungi Kami</h4>
-                    <p class="text-gray-400">Email: info@sekolahxyz.sch.id</p>
-                    <p class="text-gray-400">Telepon: (021) 123-4567</p>
-                </div>
-                <!-- Sosial Media -->
-                <div>
-                    <h4 class="font-bold text-lg mb-2">Ikuti Kami</h4>
-                    <div class="flex justify-center md:justify-start space-x-4 mt-2">
-                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M9.19795 21.5H13.198V13.4901H16.1618L16.674 9.50977H13.198V7.51125C13.198 6.94513 13.3451 6.63367 14.2201 6.63367H16.5V3.00367C15.9038 2.94363 15.0259 2.88525 14.1522 2.88525C11.5639 2.88525 9.94022 4.48834 9.94022 7.23525V9.50977H6.5V13.4901H9.94022V21.5H9.19795Z"></path></svg></a>
-                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.85s-.012 3.584-.07 4.85c-.148 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07s-3.584-.012-4.85-.07c-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.85s.012-3.584.07-4.85C2.289 3.854 3.754 2.31 6.984 2.163 8.25.105 8.63.093 11.837.093h.326zM12 4.885c-3.935 0-7.115 3.18-7.115 7.115S8.065 19.115 12 19.115s7.115-3.18 7.115-7.115S15.935 4.885 12 4.885zm0 11.822c-2.613 0-4.735-2.122-4.735-4.735s2.122-4.735 4.735-4.735 4.735 2.122 4.735 4.735-2.122 4.735-4.735 4.735zm5.705-11.77a1.425 1.425 0 100-2.85 1.425 1.425 0 000 2.85z"></path></svg></a>
-                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M23.643 4.937c-.835.37-1.732.62-2.675.733.962-.576 1.7-1.49 2.048-2.578-.9.534-1.897.922-2.958 1.13-.85-.904-2.06-1.47-3.4-1.47-2.572 0-4.658 2.086-4.658 4.66 0 .364.042.718.12 1.06-3.873-.195-7.304-2.05-9.602-4.868-.4.69-.63 1.49-.63 2.342 0 1.616.823 3.043 2.072 3.878-.764-.025-1.482-.234-2.11-.583v.06c0 2.257 1.605 4.14 3.737 4.568-.39.106-.803.163-1.227.163-.3 0-.593-.028-.877-.082.593 1.85 2.313 3.198 4.352 3.234-1.595 1.25-3.604 1.995-5.786 1.995-.376 0-.747-.022-1.112-.065 2.062 1.323 4.51 2.093 7.14 2.093 8.57 0 13.255-7.098 13.255-13.254 0-.2-.005-.402-.014-.602.91-.658 1.7-1.477 2.323-2.41z"></path></svg></a>
-                    </div>
-                </div>
-            </div>
             <div class="mt-8 border-t border-gray-700 pt-6 text-center text-gray-400 text-sm">
                 <p>&copy; 2024 Sekolah XYZ. Semua Hak Cipta Dilindungi.</p>
             </div>
