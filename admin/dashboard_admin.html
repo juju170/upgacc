@@ -38,8 +38,7 @@
                 <div class="flex items-center">
                  <a href="../login.html" class="text-sm font-medium text-gray-600 hover:text-red-500">Logout</a>
                 </div>
-            </header>
-            
+            </header>            
             <main class="p-6 sm:p-10 space-y-10">
                 <!-- Konten utama halaman tetap sama -->
                 <section>
@@ -48,7 +47,78 @@
                         <p class="text-gray-500 mt-1">Kelola data sekolah dengan mudah.</p>
                     </div>
                 </section>
-                <!-- ... sisa konten ... -->
+                        <!-- 3. Konten Utama (Grid Card Overview) -->
+                <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                    <div class="bg-white p-6 rounded-xl shadow-lg flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">Total Siswa</p>
+                            <p class="text-3xl font-bold text-gray-800">1,250</p>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-full">
+                            <svg class="h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-4.69c.125-.314.25-.627.375-.935m4.375 2.375v.003l.01.01m8.242 0l-.01-.01M15 19.128L15 15.07M4.5 7.5L4.5 12m0 0l3 3m-3-3l-3 3" /></svg>
+                        </div>
+                    </div>
+                     <div class="bg-white p-6 rounded-xl shadow-lg flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">Total Guru</p>
+                            <p class="text-3xl font-bold text-gray-800">85</p>
+                        </div>
+                         <div class="bg-green-100 p-3 rounded-full">
+                            <svg class="h-6 w-6 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        </div>
+                    </div>
+                     <div class="bg-white p-6 rounded-xl shadow-lg flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">Jumlah Kelas</p>
+                            <p class="text-3xl font-bold text-gray-800">36</p>
+                        </div>
+                         <div class="bg-yellow-100 p-3 rounded-full">
+                            <svg class="h-6 w-6 text-yellow-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h6M9 12h6m-6 5.25h6M5.25 6h.008v.008H5.25V6zm0 5.25h.008v.008H5.25v-.008zm0 5.25h.008v.008H5.25v-.008zm13.5-5.25h.008v.008h-.008v-.008zm0 5.25h.008v.008h-.008v-.008z" /></svg>
+                        </div>
+                    </div>
+                     <div class="bg-white p-6 rounded-xl shadow-lg flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">Program Sekolah</p>
+                            <p class="text-3xl font-bold text-gray-800">12</p>
+                        </div>
+                         <div class="bg-purple-100 p-3 rounded-full">
+                           <svg class="h-6 w-6 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>
+                        </div>
+                    </div>
+                     <div class="bg-white p-6 rounded-xl shadow-lg flex items-center justify-between sm:col-span-2 lg:col-span-4 xl:col-span-1">
+                        <div>
+                            <p class="text-gray-500 text-sm">Pengumuman Aktif</p>
+                            <p class="text-3xl font-bold text-gray-800">5</p>
+                        </div>
+                         <div class="bg-red-100 p-3 rounded-full">
+                           <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" /></svg>
+                        </div>
+                    </div>
+                </section>
+                
+                <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- 4. Bagian Statistik -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Statistik Pendaftaran Siswa</h3>
+                        <div class="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+                            <p class="text-gray-500">Placeholder untuk Grafik</p>
+                        </div>
+                    </div>
+
+                    <!-- 5. Shortcut Aksi Cepat -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Aksi Cepat</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg transition">Tambah Siswa</button>
+                            <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition">Tambah Guru</button>
+                            <button class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-4 rounded-lg transition">Tambah Program</button>
+                            <button class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg transition">Tambah Berita</button>
+                        </div>
+                    </div>
+                </section>            
+                <footer class="text-center pt-10">
+                    <p class="text-sm text-gray-500">&copy; 2025 Sekolah XYZ. Semua Hak Cipta Dilindungi.</p>
+                </footer>
             </main>
         </div>
     </div>
