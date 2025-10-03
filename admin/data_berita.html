@@ -14,6 +14,7 @@
         body {
             font-family: 'Inter', sans-serif;
         }
+        /* Style untuk sidebar ini akan diinjeksi oleh main_admin.js */
         .sidebar::-webkit-scrollbar { width: 6px; }
         .sidebar::-webkit-scrollbar-thumb { background-color: #4338ca; border-radius: 10px; }
         .sidebar::-webkit-scrollbar-track { background-color: #1e1b4b; }
@@ -25,7 +26,7 @@
 <body class="bg-gray-100">
 
     <div class="flex h-screen bg-gray-100">
-        <!-- Sidebar -->
+        <!-- Sidebar Container - Konten sidebar akan diisi oleh main_admin.js -->
         <div id="sidebar-container"></div>
 
         <!-- Main content -->
@@ -35,6 +36,7 @@
                     <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
                 </button>
                 <div class="flex items-center"><span class="text-lg font-semibold text-gray-700">Admin Area</span></div>
+                <!-- Pastikan path logout benar, saya asumsikan ada di luar folder admin -->
                 <div class="flex items-center"><a href="../login.html" class="text-sm font-medium text-gray-600 hover:text-red-500">Logout</a></div>
             </header>
             
@@ -165,38 +167,42 @@
         </div>
     </div>
 
+    <!-- Panggil main_admin.js di sini agar logika sidebar terpusat dapat berjalan -->
+    <script src="./main_admin.js"></script>
+    
     <script>
+        // Skrip lokal hanya untuk fungsionalitas modal di halaman ini
         document.addEventListener('DOMContentLoaded', () => {
-            const sidebarToggle = document.getElementById('sidebar-toggle');
-            const sidebar = document.getElementById('sidebar');
             const modals = document.querySelectorAll('.modal');
             const formModal = document.getElementById('form-modal');
             const detailModal = document.getElementById('detail-modal');
             const deleteModal = document.getElementById('delete-modal');
 
-            sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('hidden'));
-
             const openModal = (modal) => modal.classList.remove('hidden');
             const closeModal = (modal) => modal.classList.add('hidden');
 
+            // Listeners untuk tombol tambah, edit, detail, dan hapus
             document.getElementById('add-btn').addEventListener('click', () => openModal(formModal));
             document.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', () => openModal(formModal)));
             document.querySelectorAll('.detail-btn').forEach(btn => btn.addEventListener('click', () => openModal(detailModal)));
             document.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', () => openModal(deleteModal)));
 
+            // Listeners untuk tombol batal di dalam modal
             document.querySelectorAll('.modal-cancel').forEach(btn => {
                 btn.addEventListener('click', () => {
                     modals.forEach(modal => closeModal(modal));
                 });
             });
 
+            // Listener untuk klik di luar modal (backdrop)
             window.addEventListener('click', (event) => {
                 if (event.target.classList.contains('modal')) {
                     closeModal(event.target);
                 }
             });
         });
-        <script src="./main_admin.js"></script>
+    </script>
 </body>
 </html>
 
+            
