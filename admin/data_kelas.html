@@ -4,23 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Kelas - Admin Panel</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        #sidebar-container .sidebar::-webkit-scrollbar { width: 6px; }
-        #sidebar-container .sidebar::-webkit-scrollbar-thumb { background-color: #4338ca; border-radius: 10px; }
-        #sidebar-container .sidebar::-webkit-scrollbar-track { background-color: #1e1b4b; }
-        .modal { transition: opacity 0.25s ease; }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .modal {
+            transition: opacity 0.25s ease;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
-    <div class="flex h-screen bg-gray-100">
-        <!-- Sidebar Container -->
-        <div id="sidebar-container"></div>
 
+    <div class="flex h-screen bg-gray-100">
+        <!-- Sidebar Container Kosong -->
+        <!-- Sidebar akan dimuat di sini oleh main_admin.js -->
+        <div id="sidebar-container"></div>
+        
         <!-- Main content -->
         <div class="flex flex-col flex-1 overflow-y-auto">
             <header class="h-16 bg-white shadow-md flex items-center justify-between px-6 sticky top-0 z-10">
@@ -32,22 +37,41 @@
             </header>
             
             <main class="p-6 sm:p-10 space-y-10">
-                <!-- Konten utama tidak berubah -->
+                <!-- Hero Section -->
                 <section>
                     <div>
                         <h1 class="text-3xl font-bold text-gray-800">Manajemen Data Kelas</h1>
                         <p class="text-gray-500 mt-1">Kelola informasi kelas, jurusan, dan wali kelas.</p>
                     </div>
                 </section>
+
+                <!-- Konten Utama -->
                 <section class="bg-white p-6 rounded-xl shadow-lg">
-                    <div class="flex justify-end items-center gap-4 mb-6">
-                         <button id="add-class-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg text-sm transition">+ Tambah Kelas</button>
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+                        <div class="relative w-full sm:max-w-xs">
+                            <input type="text" placeholder="Cari kelas..." class="w-full border rounded-md px-4 py-2 text-sm pl-10">
+                            <svg class="h-5 w-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+                        </div>
+                        <div class="flex items-center gap-2">
+                             <button id="add-class-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg text-sm transition">+ Tambah Kelas</button>
+                        </div>
                     </div>
-                     <div class="overflow-x-auto">
+
+                    <!-- Tabel Data Kelas -->
+                    <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left text-gray-500">
-                           <!-- Isi tabel tidak berubah -->
-                           <tbody>
-                               <tr class="odd:bg-white even:bg-gray-50 border-b">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                                <tr>
+                                    <th class="px-6 py-3">No</th>
+                                    <th class="px-6 py-3">Nama Kelas</th>
+                                    <th class="px-6 py-3">Jurusan</th>
+                                    <th class="px-6 py-3">Wali Kelas</th>
+                                    <th class="px-6 py-3">Jml. Siswa</th>
+                                    <th class="px-6 py-3 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="odd:bg-white even:bg-gray-50 border-b">
                                     <td class="px-6 py-4">1</td>
                                     <td class="px-6 py-4 font-medium text-gray-900">X IPA 1</td>
                                     <td class="px-6 py-4">IPA</td>
@@ -59,7 +83,7 @@
                                         <button class="delete-btn text-red-600 hover:text-red-800" title="Hapus"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg></button>
                                     </td>
                                 </tr>
-                           </tbody>
+                            </tbody>
                         </table>
                     </div>
                 </section>
@@ -68,18 +92,70 @@
         </div>
     </div>
 
-    <!-- Semua Modal -->
+    <!-- Modal Form Tambah/Edit Kelas -->
     <div id="form-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-        <!-- Konten tidak berubah -->
-    </div>
-    <div id="detail-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-        <!-- Konten tidak berubah -->
-    </div>
-    <div id="delete-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-        <!-- Konten tidak berubah -->
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Tambah Kelas Baru</h3>
+            <form class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="nama-kelas" class="block text-sm font-medium text-gray-700">Nama Kelas</label>
+                        <input type="text" id="nama-kelas" placeholder="e.g., X IPA 1" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                    </div>
+                    <div>
+                        <label for="jurusan" class="block text-sm font-medium text-gray-700">Jurusan</label>
+                        <select id="jurusan" class="mt-1 block w-full p-2 border border-gray-300 rounded-md"><option>IPA</option><option>IPS</option><option>Bahasa</option></select>
+                    </div>
+                </div>
+                <div>
+                    <label for="wali-kelas" class="block text-sm font-medium text-gray-700">Wali Kelas</label>
+                    <select id="wali-kelas" class="mt-1 block w-full p-2 border border-gray-300 rounded-md"><option>Dra. Indah Puspitasari, M.Pd.</option><option>Bambang Wijoyo, S.Kom.</option></select>
+                </div>
+                <div class="flex justify-end gap-3 pt-4">
+                    <button type="button" class="modal-cancel bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg">Batal</button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Simpan</button>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <!-- Panggil satu skrip ini saja -->
+    <!-- Modal Detail Kelas -->
+    <div id="detail-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-2xl">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Detail Kelas: X IPA 1</h3>
+            <p class="text-sm text-gray-600 mb-4">Wali Kelas: <span class="font-semibold">Dra. Indah Puspitasari, M.Pd.</span></p>
+            <h4 class="font-semibold text-gray-700 mb-2">Daftar Anggota Kelas</h4>
+            <div class="h-64 overflow-y-auto border rounded-lg">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 sticky top-0"><tr><th class="p-2 text-left">NIS</th><th class="p-2 text-left">Nama Siswa</th></tr></thead>
+                    <tbody>
+                        <tr class="border-b">
+                            <td class="p-2">1234567890</td>
+                            <td class="p-2">Ahmad Budi Santoso</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="flex justify-end gap-3 pt-4">
+                <button type="button" class="modal-cancel bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg">Tutup</button>
+                <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Kelola Anggota</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Hapus -->
+    <div id="delete-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm text-center">
+            <h3 class="text-lg font-bold text-gray-800">Konfirmasi Hapus</h3>
+            <p class="text-gray-600 my-4">Apakah Anda yakin ingin menghapus data kelas ini?</p>
+            <div class="flex justify-center gap-4">
+                <button class="modal-cancel bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg">Batal</button>
+                <button id="confirm-delete-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">Hapus</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cukup panggil satu skrip ini -->
     <script src="./main_admin.js"></script>
 </body>
 </html>
