@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
  * Fungsi untuk memuat sidebar secara dinamis dan menginisialisasi fungsinya.
  */
 function loadSidebar() {
-    const sidebarPath = './_sidebar_admin.html';
+    const sidebarPath = 'admin/_sidebar_admin.html';
     const sidebarContainerId = 'sidebar-container';
     const sidebarToggleId = 'sidebar-toggle';
 
