@@ -1,521 +1,271 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verifikasi Admin Sekolah (Developer)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        .thumbnail-container {
-            width: 100px; /* Ukuran thumbnail */
-            height: 100px;
-            overflow: hidden;
-            cursor: pointer;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-        }
-        .thumbnail-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        /* Style untuk modal (kotak dialog kustom) */
-        .modal {
-            background-color: rgba(0, 0, 0, 0.75);
-            transition: opacity 0.3s ease-out;
-            z-index: 1000;
-        }
-        .modal-content {
-            max-width: 90vw;
-            max-height: 90vh;
-            object-fit: contain;
-        }
-        .modal-body-container {
-            max-height: 80vh; /* Agar konten bisa discroll */
-            overflow-y: auto;
-        }
-        .text-xs-tight {
-            font-size: 0.65rem;
-            line-height: 0.85rem;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Developer Verification — UPGACC</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; margin: 0; padding: 24px; background:#f6f7fb; color:#111; }
+    header { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+    h1 { margin:0; font-size:20px; }
+    #status { color:#666; font-size:14px; }
+    #cards { display:grid; grid-template-columns: repeat(auto-fill, minmax(320px,1fr)); gap:16px; margin-top:18px; }
+    .card { background:white; border-radius:12px; box-shadow: 0 6px 18px rgba(20,20,40,0.06); padding:16px; }
+    .card h3 { margin:0 0 8px 0; font-size:16px; }
+    .meta { color:#666; font-size:13px; margin-bottom:10px; }
+    .buttons { display:flex; gap:8px; }
+    button { padding:8px 12px; border-radius:8px; border:0; cursor:pointer; font-weight:600; }
+    .approve { background:#16a34a; color:white; }
+    .reject { background:#ef4444; color:white; }
+    .small { font-size:13px; padding:6px 10px; border-radius:8px; }
+    #loading { margin-top:12px; color:#555; }
+    pre.err { background:#ffecec; color:#900; padding:10px; border-radius:8px; overflow:auto; }
+  </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body>
+  <header>
+    <div>
+      <h1>Developer — Verifikasi Sekolah</h1>
+      <div id="status">Memeriksa status otentikasi...</div>
+    </div>
+  </header>
 
-    <!-- Konfigurasi Global/Firebase Import -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { 
-            getAuth, 
-            signInWithEmailAndPassword, 
-            signOut, 
-            onAuthStateChanged, 
-            signInAnonymously,
-            signInWithCustomToken 
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { 
-            getFirestore, 
-            collection, 
-            query, 
-            where, 
-            getDocs, 
-            updateDoc, 
-            doc,
-            getDoc 
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        
-        // Atur log level debug untuk firestore
-        setLogLevel('Debug');
+  <main>
+    <div id="controls" style="display:flex;gap:8px;align-items:center;">
+      <button id="refresh" class="small">Refresh Data</button>
+      <div id="loading" style="display:none">Memuat data...</div>
+    </div>
 
-        // Variabel Global dari Lingkungan Canvas
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        
-        // Ganti dengan UID Developer/Super Admin yang berwenang
-        const AUTHORIZED_DEVELOPER_UID = "W9ombzh6y0Mj1AAJEFxL53H1YAR2"; 
+    <div id="cards" aria-live="polite"></div>
 
-        let currentAdminDocRef = null; // Untuk menyimpan referensi dokumen admin yang sedang dilihat
+    <div id="empty" style="display:none; margin-top:18px; color:#666;">Tidak ada data sekolah untuk diverifikasi.</div>
 
-        // ----------------------------------------------------
-        // FUNGSI UTAMA APP WRAPPER 
-        // ----------------------------------------------------
-        function initApp() {
-            // *** PERBAIKAN: Semua pengambilan DOM Element dipindahkan ke sini ***
-            const loginFormContainer = document.getElementById('login-form-container');
-            const verificationDashboard = document.getElementById('verification-dashboard');
-            const adminList = document.getElementById('admin-list');
-            const loginForm = document.getElementById('login-form');
-            const authCheckDiv = document.getElementById('auth-check-status');
-            const logoutButton = document.getElementById('logout-button');
+    <div id="errorWrap" style="margin-top:18px;"></div>
+  </main>
 
-            // Modal Elements
-            const modal = document.getElementById('document-modal');
-            const modalImage = document.getElementById('modal-image');
-            const modalCloseButton = document.getElementById('modal-close-button');
-            const modalTitle = document.getElementById('modal-title');
-            const modalDetails = document.getElementById('modal-details');
-            const modalApproveButton = document.getElementById('modal-approve-button');
-            const modalRejectButton = document.getElementById('modal-reject-button');
-            const modalVerificationKey = document.getElementById('modal-verification-key');
-            const modalDataContainer = document.getElementById('modal-data-container');
-            
-            // ----------------------------------------------------
-            // INITIALISASI FIREBASE & AUTENTIKASI
-            // ----------------------------------------------------
-            const app = initializeApp(firebaseConfig);
-            const db = getFirestore(app);
-            const auth = getAuth(app);
-            
-            // Fungsi untuk autentikasi awal (Custom Token atau Anonim)
-            async function initializeAuth() {
-                try {
-                    if (initialAuthToken) {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                        console.log("Signed in with Custom Token.");
-                    } else {
-                        await signInAnonymously(auth);
-                        console.log("Signed in Anonymously.");
-                    }
-                } catch (error) {
-                    console.error("Auth Initialization Error:", error);
-                }
-            }
-            
-            // Panggil inisialisasi otentikasi
-            initializeAuth();
-            
-            // Helper untuk Notifikasi
-            function alertMessage(message, type = 'info') {
-                const container = document.getElementById('notification-container');
-                const color = type === 'success' ? 'bg-green-100 border-green-400 text-green-700' : 
-                              type === 'error' ? 'bg-red-100 border-red-400 text-red-700' :
-                              'bg-blue-100 border-blue-400 text-blue-700';
-                
-                container.innerHTML = `
-                    <div class="border px-4 py-3 rounded relative ${color}" role="alert">
-                        <span class="block sm:inline">${message}</span>
-                    </div>
-                `;
-                container.classList.remove('hidden');
-                setTimeout(() => {
-                    container.classList.add('hidden');
-                    container.innerHTML = '';
-                }, 5000);
-            }
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, collection, getDocs, query, orderBy, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-            // ----------------------------------------------------
-            // FUNGSI UTAMA (Developer Dashboard)
-            // ----------------------------------------------------
+    // ---------- CONFIGURASI (DIEDIT: pakai config yang kamu berikan) ----------
+    const appId = "forumwidara";
 
-            // 1. Mengambil dan Menampilkan Daftar Admin yang Belum Diverifikasi
-            async function fetchPendingAdmins() {
-                adminList.innerHTML = '<div class="text-center py-4 text-gray-500">Memuat data...</div>';
-                
-                try {
-                    // Query: Cari dokumen di koleksi 'sekolah' di public data yang status_verifikasi = 'pending'
-                    const adminCollectionPath = `/artifacts/${appId}/public/data/sekolah`;
-                    const q = query(collection(db, adminCollectionPath), where("status_verifikasi", "==", "pending"));
-                    
-                    const querySnapshot = await getDocs(q);
-                    
-                    if (querySnapshot.empty) {
-                        adminList.innerHTML = '<div class="text-center py-8 text-gray-500">Tidak ada pendaftaran Admin yang menunggu verifikasi.</div>';
-                        return;
-                    }
+    const firebaseConfig = {
+      apiKey: "AIzaSyA6zXOerKvdPJTmBp5Y6R2yFsy98xLDsKc",
+      authDomain: "forumwidara.firebaseapp.com",
+      databaseURL: "https://forumwidara-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "forumwidara",
+      storageBucket: "forumwidara.firebasestorage.app",
+      messagingSenderId: "216895655168",
+      appId: "1:216895655168:web:59255f600fc3b3b44eb7e5",
+      measurementId: "G-GVD3VJ2HZN"
+    };
 
-                    adminList.innerHTML = ''; // Kosongkan
-                    querySnapshot.forEach(doc => {
-                        const data = doc.data();
-                        const docId = doc.id;
-                        
-                        const adminItem = document.createElement('div');
-                        adminItem.className = 'flex items-center justify-between p-4 bg-white shadow-md rounded-lg mb-3 hover:shadow-lg transition duration-200';
-                        adminItem.innerHTML = `
-                            <div>
-                                <p class="text-lg font-semibold text-gray-800">${data.nama_sekolah}</p>
-                                <p class="text-sm text-gray-600">${data.nama_admin} (${data.email})</p>
-                                <p class="text-xs text-gray-500 mt-1">Diajukan pada: ${new Date(data.createdAt.seconds * 1000).toLocaleString()}</p>
-                            </div>
-                            <button data-doc-id="${docId}" data-school-name="${data.nama_sekolah}" data-proof-url="${data.url_bukti_verifikasi}" class="view-details-btn bg-indigo-600 text-white px-3 py-1 rounded-full text-sm hover:bg-indigo-700 transition">
-                                Lihat Detail
-                            </button>
-                        `;
-                        adminList.appendChild(adminItem);
-                    });
+    // CREDENTIAL LOGIN OTOMATIS (seperti yang kamu berikan)
+    const DEV_EMAIL = "jujujuirah112@gmail.com";
+    const DEV_PASSWORD = "tes123";
 
-                    // Tambahkan event listener untuk tombol "Lihat Detail"
-                    document.querySelectorAll('.view-details-btn').forEach(button => {
-                        button.addEventListener('click', (e) => {
-                            const docId = e.currentTarget.getAttribute('data-doc-id');
-                            openModal(docId);
-                        });
-                    });
+    // Inisialisasi Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-                } catch (error) {
-                    console.error("Error fetching pending admins:", error);
-                    adminList.innerHTML = '<div class="text-center py-4 text-red-500">Gagal memuat data. Silakan cek koneksi atau rules Firestore Anda.</div>';
-                }
-            }
+    // Elemen
+    const statusEl = document.getElementById('status');
+    const cardsEl = document.getElementById('cards');
+    const loadingEl = document.getElementById('loading');
+    const emptyEl = document.getElementById('empty');
+    const errorWrap = document.getElementById('errorWrap');
+    const refreshBtn = document.getElementById('refresh');
 
-            // 2. Tampilkan Modal Detail
-            async function openModal(docId) {
-                const adminCollectionPath = `/artifacts/${appId}/public/data/sekolah`;
-                const docRef = doc(db, adminCollectionPath, docId);
-                currentAdminDocRef = docRef;
+    refreshBtn.addEventListener('click', () => {
+      loadData();
+    });
 
-                try {
-                    const docSnap = await getDoc(docRef);
-                    if (!docSnap.exists()) {
-                        alertMessage("Dokumen Admin tidak ditemukan.", 'error');
-                        return;
-                    }
-                    const data = docSnap.data();
-                    
-                    // Isi Modal
-                    modalTitle.textContent = data.nama_sekolah;
-                    modalImage.src = data.url_bukti_verifikasi || 'https://placehold.co/600x400/CCCCCC/000000?text=Bukti+Tidak+Tersedia';
-                    
-                    // Set detail teks
-                    modalDetails.innerHTML = `
-                        <p class="text-sm"><strong>Admin:</strong> ${data.nama_admin}</p>
-                        <p class="text-sm"><strong>Email:</strong> ${data.email}</p>
-                        <p class="text-sm"><strong>UID Admin:</strong> <span class="text-xs-tight text-indigo-600 break-all">${data.uid}</span></p>
-                        <p class="text-sm"><strong>Status:</strong> <span class="font-semibold text-yellow-600">${data.status_verifikasi.toUpperCase()}</span></p>
-                        <p class="text-sm"><strong>Waktu Daftar:</strong> ${new Date(data.createdAt.seconds * 1000).toLocaleString()}</p>
-                        <p class="text-sm mt-3"><strong>Keterangan Admin:</strong> ${data.keterangan || 'Tidak ada keterangan.'}</p>
-                    `;
+    function showError(msg, err) {
+      console.error(msg, err);
+      errorWrap.innerHTML = `<pre class="err">${escapeHtml(msg)}${err ? "\n\n" + escapeHtml(String(err)) : ""}</pre>`;
+    }
 
-                    // Tampilkan Kunci Rahasia jika sudah ada (seharusnya belum ada)
-                    const secretKey = data.kunci_rahasia || '(Belum Dibuat)';
-                    modalVerificationKey.textContent = secretKey;
-                    
-                    // Set event listener pada tombol persetujuan/penolakan
-                    modalApproveButton.onclick = () => handleVerification('approved', data.uid, data.email, data.nama_sekolah);
-                    modalRejectButton.onclick = () => handleVerification('rejected');
+    function clearError() {
+      errorWrap.innerHTML = "";
+    }
 
-                    modal.classList.remove('hidden');
-                } catch (error) {
-                    console.error("Error opening modal:", error);
-                    alertMessage("Gagal memuat detail admin.", 'error');
-                }
-            }
+    function escapeHtml(s) {
+      return (s+'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]));
+    }
 
-            // 3. Menghasilkan UUID
-            function generateUUID() {
-                // Function untuk menghasilkan UUID v4
-                return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-                    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-                );
-            }
+    // Otomatis login developer saat halaman dibuka
+    async function signInDeveloper() {
+      statusEl.textContent = "Mencoba masuk sebagai developer...";
+      try {
+        await signInWithEmailAndPassword(auth, DEV_EMAIL, DEV_PASSWORD);
+        // success handled by onAuthStateChanged
+      } catch (err) {
+        showError("Gagal login otomatis. Coba cek email/password atau login manual.", err);
+        statusEl.textContent = "Login otomatis gagal — silakan login manual.";
+        // Show a sign-out/in fallback UI
+        renderLoginFallback();
+      }
+    }
 
-            // 4. Handle Persetujuan atau Penolakan
-            async function handleVerification(status, adminUid, adminEmail, schoolName) {
-                if (!currentAdminDocRef) return;
-                
-                modalDataContainer.classList.add('opacity-50', 'pointer-events-none');
-                
-                try {
-                    let updateData = {
-                        status_verifikasi: status,
-                        verifiedAt: new Date()
-                    };
-
-                    let message = '';
-                    
-                    if (status === 'approved') {
-                        // 1. Generate Kunci Rahasia
-                        const secretKey = generateUUID();
-                        updateData.kunci_rahasia = secretKey;
-                        
-                        // 2. Simpan juga ID Sekolah ke dokumen pengguna Admin
-                        updateData.id_sekolah = currentAdminDocRef.id;
-
-                        message = `Pendaftaran ${schoolName} disetujui. Kunci Rahasia: ${secretKey}`;
-                    } else { // rejected
-                        message = `Pendaftaran ${schoolName} ditolak.`;
-                    }
-
-                    // 3. Update Dokumen di Firestore
-                    await updateDoc(currentAdminDocRef, updateData);
-                    
-                    // Tampilkan Kunci Rahasia di modal jika disetujui
-                    if (status === 'approved') {
-                        document.getElementById('modal-verification-key').textContent = updateData.kunci_rahasia;
-                    }
-                    
-                    alertMessage(message, 'success');
-                    modal.classList.add('hidden');
-                    fetchPendingAdmins(); // Refresh daftar
-                } catch (error) {
-                    console.error("Error updating verification status:", error);
-                    alertMessage("Gagal memperbarui status verifikasi. " + (error.message || "Pastikan rules Firestore mengizinkan Developer UID untuk UPDATE."), 'error');
-                } finally {
-                    modalDataContainer.classList.remove('opacity-50', 'pointer-events-none');
-                }
-            }
-
-            // Event Listener untuk menutup Modal
-            modalCloseButton.addEventListener('click', () => {
-                modal.classList.add('hidden');
-                modalImage.src = ''; // Bersihkan gambar
-                currentAdminDocRef = null;
-            });
-
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.classList.add('hidden');
-                    modalImage.src = ''; 
-                    currentAdminDocRef = null;
-                }
-            });
-
-            // ----------------------------------------------------
-            // AUTENTIKASI DEVELOPER
-            // ----------------------------------------------------
-            
-            // FUNGSI LOGIN
-            loginForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const email = document.getElementById('login-email').value;
-                const password = document.getElementById('login-password').value;
-                const loginButton = document.getElementById('login-button');
-
-                loginButton.textContent = 'Memproses...';
-                loginButton.disabled = true;
-
-                try {
-                    await signInWithEmailAndPassword(auth, email, password);
-                    // onAuthStateChanged akan dipanggil setelah login berhasil
-                } catch (error) {
-                    console.error("Login Error:", error);
-                    alertMessage("Gagal masuk: " + (error.message || "Email atau password salah."), 'error');
-                    loginButton.textContent = 'Masuk sebagai Developer';
-                    loginButton.disabled = false;
-                }
-            });
-
-            // FUNGSI LOGOUT
-            logoutButton.addEventListener('click', async () => {
-                await signOut(auth);
-                alertMessage("Anda telah keluar.", 'success');
-            });
-
-            // Setup Dashboard setelah Developer terautentikasi
-            function setupDashboard() {
-                document.getElementById('dev-uid-display').textContent = AUTHORIZED_DEVELOPER_UID;
-                fetchPendingAdmins();
-            }
-
-
-            // Cek Status Otentikasi
-            onAuthStateChanged(auth, (user) => {
-                console.log('onAuthStateChanged Fired. User:', user ? user.email : 'null');
-                // Hapus pesan loading secara paksa
-                if (authCheckDiv) {
-                    authCheckDiv.remove(); 
-                }
-
-                if (user) {
-                    // *** PERUBAHAN KRITIS: Cek menggunakan UID Super Admin ***
-                    if (user.uid === AUTHORIZED_DEVELOPER_UID) { 
-                        console.log('User is Authorized Developer.');
-                        loginFormContainer.classList.add('hidden');
-                        verificationDashboard.classList.remove('hidden');
-                        setupDashboard(); 
-                    } else {
-                        console.log('User logged in but not authorized. Signing out.');
-                        alertMessage("Anda bukan Developer/Administrator yang berwenang.", 'error');
-                        // Langsung sign out jika bukan Developer yang berhak
-                        signOut(auth); 
-                        // onAuthStateChanged akan dipanggil lagi dengan user=null
-                    }
-                } else {
-                    console.log('User is null. Showing login form.');
-                    verificationDashboard.classList.add('hidden');
-                    loginFormContainer.classList.remove('hidden');
-                }
-            });
-        } // END initApp function
-
-        // ----------------------------------------------------
-        // INITIAL CALL (Periksa Config)
-        // ----------------------------------------------------
-        
-        // HANYA jalankan aplikasi jika konfigurasi Firebase tersedia.
-        if (!firebaseConfig) {
-            document.getElementById('config-error').classList.remove('hidden');
-        } else {
-            initApp();
+    function renderLoginFallback() {
+      // simple fallback: show a manual login link
+      const fallback = document.createElement('div');
+      fallback.innerHTML = `
+        <p style="color:#444">Silakan login ke akun developer di Firebase terlebih dahulu, atau perbaiki kredensial otomatis.</p>
+        <p style="margin:8px 0"><a href="#" id="manualSignOut">Coba Login Ulang (sign out lalu sign in)</a></p>
+      `;
+      errorWrap.appendChild(fallback);
+      const a = document.getElementById('manualSignOut');
+      a.addEventListener('click', async (e) => {
+        e.preventDefault();
+        try {
+          await signOut(auth);
+          statusEl.textContent = "Telah sign out. Reload halaman dan login manual jika perlu.";
+        } catch(e) {
+          showError('Gagal sign out', e);
         }
+      });
+    }
 
-    </script>
+    // Ketika auth state berubah
+    onAuthStateChanged(auth, async (user) => {
+      clearError();
+      if (user) {
+        statusEl.textContent = `Masuk sebagai ${user.email} (uid: ${user.uid})`;
+        // note: jika rules membatasi berdasarkan UID, pastikan ini cocok
+        await loadData();
+      } else {
+        statusEl.textContent = "Belum login. Mencoba login otomatis...";
+        await signInDeveloper();
+      }
+    });
 
-    <!-- UI Halaman -->
-    <div id="notification-container" class="fixed top-4 right-4 z-50 w-full max-w-xs hidden"></div>
+    // Load data dari collection nested:
+    // /artifacts/{appId}/public/data/sekolah
+    async function loadData() {
+      cardsEl.innerHTML = '';
+      emptyEl.style.display = 'none';
+      loadingEl.style.display = 'inline';
+      clearError();
 
-    <!-- Container Loading Awal -->
-    <div id="auth-check-status" class="flex flex-col items-center justify-center min-h-screen bg-white">
-        <svg class="animate-spin -ml-1 mr-3 h-10 w-10 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        <p class="mt-4 text-gray-600">Memeriksa status otentikasi...</p>
-    </div>
-    
-    <!-- Area Notifikasi Error Konfigurasi -->
-    <div id="config-error" class="hidden fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-75 z-50">
-        <div class="rounded-lg bg-red-100 p-6 shadow-xl max-w-sm mx-auto">
-            <h3 class="text-xl font-bold text-red-800 mb-2">Error Konfigurasi</h3>
-            <p class="text-sm font-medium text-red-800">Variabel lingkungan `__firebase_config` tidak ditemukan. Pastikan Anda menjalankan aplikasi ini di lingkungan yang mendukung Firebase/Canvas.</p>
+      try {
+        // Build reference to nested collection
+        const sekolahCol = collection(db,
+          'artifacts',
+          appId,
+          'public',
+          'data',
+          'sekolah'
+        );
+
+        // optional: order by createdAt if exists; otherwise simple getDocs
+        const q = query(sekolahCol);
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+          emptyEl.style.display = 'block';
+        } else {
+          snap.forEach(docSnap => {
+            const data = docSnap.data();
+            renderCard(docSnap.id, data);
+          });
+        }
+      } catch (err) {
+        showError("Gagal memuat data dari Firestore. Periksa konfigurasi dan rules.", err);
+      } finally {
+        loadingEl.style.display = 'none';
+      }
+    }
+
+    function renderCard(docId, data) {
+      const c = document.createElement('div');
+      c.className = 'card';
+
+      const nama = data.nama_sekolah || data.nama || "Nama sekolah tidak tersedia";
+      const pendaftar = data.nama_pendaftar || data.pemilik || data.uid || "-";
+      const email = data.email || data.contact || "-";
+      const status = data.status_verifikasi || "menunggu";
+
+      c.innerHTML = `
+        <h3>${escapeHtml(nama)}</h3>
+        <div class="meta">Pendaftar: ${escapeHtml(pendaftar)} • Email/ID: ${escapeHtml(email)}</div>
+        <div class="meta">Status: <strong>${escapeHtml(status)}</strong></div>
+        <div style="margin:12px 0; color:#444; font-size:13px;">
+          ${data.deskripsi ? escapeHtml(String(data.deskripsi).slice(0,200)) : ''}
         </div>
-    </div>
-
-
-    <!-- 1. Form Login Developer (Hidden Awalnya) -->
-    <div id="login-form-container" class="hidden flex items-center justify-center min-h-screen">
-        <div class="w-full max-w-md p-8 space-y-8 bg-white shadow-xl rounded-xl">
-            <h2 class="text-3xl font-extrabold text-gray-900 text-center">Akses Developer</h2>
-            <p class="text-sm text-center text-gray-500">Hanya untuk Super Admin/Developer. Silakan masuk.</p>
-            <form id="login-form" class="space-y-6">
-                <div>
-                    <label for="login-email" class="sr-only">Email address</label>
-                    <input id="login-email" name="email" type="email" autocomplete="email" required class="relative block w-full appearance-none rounded-lg border border-gray-300 px-3 py-3 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" placeholder="Email Developer" value="super.admin@example.com">
-                </div>
-                <div>
-                    <label for="login-password" class="sr-only">Password</label>
-                    <input id="login-password" name="password" type="password" autocomplete="current-password" required class="relative block w-full appearance-none rounded-lg border border-gray-300 px-3 py-3 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" placeholder="Password" value="123456">
-                </div>
-                <div>
-                    <button type="submit" id="login-button" class="group relative flex w-full justify-center rounded-lg border border-transparent bg-indigo-600 py-3 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition">
-                        Masuk sebagai Developer
-                    </button>
-                </div>
-                <p class="text-xs text-red-500 text-center">Pastikan akun yang Anda gunakan memiliki UID: <strong class="break-all">W9ombzh6y0Mj1AAJEFxL53H1YAR2</strong></p>
-            </form>
+        <div class="buttons">
+          <button class="approve small">Setujui</button>
+          <button class="reject small">Tolak & Hapus</button>
+          <button class="small" id="viewRaw">Lihat Raw</button>
         </div>
-    </div>
+      `;
 
+      // tombol
+      const approveBtn = c.querySelector('.approve');
+      const rejectBtn = c.querySelector('.reject');
+      const viewRawBtn = c.querySelector('#viewRaw');
 
-    <!-- 2. Developer Dashboard (Hidden Awalnya) -->
-    <div id="verification-dashboard" class="hidden p-4 sm:p-8 max-w-4xl mx-auto">
-        <header class="flex justify-between items-center mb-6 border-b pb-4">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900">Dashboard Verifikasi Admin</h1>
-                <p class="text-sm text-gray-500 mt-1">
-                    UID Aktif: <strong id="dev-uid-display" class="text-indigo-600 text-xs-tight break-all"></strong>
-                </p>
-            </div>
-            <button id="logout-button" class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-red-600 transition">
-                Logout
-            </button>
-        </header>
+      approveBtn.addEventListener('click', async () => {
+        if (!confirm('Yakin ingin menandai sebagai TERVERIFIKASI?')) return;
+        try {
+          const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'sekolah', docId);
+          await updateDoc(docRef, { status_verifikasi: 'terverifikasi', verified_at: new Date().toISOString() });
+          approveBtn.textContent = '✔️ Terverifikasi';
+          approveBtn.disabled = true;
+        } catch (err) {
+          showError('Gagal mengubah status verifikasi. Periksa permissions (rules).', err);
+        }
+      });
 
-        <h2 class="text-xl font-semibold mb-4 text-gray-700">Pendaftaran Admin Menunggu Persetujuan</h2>
-        
-        <!-- List Admin -->
-        <div id="admin-list" class="space-y-4">
-            <!-- Konten akan dimuat di sini oleh fetchPendingAdmins() -->
-        </div>
+      rejectBtn.addEventListener('click', async () => {
+        if (!confirm('Yakin ingin MENGHAPUS dokumen ini? Tindakan ini permanen.')) return;
+        try {
+          const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'sekolah', docId);
+          await deleteDoc(docRef);
+          // hapus card dari DOM
+          c.remove();
+        } catch (err) {
+          showError('Gagal menghapus dokumen. Periksa permissions (rules).', err);
+        }
+      });
 
-    </div>
+      viewRawBtn.addEventListener('click', () => {
+        const raw = document.createElement('pre');
+        raw.style.whiteSpace = 'pre-wrap';
+        raw.style.marginTop = '10px';
+        raw.textContent = JSON.stringify(data, null, 2);
+        // toggle raw
+        if (c.contains(raw)) {
+          raw.remove();
+        } else {
+          c.appendChild(raw);
+        }
+      });
 
-    <!-- 3. Modal Tampilan Bukti Verifikasi -->
-    <div id="document-modal" class="modal fixed inset-0 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-3xl transform transition-all duration-300 modal-body-container">
-            <div class="flex justify-between items-start border-b pb-3 mb-4">
-                <h3 id="modal-title" class="text-xl font-bold text-gray-900">Detail Admin Sekolah</h3>
-                <button id="modal-close-button" class="text-gray-400 hover:text-gray-600 transition">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            
-            <div id="modal-data-container">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Kolom Kiri: Bukti Fisik -->
-                    <div class="md:col-span-1">
-                        <p class="font-medium text-gray-700 mb-2">Bukti Verifikasi (Kepala Sekolah/Dokumen):</p>
-                        <div class="aspect-w-16 aspect-h-9">
-                            <img id="modal-image" src="" alt="Bukti Verifikasi" class="w-full h-auto object-contain rounded-lg border border-gray-200">
-                        </div>
-                        <p class="text-xs text-gray-500 mt-2">Klik gambar untuk melihat dalam ukuran penuh.</p>
-                    </div>
+      cardsEl.appendChild(c);
+    }
 
-                    <!-- Kolom Kanan: Detail & Aksi -->
-                    <div class="md:col-span-1 space-y-4">
-                        <div class="bg-gray-50 p-4 rounded-lg border">
-                            <p class="font-medium text-gray-700 mb-2">Detail Pendaftar:</p>
-                            <div id="modal-details" class="space-y-1">
-                                <!-- Detail akan diisi oleh JS -->
-                            </div>
-                        </div>
+    // Start: try auto sign-in
+    // If user is already signed-in, onAuthStateChanged will call loadData.
+    // Otherwise this will attempt to sign in.
+    (async () => {
+      try {
+        // small delay so UI shows status change
+        await new Promise(r => setTimeout(r, 250));
+        if (!auth.currentUser) {
+          signInDeveloper();
+        } else {
+          statusEl.textContent = `Sudah login sebagai ${auth.currentUser.email}`;
+          loadData();
+        }
+      } catch (err) {
+        showError('Inisialisasi gagal', err);
+      }
+    })();
 
-                        <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
-                            <p class="font-medium text-indigo-700">Kunci Rahasia (Akan dibuat setelah disetujui):</p>
-                            <code id="modal-verification-key" class="block bg-indigo-100 p-2 mt-1 rounded text-sm font-mono text-indigo-800 break-all">
-                                (Belum Dibuat)
-                            </code>
-                            <p class="text-xs text-indigo-600 mt-1">Kunci ini akan digunakan oleh Guru untuk pendaftaran.</p>
-                        </div>
-
-                        <div class="flex space-x-3 pt-2">
-                            <button id="modal-approve-button" class="flex-1 bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition shadow-md">
-                                Setujui & Buat Kunci
-                            </button>
-                            <button id="modal-reject-button" class="flex-1 bg-red-500 text-white py-2 rounded-lg font-semibold hover:bg-red-600 transition shadow-md">
-                                Tolak Pendaftaran
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+  </script>
 </body>
 </html>
-
