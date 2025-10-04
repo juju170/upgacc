@@ -46,13 +46,21 @@
     <!-- AKHIR PENTING -->
 
     <div class="max-w-4xl mx-auto">
+        <!-- Tambahkan gaya 'hidden' secara default, akan dihapus oleh JS setelah cek selesai -->
         <div id="auth-check" class="text-center p-12">
-             <p class="text-lg text-gray-600">Memeriksa otentikasi...</p>
+             <div class="flex justify-center items-center space-x-2">
+                 <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                 </svg>
+                 <p class="text-lg text-gray-600">Memeriksa otentikasi...</p>
+             </div>
         </div>
         
         <!-- Formulir Login Developer -->
         <div id="login-form-container" class="hidden mt-8 space-y-6 bg-white p-8 rounded-xl shadow-lg w-full max-w-sm mx-auto">
             <h2 class="text-2xl font-bold text-gray-800 text-center">Login Developer</h2>
+            <p class="text-xs text-red-500 text-center font-semibold">PERINGATAN: Pastikan Anda mengganti 'developer@contoh.com' di kode!</p>
             <form id="login-form">
                 <input id="login-email" type="email" required class="relative block w-full appearance-none rounded-md border border-gray-300 px-3 py-3 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm mb-4" placeholder="Email Developer">
                 <input id="login-password" type="password" required class="relative block w-full appearance-none rounded-md border border-gray-300 px-3 py-3 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm mb-6" placeholder="Password">
@@ -87,6 +95,7 @@
     <div id="image-modal" class="modal fixed inset-0 flex items-center justify-center opacity-0 pointer-events-none">
         <div class="modal-content bg-white p-2 rounded-lg shadow-2xl relative">
             <button id="close-modal" class="absolute top-2 right-2 text-white bg-black rounded-full w-8 h-8 flex items-center justify-center text-xl font-bold hover:bg-gray-700">&times;</button>
+            <!-- Di sini kita akan menggunakan Blob URL, jadi src-nya dikosongkan dulu -->
             <img id="modal-image" src="" alt="Dokumen Bukti" class="max-h-[85vh] max-w-[85vw] object-contain">
         </div>
     </div>
@@ -139,7 +148,6 @@
             if (dbCache) return dbCache;
             dbCache = await openDB(DB_NAME, 1, {
                 upgrade(db) {
-                    // Buat store untuk menyimpan Blob gambar. KeyPath adalah URL gambar.
                     db.createObjectStore(STORE_NAME);
                 },
             });
@@ -172,32 +180,39 @@
             const imgElement = document.getElementById(elementId);
             if (!imgElement) return;
 
+            // Pastikan URL valid
+            if (!imgUrl || !imgUrl.startsWith('http')) {
+                imgElement.src = 'https://placehold.co/100x100/eeeeee/888888?text=No+URL';
+                imgElement.alt = "Invalid URL";
+                return;
+            }
+
             imgElement.src = 'https://placehold.co/100x100/eeeeee/888888?text=Loading...'; // Placeholder
 
             try {
                 let imageBlob = await getImage(imgUrl);
                 
                 if (imageBlob) {
-                    // 1. Gambar ada di cache! Tampilkan
+                    // Gambar ada di cache!
                     const imageUrl = URL.createObjectURL(imageBlob);
                     imgElement.src = imageUrl;
-                    imgElement.alt = "Cached Document";
                 } else {
-                    // 2. Gambar belum ada di cache, download dari Cloudinary
+                    // Gambar belum ada di cache, download
                     const response = await fetch(imgUrl);
-                    if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
+                    if (!response.ok) throw new Error(`Gagal mengambil gambar: ${response.statusText}`);
                     
                     imageBlob = await response.blob();
                     await saveImage(imgUrl, imageBlob); // Simpan ke cache
                     
                     const imageUrl = URL.createObjectURL(imageBlob);
                     imgElement.src = imageUrl;
-                    imgElement.alt = "Downloaded Document";
                 }
+                imgElement.dataset.blobUrl = imgElement.src; // Simpan blob URL untuk modal
             } catch (e) {
                 console.error(`Gagal memuat gambar ${imgUrl}:`, e);
                 imgElement.src = 'https://placehold.co/100x100/ffdddd/990000?text=Error';
                 imgElement.alt = "Failed to load image";
+                imgElement.dataset.blobUrl = '';
             }
         }
 
@@ -248,8 +263,7 @@
 
         // FUNGSI UNTUK MEMUAT DATA DASHBOARD
         function setupDashboard() {
-            // Inisialisasi IndexedDB saat dashboard dimuat
-            openDB().catch(e => alertMessage("Error: IndexedDB tidak didukung oleh browser Anda.", 'error'));
+            openDB().catch(e => console.warn("IndexedDB Error:", e));
             
             loadingMessage.textContent = 'Memuat data...';
 
@@ -280,14 +294,14 @@
                                 <!-- Thumbnail SK Kepsek -->
                                 <div>
                                     <p class="text-xs text-gray-500 mb-1">SK Kepsek:</p>
-                                    <div class="thumbnail-container" data-url="${data.url_sk_kepsek}">
+                                    <div class="thumbnail-container cursor-pointer" data-url="${data.url_sk_kepsek}">
                                         <img id="${skKepsekId}" class="thumbnail-img" src="" alt="SK Kepsek">
                                     </div>
                                 </div>
                                 <!-- Thumbnail Izin Operasional -->
                                 <div>
                                     <p class="text-xs text-gray-500 mb-1">Izin Operasional:</p>
-                                    <div class="thumbnail-container" data-url="${data.url_izin_sekolah}">
+                                    <div class="thumbnail-container cursor-pointer" data-url="${data.url_izin_sekolah}">
                                         <img id="${izinSekolahId}" class="thumbnail-img" src="" alt="Izin Sekolah">
                                     </div>
                                 </div>
@@ -304,7 +318,6 @@
                         `;
                         pendingList.appendChild(item);
 
-                        // Panggil fungsi render untuk setiap gambar
                         renderImageFromDB(data.url_sk_kepsek, skKepsekId);
                         renderImageFromDB(data.url_izin_sekolah, izinSekolahId);
                     });
@@ -312,28 +325,36 @@
             });
         }
 
-        // Event Listener untuk tombol Approve/Reject
-        pendingList.addEventListener('click', (e) => {
+        // Event Listener untuk tombol Approve/Reject dan Modal Gambar
+        pendingList.addEventListener('click', async (e) => {
+            // Aksi Approve/Reject
             const button = e.target.closest('button[data-id][data-action]');
             if (button) {
                 const userId = button.dataset.id;
                 const action = button.dataset.action;
                 
-                // Menggunakan window.confirm untuk notifikasi kustom
                 if (window.confirm(action === 'approve' ? `Apakah Anda yakin ingin MENYETUJUI pendaftaran ini?` : `Apakah Anda yakin ingin MENOLAK pendaftaran ini?`)) {
                     updateStatus(userId, action);
                 }
                 return;
             }
 
-            // Event Listener untuk membuka Modal Gambar
+            // Aksi Membuka Modal Gambar
             const thumbnail = e.target.closest('.thumbnail-container');
             if (thumbnail) {
-                const url = thumbnail.dataset.url;
-                if (url) {
-                    modalImage.src = url; // Saat ini, modal masih menggunakan URL langsung
+                const img = thumbnail.querySelector('img');
+                const blobUrl = img ? img.dataset.blobUrl : null;
+                
+                if (blobUrl) {
+                    modalImage.src = blobUrl;
                     imageModal.classList.remove('opacity-0', 'pointer-events-none');
                     imageModal.classList.add('opacity-100', 'pointer-events-auto');
+                } else {
+                    // Jika Blob URL tidak tersedia (misal error load), gunakan URL asli sebagai fallback
+                    modalImage.src = thumbnail.dataset.url; 
+                    imageModal.classList.remove('opacity-0', 'pointer-events-none');
+                    imageModal.classList.add('opacity-100', 'pointer-events-auto');
+                    alertMessage("Gagal memuat gambar dari cache, menggunakan URL asli.", 'error');
                 }
             }
         });
@@ -342,7 +363,7 @@
         closeModalButton.addEventListener('click', () => {
             imageModal.classList.add('opacity-0', 'pointer-events-none');
             imageModal.classList.remove('opacity-100', 'pointer-events-auto');
-            modalImage.src = ''; // Bersihkan gambar
+            modalImage.src = ''; 
         });
 
 
@@ -354,7 +375,7 @@
             loginErrorDiv.classList.add('hidden');
             
             if (email !== AUTHORIZED_DEVELOPER_EMAIL) {
-                loginErrorDiv.textContent = "Email tidak terdaftar sebagai Developer.";
+                loginErrorDiv.textContent = "Email tidak terdaftar sebagai Developer. Harap periksa konstanta AUTHORIZED_DEVELOPER_EMAIL di kode.";
                 loginErrorDiv.classList.remove('hidden');
                 return;
             }
@@ -377,20 +398,26 @@
 
         // Cek Status Otentikasi
         onAuthStateChanged(auth, (user) => {
-            authCheckDiv.classList.add('hidden');
+            console.log('onAuthStateChanged Fired. User:', user ? user.email : 'null');
+            // Hapus pesan loading secara paksa
+            authCheckDiv.remove(); 
+
             if (user) {
                 if (user.email === AUTHORIZED_DEVELOPER_EMAIL) {
+                    console.log('User is Authorized Developer.');
                     loginFormContainer.classList.add('hidden');
                     verificationDashboard.classList.remove('hidden');
                     setupDashboard(); 
                 } else {
+                    console.log('User logged in but not authorized. Signing out.');
                     alertMessage("Anda bukan Developer/Administrator yang berwenang.", 'error');
                     signOut(auth);
-                    loginFormContainer.classList.remove('hidden');
+                    // Setelah sign out, onAuthStateChanged akan dipanggil lagi dengan user=null
                 }
             } else {
-                loginFormContainer.classList.remove('hidden');
+                console.log('User is null. Showing login form.');
                 verificationDashboard.classList.add('hidden');
+                loginFormContainer.classList.remove('hidden');
             }
         });
     </script>
