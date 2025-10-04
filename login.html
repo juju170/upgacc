@@ -45,30 +45,22 @@
 
         <div class="w-full max-w-sm bg-white p-8 rounded-xl shadow-lg">
             <form id="login-form" class="space-y-6">
-                <!-- Input Email -->
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
                     <input id="email" name="email" type="email" autocomplete="email" required class="mt-1 block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                 </div>
-
-                <!-- Input Password -->
                 <div>
                     <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
                     <input id="password" name="password" type="password" autocomplete="current-password" required class="mt-1 block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                 </div>
-
-                <!-- Notifikasi Error -->
                 <div id="error-notification" class="hidden p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded-lg">
                     <p id="error-message"></p>
                 </div>
-
-                <!-- Tombol Login -->
                 <div>
                     <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-300">
                         Login
                     </button>
                 </div>
-                
                 <div class="text-center text-sm">
                     <p class="text-gray-600">Belum punya akun?
                         <a href="pendaftaran_guru.html" class="font-medium text-blue-600 hover:text-blue-500">Daftar sebagai Guru</a>
@@ -83,12 +75,11 @@
 
     <!-- Firebase SDK -->
     <script type="module">
-        // Import fungsi yang diperlukan dari SDK
+        // DIUBAH: Menambahkan 'signOut' untuk logout pengguna yang belum disetujui
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
         import { getFirestore, doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-        // TODO: Ganti dengan konfigurasi Firebase proyek Anda
         const firebaseConfig = {
             apiKey: "AIzaSyA6zXOerKvdPJTmBp5Y6R2yFsy98xLDsKc",
   authDomain: "forumwidara.firebaseapp.com",
@@ -100,12 +91,10 @@
   measurementId: "G-GVD3VJ2HZN"
         };
 
-        // Inisialisasi Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Elemen Form
         const loginForm = document.getElementById('login-form');
         const errorNotification = document.getElementById('error-notification');
         const errorMessage = document.getElementById('error-message');
@@ -118,19 +107,27 @@
             errorNotification.classList.add('hidden');
 
             try {
-                // 1. Coba login dengan email dan password
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
-                // 2. Periksa peran pengguna di Firestore dan arahkan
                 // Cek apakah user adalah Admin (di koleksi 'sekolah')
                 const adminDocRef = doc(db, "sekolah", user.uid);
                 const adminDocSnap = await getDoc(adminDocRef);
 
+                // --- LOGIKA PENGECEKAN STATUS ADMIN ---
                 if (adminDocSnap.exists()) {
-                    console.log("Admin ditemukan, mengarahkan ke dashboard admin...");
-                    window.location.href = './admin/dashboard_admin.html';
-                    return;
+                    const adminData = adminDocSnap.data();
+                    // Jika status adalah 'approved', izinkan login
+                    if (adminData.status === 'approved') {
+                        console.log("Admin disetujui, mengarahkan ke dashboard admin...");
+                        window.location.href = './admin/dashboard_admin.html';
+                    } else {
+                        // Jika status 'pending' atau lainnya, tolak login
+                        console.log("Login admin ditolak, status: " + (adminData.status || "belum disetujui"));
+                        await signOut(auth); // Langsung logout pengguna
+                        throw new Error("Akun Anda sedang dalam proses peninjauan oleh administrator pusat.");
+                    }
+                    return; // Hentikan eksekusi lebih lanjut
                 }
 
                 // Cek apakah user adalah Guru (di koleksi 'guru')
@@ -142,17 +139,21 @@
                     window.location.href = './guru/dashboard_guru.html';
                     return;
                 }
-                
-                // (Tambahkan pengecekan untuk Siswa di sini jika diperlukan)
 
-                // Jika tidak ada peran yang ditemukan
+                // Jika tidak ada peran yang cocok
+                await signOut(auth);
                 throw new Error("Login berhasil, tetapi data peran Anda tidak ditemukan. Hubungi administrator.");
 
             } catch (error) {
                 console.error("Error saat login:", error);
-                errorMessage.textContent = error.message.includes("auth/invalid-credential") 
-                    ? "Email atau password salah." 
-                    : "Terjadi kesalahan. Silakan coba lagi.";
+                // DIUBAH: Logika penanganan error yang lebih spesifik
+                if (error.message.includes("auth/invalid-credential")) {
+                    errorMessage.textContent = "Email atau password salah.";
+                } else if (error.message.includes("Akun Anda sedang dalam proses peninjauan")) {
+                    errorMessage.textContent = error.message;
+                } else {
+                    errorMessage.textContent = "Terjadi kesalahan. Silakan coba lagi nanti.";
+                }
                 errorNotification.classList.remove('hidden');
             }
         });
