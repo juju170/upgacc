@@ -119,8 +119,8 @@
             loginButton.textContent = 'Memproses...';
             loginError.classList.add('hidden');
 
-            const email = document.getElementById('jujujuirah112@gmail.com').value;
-            const password = document.getElementById('tes123').value;
+            const email = document.getElementById('dev-email').value;
+            const password = document.getElementById('dev-password').value;
 
             try {
                 await signInWithEmailAndPassword(auth, email, password);
@@ -243,7 +243,7 @@
             authCheckDiv.classList.add('hidden');
             if (user) {
                 // Pengguna masuk. Cek apakah pengguna ini adalah Developer yang sah
-                if (user.email === AUTHORIZED_DEVELOPER_EMAIL) {
+                if (user.email === jujujuirah112@gmail.com) {
                     // Beri hak akses ke Dashboard
                     loginFormContainer.classList.add('hidden');
                     verificationDashboard.classList.remove('hidden');
