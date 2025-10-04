@@ -160,7 +160,7 @@
         }
 
         // FUNGSI 1: Cek Konfigurasi Cloudinary
-        if (CLOUDINARY_CLOUD_NAME === "dgqg7w1p3" || CLOUDINARY_UPLOAD_PRESET === "sekolah_unsigned") {
+        if (CLOUDINARY_CLOUD_NAME === "cloud-name-anda" || CLOUDINARY_UPLOAD_PRESET === "upload-preset-anda") {
             configErrorBanner.classList.remove('hidden');
             document.getElementById('registration-form-container').classList.add('opacity-50', 'pointer-events-none');
             // Hentikan eksekusi skrip pendaftaran jika konfigurasi belum diatur
@@ -234,25 +234,38 @@
             const skKepsekFile = document.getElementById('sk-kepsek-upload').files[0];
             const izinSekolahFile = document.getElementById('izin-sekolah-upload').files[0];
 
+            // Pengecekan minimum password
+            if (password.length < 6) {
+                 errorMessage.textContent = 'Password terlalu lemah (minimal 6 karakter).';
+                 errorNotification.classList.remove('hidden');
+                 submitButton.disabled = false;
+                 submitButton.textContent = 'Daftar & Unggah Dokumen';
+                 return;
+            }
+
             try {
-                // 1. UNGGAH DOKUMEN KE CLOUDINARY
+                let user;
+                
+                // 1. BUAT AKUN DI FIREBASE AUTH
+                submitButton.textContent = 'Membuat Akun Admin...';
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                user = userCredential.user;
+                alertMessage("Akun berhasil dibuat di Firebase Auth.", 'success');
+                
+                // 2. UNGGAH DOKUMEN KE CLOUDINARY
                 submitButton.textContent = 'Mengunggah Dokumen (1/2)...';
                 const urlSkKepsek = await uploadFileToCloudinary(skKepsekFile);
-                alertMessage("Dokumen 1 berhasil diunggah.", 'success');
+                alertMessage("Dokumen SK Kepsek berhasil diunggah.", 'success');
 
                 submitButton.textContent = 'Mengunggah Dokumen (2/2)...';
                 const urlIzinSekolah = await uploadFileToCloudinary(izinSekolahFile);
-                alertMessage("Dokumen 2 berhasil diunggah.", 'success');
+                alertMessage("Dokumen Izin Sekolah berhasil diunggah.", 'success');
                 
-                // 2. BUAT AKUN DI FIREBASE AUTH
-                submitButton.textContent = 'Membuat Akun Admin...';
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-
                 // 3. BUAT KODE KUNCI RAHASIA
                 const secretKey = generateSecretKey();
 
                 // 4. SIMPAN DATA KE FIRESTORE (Koleksi 'sekolah')
+                submitButton.textContent = 'Menyimpan Data Sekolah...';
                 await setDoc(doc(db, "sekolah", user.uid), {
                     nama_admin: namaAdmin,
                     nama_sekolah: namaSekolah,
@@ -263,7 +276,7 @@
                     createdAt: new Date(),
                     status: 'pending' // Menunggu persetujuan manual
                 });
-                alertMessage("Data pendaftaran berhasil disimpan.", 'success');
+                alertMessage("Data pendaftaran berhasil disimpan ke Firestore.", 'success');
                 
                 // 5. TAMPILKAN PESAN SUKSES
                 document.getElementById('registration-form-container').classList.add('hidden');
@@ -279,11 +292,13 @@
                 if (error.code === 'auth/email-already-in-use') {
                     message = 'Email sudah digunakan.';
                 } else if (error.message.includes("Cloudinary Upload Failed")) {
-                    message = 'Gagal mengunggah dokumen. Error Cloudinary: ' + error.message;
+                    message = `Gagal mengunggah dokumen. Kemungkinan: ${error.message.includes('400') ? 'Format file salah atau Upload Preset tidak aktif.' : 'Masalah jaringan/CORS.'}`;
                 } else if (error.message.includes("Gagal terhubung ke Cloudinary")) {
                     message = error.message;
                 } else if (error.code === 'auth/weak-password') {
                     message = 'Password terlalu lemah (minimal 6 karakter).';
+                } else if (error.code === 'permission-denied') {
+                    message = 'Gagal menyimpan data ke Firestore. Silakan cek **Firestore Security Rules** Anda!';
                 }
                 
                 errorMessage.textContent = message;
