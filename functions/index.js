@@ -43,7 +43,7 @@ exports.cleanupStaleAdmins = functions.pubsub
 
         if (guruSnap.empty) {
           console.log(`Admin ${adminId} dianggap fiktif. Hapus akun & data.`);
-
+          
           // Hapus akun Auth
           try {
             await auth.deleteUser(adminId);
