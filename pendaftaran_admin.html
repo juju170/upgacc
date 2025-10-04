@@ -22,7 +22,7 @@
                 </p>
             </div>
             
-            <!-- Area Notifikasi Error Konfigurasi (TIDAK AKAN MUNCUL JIKA KONFIG BENAR) -->
+            <!-- Area Notifikasi Error Konfigurasi (JANGAN SAMPAI MUNCUL) -->
             <div id="config-error-banner" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg shadow-lg">
                 <h4 class="font-bold">Error Konfigurasi!</h4>
                 <p class="text-sm mt-1">Harap ganti `CLOUDINARY_CLOUD_NAME` dan `CLOUDINARY_UPLOAD_PRESET` di bagian skrip dengan nilai Anda yang sebenarnya.</p>
@@ -106,6 +106,9 @@
         </div>
     </div>
 
+    <!-- Kotak Notifikasi Global -->
+    <div id="alert-container" class="fixed top-5 right-5 z-50 space-y-2"></div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
@@ -114,8 +117,8 @@
         // ==============================================================================================
         // !!! PENTING: GANTI DENGAN KONFIGURASI CLOUDINARY ANDA !!!
         // Pastikan Anda menggunakan Upload Preset yang TIDAK BERTANDA TANGAN (UNSIGNED)
-        const CLOUDINARY_CLOUD_NAME = "dgqg7w1p3"; 
-        const CLOUDINARY_UPLOAD_PRESET = "Unsigned_demo"; 
+        const CLOUDINARY_CLOUD_NAME = "cloud-name-anda"; 
+        const CLOUDINARY_UPLOAD_PRESET = "upload-preset-anda"; 
         // ==============================================================================================
         
         // Konfigurasi Firebase Anda
@@ -140,9 +143,24 @@
         const errorMessage = document.getElementById('error-message');
         const submitButton = document.getElementById('submit-button');
         const configErrorBanner = document.getElementById('config-error-banner');
+        const alertContainer = document.getElementById('alert-container');
+
+        // Fungsi Notifikasi Popup
+        function alertMessage(message, type = 'success') {
+            const colorClass = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `p-4 rounded-lg shadow-xl text-white ${colorClass} transition-opacity duration-300 z-50`;
+            alertDiv.textContent = message;
+            alertContainer.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.classList.add('opacity-0');
+                setTimeout(() => alertDiv.remove(), 300);
+            }, 5000);
+        }
 
         // FUNGSI 1: Cek Konfigurasi Cloudinary
-        if (CLOUDINARY_CLOUD_NAME === "dgqg7w1p3" || CLOUDINARY_UPLOAD_PRESET === "Unsigned_demo") {
+        if (CLOUDINARY_CLOUD_NAME === "dgqg7w1p3" || CLOUDINARY_UPLOAD_PRESET === "sekolah_unsigned") {
             configErrorBanner.classList.remove('hidden');
             document.getElementById('registration-form-container').classList.add('opacity-50', 'pointer-events-none');
             // Hentikan eksekusi skrip pendaftaran jika konfigurasi belum diatur
@@ -163,24 +181,40 @@
 
         // FUNGSI 3: Unggah File ke Cloudinary
         async function uploadFileToCloudinary(file) {
+            if (!file) throw new Error("File tidak ditemukan.");
+
             const formData = new FormData();
             formData.append('file', file);
             formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
             const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
 
-            const response = await fetch(url, {
-                method: 'POST',
-                body: formData
-            });
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: formData
+                });
+    
+                if (!response.ok) {
+                    // Coba baca error dari Cloudinary
+                    let errorDetails = "Unknown error.";
+                    try {
+                        const errorData = await response.json();
+                        errorDetails = errorData.error ? errorData.error.message : response.statusText;
+                    } catch (e) {
+                        errorDetails = response.statusText;
+                    }
+                    throw new Error(`Cloudinary Upload Failed (${response.status}): ${errorDetails}`);
+                }
+    
+                const data = await response.json();
+                return data.secure_url; // Mengembalikan URL aman dari Cloudinary
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(`Cloudinary Upload Failed: ${errorData.error ? errorData.error.message : response.statusText}`);
+            } catch (networkError) {
+                // Tangkap error jaringan (CORS, dll.)
+                console.error("Network Error during Cloudinary upload:", networkError);
+                throw new Error(`Gagal terhubung ke Cloudinary. Kemungkinan masalah CORS atau koneksi jaringan. Error: ${networkError.message}`);
             }
-
-            const data = await response.json();
-            return data.secure_url; // Mengembalikan URL aman dari Cloudinary
         }
 
         // Event Listener Form
@@ -204,9 +238,11 @@
                 // 1. UNGGAH DOKUMEN KE CLOUDINARY
                 submitButton.textContent = 'Mengunggah Dokumen (1/2)...';
                 const urlSkKepsek = await uploadFileToCloudinary(skKepsekFile);
-                
+                alertMessage("Dokumen 1 berhasil diunggah.", 'success');
+
                 submitButton.textContent = 'Mengunggah Dokumen (2/2)...';
                 const urlIzinSekolah = await uploadFileToCloudinary(izinSekolahFile);
+                alertMessage("Dokumen 2 berhasil diunggah.", 'success');
                 
                 // 2. BUAT AKUN DI FIREBASE AUTH
                 submitButton.textContent = 'Membuat Akun Admin...';
@@ -227,8 +263,7 @@
                     createdAt: new Date(),
                     status: 'pending' // Menunggu persetujuan manual
                 });
-
-                console.log("Admin berhasil didaftarkan dengan status 'pending'.");
+                alertMessage("Data pendaftaran berhasil disimpan.", 'success');
                 
                 // 5. TAMPILKAN PESAN SUKSES
                 document.getElementById('registration-form-container').classList.add('hidden');
@@ -244,7 +279,9 @@
                 if (error.code === 'auth/email-already-in-use') {
                     message = 'Email sudah digunakan.';
                 } else if (error.message.includes("Cloudinary Upload Failed")) {
-                    message = 'Gagal mengunggah dokumen. Pastikan Cloud Name dan Upload Preset Anda sudah benar dan aktif. Error Cloudinary: ' + error.message.split(':').slice(1).join(':').trim();
+                    message = 'Gagal mengunggah dokumen. Error Cloudinary: ' + error.message;
+                } else if (error.message.includes("Gagal terhubung ke Cloudinary")) {
+                    message = error.message;
                 } else if (error.code === 'auth/weak-password') {
                     message = 'Password terlalu lemah (minimal 6 karakter).';
                 }
