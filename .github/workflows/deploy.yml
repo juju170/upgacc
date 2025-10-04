@@ -4,23 +4,19 @@ on:
     branches:
       - main
 jobs:
-  deploy_functions:
+  build_and_deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
+      - uses: actions/checkout@v3
       - name: Install Dependencies
-        # Pergi ke folder functions (sesuai firebase.json) dan install
         run: cd functions && npm install
+
+      # Menggunakan action resmi dari Firebase
       - name: Deploy to Firebase
-        uses: w9jds/firebase-action@master
+        uses: FirebaseExtended/github-action@v0
         with:
-          action: deploy
-          project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
-          service_account: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
-          # Deploy HANYA functions
-          cli_args: functions
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}'
+          projectId: '${{ secrets.FIREBASE_PROJECT_ID }}'
+          # Perintah untuk deploy HANYA functions
+          args: deploy --only functions
