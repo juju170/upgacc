@@ -4,164 +4,159 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Sekolah XYZ</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* Menggunakan font Inter sebagai default */
-        body {
-            font-family: 'Inter', sans-serif;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        main {
-            flex-grow: 1;
-        }
+        body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 flex flex-col min-h-screen">
 
-    <!-- 1. Navbar -->
+    <!-- Navbar (Statis) -->
     <nav class="bg-white shadow-md sticky top-0 z-50">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <!-- Logo -->
                 <div class="flex-shrink-0">
                     <a href="index.html" class="flex items-center space-x-2">
-                        <svg class="h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.627 48.627 0 0 1 12 20.904a48.627 48.627 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.57 50.57 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" />
-                        </svg>
+                        <svg class="h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.627 48.627 0 0 1 12 20.904a48.627 48.627 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.57 50.57 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" /></svg>
                         <span class="font-bold text-xl text-gray-800">Sekolah XYZ</span>
                     </a>
                 </div>
-                <!-- Menu Navigasi (Desktop) -->
                 <div class="hidden md:block">
                     <div class="ml-10 flex items-baseline space-x-4">
-                        <a href="index.html" class="text-gray-600 hover:bg-blue-500 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Home</a>
-                        <a href="./public/program.html" class="text-gray-600 hover:bg-blue-500 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Program</a>
-                        <a href="./public/berita.html" class="text-gray-600 hover:bg-blue-500 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Berita</a>
+                        <a href="index.html" class="text-gray-600 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium">Home</a>
+                        <a href="#" class="text-gray-600 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium">Program</a>
+                        <a href="#" class="text-gray-600 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium">Berita</a>
                         <a href="login.html" class="bg-blue-600 text-white px-3 py-2 rounded-md text-sm font-medium">Login</a>
                     </div>
-                </div>
-                <!-- Tombol Menu (Mobile) -->
-                <div class="-mr-2 flex md:hidden">
-                    <button type="button" class="bg-gray-200 inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-white hover:bg-blue-500 focus:outline-none">
-                        <span class="sr-only">Open main menu</span>
-                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
-                        </svg>
-                    </button>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- 2. Konten Utama -->
-    <main class="w-full flex flex-col items-center justify-center bg-gray-50 px-4 py-12">
-        <!-- Teks Judul -->
+    <!-- Konten Utama -->
+    <main class="flex-grow w-full flex flex-col items-center justify-center bg-gray-50 px-4 py-12">
         <div class="text-center mb-8">
-            <h1 class="text-4xl md:text-5xl font-extrabold text-gray-800">Login Portal Sekolah</h1>
-            <p class="mt-3 text-lg text-gray-600">Masuk sebagai Guru atau Siswa untuk mengakses dashboard</p>
+            <h1 class="text-4xl md:text-5xl font-extrabold text-gray-800">Portal Login Sekolah</h1>
+            <p class="mt-3 text-lg text-gray-600">Masuk untuk mengakses dashboard Anda.</p>
         </div>
 
-        <!-- 3. Form Login Wrapper -->
         <div class="w-full max-w-sm bg-white p-8 rounded-xl shadow-lg">
-            <!-- Tag form yang sudah diperbaiki -->
-            <form action="/proses-login" method="POST" class="space-y-6">
-                
-                <!-- Pilihan Role (Siswa/Guru) -->
+            <form id="login-form" class="space-y-6">
+                <!-- Input Email -->
                 <div>
-                    <label class="text-sm font-medium text-gray-700">Login sebagai:</label>
-                    <div class="mt-2 grid grid-cols-2 gap-3">
-                        <div>
-                            <label for="role-siswa" class="flex items-center justify-center p-3 w-full text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg cursor-pointer peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-900 hover:bg-gray-100">
-                                <input type="radio" id="role-siswa" name="role" value="siswa" class="sr-only peer" checked>
-                                Siswa
-                            </label>
-                        </div>
-                        <div>
-                           <label for="role-guru" class="flex items-center justify-center p-3 w-full text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg cursor-pointer peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-900 hover:bg-gray-100">
-                                <input type="radio" id="role-guru" name="role" value="guru" class="sr-only peer">
-                                Guru
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Input Email/Username -->
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700">Email / Username</label>
-                    <div class="mt-1 relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                               <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                            </svg>
-                        </div>
-                        <input id="email" name="email" type="text" placeholder="Masukkan email atau username" required class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                    </div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input id="email" name="email" type="email" autocomplete="email" required class="mt-1 block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                 </div>
 
-                <!-- Input Password (BARU) -->
+                <!-- Input Password -->
                 <div>
                     <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                    <div class="mt-1 relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-                            </svg>
-                        </div>
-                        <input id="password" name="password" type="password" placeholder="Masukkan password" required class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                    </div>
+                    <input id="password" name="password" type="password" autocomplete="current-password" required class="mt-1 block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                 </div>
-                
+
+                <!-- Notifikasi Error -->
+                <div id="error-notification" class="hidden p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded-lg">
+                    <p id="error-message"></p>
+                </div>
+
                 <!-- Tombol Login -->
                 <div>
-                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-300">
+                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-300">
                         Login
                     </button>
                 </div>
                 
-                <!-- Link Lupa Password -->
-                <div class="text-center">
-                    <a href="#" class="text-sm font-medium text-blue-600 hover:text-blue-500">
-                        Lupa Password?
-                    </a>
+                <div class="text-center text-sm">
+                    <p class="text-gray-600">Belum punya akun?
+                        <a href="pendaftaran_guru.html" class="font-medium text-blue-600 hover:text-blue-500">Daftar sebagai Guru</a>
+                    </p>
+                     <p class="text-gray-600 mt-2">atau
+                        <a href="pendaftaran_admin.html" class="font-medium text-indigo-600 hover:text-indigo-500">Daftarkan Sekolah Anda</a>
+                    </p>
                 </div>
             </form>
         </div>
+    </main>
 
-        <!-- 4. Shortcut untuk Development -->
-        <div class="w-full max-w-sm mt-6 text-center">
-            <div class="p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded-lg">
-                <p class="font-bold">Hanya untuk Development</p>
-                <p class="text-sm">Klik untuk masuk langsung ke dashboard:</p>
-            </div>
-            <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <a href="./admin/dashboard_admin.html" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-red-600 hover:bg-red-700">
-                    Admin
-                </a>
-                <a href="./guru/dashboard_guru.html" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700">
-                    Guru
-                </a>
-                <a href="./siswa/dashboard_siswa.html" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700">
-                    Siswa
-                </a>
-            </div>
-        </div>
-    </main>     
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import fungsi yang diperlukan dari SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-    <!-- 5. Footer -->
-    <footer class="bg-gray-800 text-white">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div class="mt-8 border-t border-gray-700 pt-6 text-center text-gray-400 text-sm">
-                <p>&copy; 2024 Sekolah XYZ. Semua Hak Cipta Dilindungi.</p>
-            </div>
-        </div>
-    </footer>
+        // TODO: Ganti dengan konfigurasi Firebase proyek Anda
+        const firebaseConfig = {
+            apiKey: "AIzaSyA6zXOerKvdPJTmBp5Y6R2yFsy98xLDsKc",
+  authDomain: "forumwidara.firebaseapp.com",
+  databaseURL: "https://forumwidara-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "forumwidara",
+  storageBucket: "forumwidara.firebasestorage.app",
+  messagingSenderId: "216895655168",
+  appId: "1:216895655168:web:59255f600fc3b3b44eb7e5",
+  measurementId: "G-GVD3VJ2HZN"
+        };
+
+        // Inisialisasi Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Elemen Form
+        const loginForm = document.getElementById('login-form');
+        const errorNotification = document.getElementById('error-notification');
+        const errorMessage = document.getElementById('error-message');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = loginForm.email.value;
+            const password = loginForm.password.value;
+            
+            errorNotification.classList.add('hidden');
+
+            try {
+                // 1. Coba login dengan email dan password
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // 2. Periksa peran pengguna di Firestore dan arahkan
+                // Cek apakah user adalah Admin (di koleksi 'sekolah')
+                const adminDocRef = doc(db, "sekolah", user.uid);
+                const adminDocSnap = await getDoc(adminDocRef);
+
+                if (adminDocSnap.exists()) {
+                    console.log("Admin ditemukan, mengarahkan ke dashboard admin...");
+                    window.location.href = './admin/dashboard_admin.html';
+                    return;
+                }
+
+                // Cek apakah user adalah Guru (di koleksi 'guru')
+                const guruQuery = query(collection(db, "guru"), where("uid", "==", user.uid));
+                const guruQuerySnapshot = await getDocs(guruQuery);
+                
+                if (!guruQuerySnapshot.empty) {
+                    console.log("Guru ditemukan, mengarahkan ke dashboard guru...");
+                    window.location.href = './guru/dashboard_guru.html';
+                    return;
+                }
+                
+                // (Tambahkan pengecekan untuk Siswa di sini jika diperlukan)
+
+                // Jika tidak ada peran yang ditemukan
+                throw new Error("Login berhasil, tetapi data peran Anda tidak ditemukan. Hubungi administrator.");
+
+            } catch (error) {
+                console.error("Error saat login:", error);
+                errorMessage.textContent = error.message.includes("auth/invalid-credential") 
+                    ? "Email atau password salah." 
+                    : "Terjadi kesalahan. Silakan coba lagi.";
+                errorNotification.classList.remove('hidden');
+            }
+        });
+    </script>
 
 </body>
 </html>
