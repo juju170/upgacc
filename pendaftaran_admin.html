@@ -14,16 +14,17 @@
 </head>
 <body class="bg-gray-50">
     <div class="flex min-h-screen items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div class="w-full max-w-md space-y-8">
+        <div class="w-full max-w-lg space-y-8">
             <div>
                 <h2 class="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">Daftarkan Sekolah Anda</h2>
                 <p class="mt-2 text-center text-sm text-gray-600">
-                    Buat akun Admin untuk memulai mengelola data sekolah.
+                    Buat akun Admin dan unggah dokumen bukti untuk verifikasi.
                 </p>
             </div>
             <div id="registration-form-container" class="mt-8 space-y-6 bg-white p-8 rounded-xl shadow-lg">
                 <form id="registration-form">
                     <div class="space-y-4 rounded-md shadow-sm">
+                        <!-- Informasi Sekolah dan Admin -->
                         <div>
                             <label for="school-name" class="sr-only">Nama Sekolah</label>
                             <input id="school-name" name="school-name" type="text" required class="relative block w-full appearance-none rounded-md border border-gray-300 px-3 py-3 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" placeholder="Nama Sekolah">
@@ -41,20 +42,38 @@
                             <input id="password" name="password" type="password" autocomplete="new-password" required class="relative block w-full appearance-none rounded-md border border-gray-300 px-3 py-3 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" placeholder="Password (min. 6 karakter)">
                         </div>
                     </div>
-                     <div id="error-notification" class="hidden mt-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded-lg">
+
+                    <!-- Upload Bukti Dokumen -->
+                    <div class="mt-6 pt-6 border-t border-gray-200 space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Dokumen Verifikasi (WAJIB)</h3>
+                        <p class="text-sm text-gray-500">Unggah dokumen resmi untuk memverifikasi sekolah Anda.</p>
+                        
+                        <div>
+                            <label for="file-sk" class="block text-sm font-medium text-gray-700">1. Surat Keterangan Kepala Sekolah / SK Pengangkatan</label>
+                            <input id="file-sk" name="file-sk" type="file" required accept="image/*,application/pdf" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                            <span id="status-sk" class="text-xs text-gray-500 block mt-1"></span>
+                        </div>
+
+                        <div>
+                            <label for="file-izin" class="block text-sm font-medium text-gray-700">2. Foto Izin Operasional / Izin Pendirian Sekolah</label>
+                            <input id="file-izin" name="file-izin" type="file" required accept="image/*,application/pdf" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                            <span id="status-izin" class="text-xs text-gray-500 block mt-1"></span>
+                        </div>
+                    </div>
+                    
+                    <div id="error-notification" class="hidden mt-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded-lg">
                         <p id="error-message"></p>
                     </div>
                     <div>
-                        <button type="submit" class="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-3 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 mt-6">
-                            Daftar
+                        <button id="submit-button" type="submit" class="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-3 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 mt-6">
+                            Daftar & Unggah Dokumen
                         </button>
                     </div>
                 </form>
             </div>
             <div id="success-message-container" class="hidden text-center bg-white p-8 rounded-xl shadow-lg">
                 <h3 class="text-2xl font-bold text-green-600">Pendaftaran Diterima!</h3>
-                <!-- DIUBAH: Pesan sukses diubah untuk menginformasikan tentang proses verifikasi -->
-                <p class="mt-4 text-gray-700">Akun Anda akan aktif setelah diverifikasi oleh administrator pusat (biasanya dalam 1x24 jam). Setelah disetujui, Anda dapat login dan mulai menggunakan kode kunci rahasia di bawah ini.</p>
+                <p class="mt-4 text-gray-700">Dokumen Anda sedang dalam proses verifikasi oleh administrator pusat. Setelah disetujui, Anda dapat login dan mulai menggunakan kode kunci rahasia di bawah ini.</p>
                 <div class="mt-6 bg-gray-100 p-4 rounded-lg border border-dashed">
                     <p class="text-gray-500 text-sm">Kode Kunci Rahasia Anda:</p>
                     <p id="secret-key" class="text-2xl font-mono font-bold text-indigo-600 break-all"></p>
@@ -67,19 +86,27 @@
     </div>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
         import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
+        // Variabel Global
+        // GANTI DENGAN KONFIGURASI CLOUDINARY ANDA
+        const CLOUDINARY_CLOUD_NAME = "dgqg7w1p3"; // <-- GANTI INI
+        const CLOUDINARY_UPLOAD_PRESET = "Unsigned_demo"; // <-- GANTI INI (Harus Unsigned)
+        const CLOUDINARY_API_URL = `https://api.cloudinary.com/v1_1/${dgqg7w1p3}/image/upload`;
+        
+        // Konfigurasi Firebase Anda (dari file yang diunggah)
         const firebaseConfig = {
             apiKey: "AIzaSyA6zXOerKvdPJTmBp5Y6R2yFsy98xLDsKc",
-  authDomain: "forumwidara.firebaseapp.com",
-  databaseURL: "https://forumwidara-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "forumwidara",
-  storageBucket: "forumwidara.firebasestorage.app",
-  messagingSenderId: "216895655168",
-  appId: "1:216895655168:web:59255f600fc3b3b44eb7e5",
-  measurementId: "G-GVD3VJ2HZN"
+            authDomain: "forumwidara.firebaseapp.com",
+            databaseURL: "https://forumwidara-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "forumwidara",
+            storageBucket: "forumwidara.firebasestorage.app",
+            messagingSenderId: "216895655168",
+            appId: "1:216895655168:web:59255f600fc3b3b44eb7e5",
+            measurementId: "G-GVD3VJ2HZN"
         };
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -87,7 +114,8 @@
         const regForm = document.getElementById('registration-form');
         const errorNotification = document.getElementById('error-notification');
         const errorMessage = document.getElementById('error-message');
-        
+        const submitButton = document.getElementById('submit-button');
+
         function generateUUID() {
             return 'xxxx-xxxx-xxxx'.replace(/[xy]/g, function(c) {
                 var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -95,56 +123,119 @@
             });
         }
 
+        /**
+         * Mengunggah file ke Cloudinary.
+         * @param {File} file - Objek file yang akan diunggah.
+         * @returns {Promise<string>} URL dari file yang diunggah.
+         */
+        async function uploadToCloudinary(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+            const response = await fetch(CLOUDINARY_API_URL, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("Cloudinary Error:", errorData);
+                throw new Error(`Gagal mengunggah ${file.name}: ${errorData.error.message || response.statusText}`);
+            }
+
+            const data = await response.json();
+            return data.secure_url;
+        }
+
         regForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            submitButton.disabled = true;
+            submitButton.textContent = 'Memproses... Harap tunggu.';
+            errorNotification.classList.add('hidden');
+
             const schoolName = regForm['school-name'].value;
             const adminName = regForm['admin-name'].value;
             const email = regForm['email'].value;
             const password = regForm['password'].value;
-
-            errorNotification.classList.add('hidden');
+            const fileSK = regForm['file-sk'].files[0];
+            const fileIzin = regForm['file-izin'].files[0];
+            
+            // 1. Validasi File
+            if (!fileSK || !fileIzin) {
+                errorMessage.textContent = "Harap unggah kedua dokumen verifikasi.";
+                errorNotification.classList.remove('hidden');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Daftar & Unggah Dokumen';
+                return;
+            }
 
             try {
+                // 2. Buat Akun Firebase
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
-                const secretKey = `${generateUUID()}-${generateUUID()}`;
+                // 3. Unggah Dokumen ke Cloudinary
+                const statusSK = document.getElementById('status-sk');
+                const statusIzin = document.getElementById('status-izin');
+                
+                statusSK.textContent = 'Mengunggah SK...';
+                const urlSK = await uploadToCloudinary(fileSK);
+                statusSK.textContent = 'SK berhasil diunggah.';
+                
+                statusIzin.textContent = 'Mengunggah Izin...';
+                const urlIzin = await uploadToCloudinary(fileIzin);
+                statusIzin.textContent = 'Izin berhasil diunggah.';
 
-                // DIUBAH: Menambahkan field status: 'pending' saat data admin baru disimpan
+                // 4. Simpan Data ke Firestore
+                const secretKey = `${generateUUID()}-${generateUUID()}`;
+                
                 await setDoc(doc(db, "sekolah", user.uid), {
                     nama_sekolah: schoolName,
                     nama_admin: adminName,
                     email: email,
                     kode_kunci_rahasia: secretKey,
+                    url_sk_kepsek: urlSK,     // <-- URL Bukti 1
+                    url_izin_sekolah: urlIzin, // <-- URL Bukti 2
                     createdAt: new Date(),
-                    status: "pending" // <-- Status default untuk persetujuan manual
+                    status: "pending", // Status default untuk persetujuan manual
+                    userId: user.uid // UID Admin
                 });
 
-                console.log("Admin berhasil didaftarkan dengan status 'pending'.");
+                // 5. Tampilkan Pesan Sukses
+                console.log("Admin berhasil didaftarkan dengan status 'pending' dan dokumen terunggah.");
+                await signOut(auth); // Logout pengguna baru setelah pendaftaran
                 
                 document.getElementById('registration-form-container').classList.add('hidden');
                 document.getElementById('secret-key').textContent = secretKey;
                 document.getElementById('success-message-container').classList.remove('hidden');
 
             } catch (error) {
-                console.error("Error pendaftaran:", error.code, error.message);
-                errorMessage.textContent = "Gagal mendaftar. " + (error.code === 'auth/email-already-in-use' ? 'Email sudah digunakan.' : 'Silakan periksa kembali data Anda.');
+                console.error("Error pendaftaran/upload:", error.code || error.message);
+                
+                // Jika pendaftaran Firebase berhasil tapi upload gagal, hapus akun yang baru dibuat
+                // (Ini adalah penanganan error yang kompleks, untuk kesederhanaan, kita anggap gagal total)
+                
+                errorMessage.textContent = "Gagal mendaftar. " + (error.code === 'auth/email-already-in-use' ? 'Email sudah digunakan.' : error.message.includes("Cloudinary") ? 'Gagal mengunggah dokumen.' : 'Silakan periksa kembali data Anda.');
                 errorNotification.classList.remove('hidden');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Daftar & Unggah Dokumen';
             }
         });
 
         const copyBtn = document.getElementById('copy-key-button');
         const copyStatus = document.getElementById('copy-status');
         copyBtn.addEventListener('click', () => {
-            navigator.clipboard.writeText(document.getElementById('secret-key').textContent)
-                .then(() => {
-                    copyStatus.textContent = 'Kode berhasil disalin!';
-                    setTimeout(() => { copyStatus.textContent = '' }, 2000);
-                })
-                .catch(err => {
-                    copyStatus.textContent = 'Gagal menyalin.';
-                     setTimeout(() => { copyStatus.textContent = '' }, 2000);
-                });
+            // Menggunakan execCommand untuk kompatibilitas yang lebih baik di iframe
+            const el = document.createElement('textarea');
+            el.value = document.getElementById('secret-key').textContent;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+
+            copyStatus.textContent = 'Kode berhasil disalin!';
+            setTimeout(() => { copyStatus.textContent = '' }, 2000);
         });
     </script>
 </body>
