@@ -21,104 +21,179 @@
                     Masukkan Kode Kunci Rahasia yang Anda dapatkan dari Admin sekolah.
                 </p>
             </div>
+            
+            <!-- Area Notifikasi Error Utama -->
+            <div id="error-notification" class="hidden rounded-lg bg-red-100 p-4">
+                <p class="text-sm font-medium text-red-800" id="error-message"></p>
+            </div>
+
+            <!-- Form Pendaftaran -->
             <div id="registration-form-container" class="mt-8 space-y-6 bg-white p-8 rounded-xl shadow-lg">
-                <form id="registration-form">
-                    <div class="space-y-4 rounded-md shadow-sm">
-                        <div>
-                            <label for="secret-key" class="sr-only">Kode Kunci Rahasia</label>
-                            <input id="secret-key" name="secret-key" type="text" required class="relative block w-full appearance-none rounded-md border border-gray-300 px-3 py-3 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" placeholder="Kode Kunci Rahasia">
-                        </div>
-                        <div>
-                            <label for="teacher-name" class="sr-only">Nama Lengkap</label>
-                            <input id="teacher-name" name="teacher-name" type="text" required class="relative block w-full appearance-none rounded-md border border-gray-300 px-3 py-3 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" placeholder="Nama Lengkap Anda">
-                        </div>
-                        <div>
-                            <label for="email-address" class="sr-only">Alamat Email</label>
-                            <input id="email-address" name="email" type="email" autocomplete="email" required class="relative block w-full appearance-none rounded-md border border-gray-300 px-3 py-3 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" placeholder="Alamat Email">
-                        </div>
-                        <div>
-                            <label for="password" class="sr-only">Password</label>
-                            <input id="password" name="password" type="password" autocomplete="new-password" required class="relative block w-full appearance-none rounded-md border border-gray-300 px-3 py-3 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" placeholder="Password (min. 6 karakter)">
-                        </div>
-                    </div>
-                     <div id="error-notification" class="hidden mt-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded-lg">
-                        <p id="error-message"></p>
+                <form id="registration-form" class="space-y-6">
+                    <div>
+                        <label for="teacher-name" class="sr-only">Nama Guru</label>
+                        <input id="teacher-name" name="teacher-name" type="text" required class="relative block w-full appearance-none rounded-lg border border-gray-300 px-3 py-3 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" placeholder="Nama Lengkap Guru">
                     </div>
                     <div>
-                        <button type="submit" class="group relative flex w-full justify-center rounded-md border border-transparent bg-blue-600 py-3 px-4 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mt-6">
+                        <label for="email-address" class="sr-only">Alamat Email</label>
+                        <input id="email-address" name="email" type="email" autocomplete="email" required class="relative block w-full appearance-none rounded-lg border border-gray-300 px-3 py-3 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" placeholder="Alamat Email">
+                    </div>
+                    <div>
+                        <label for="password" class="sr-only">Password</label>
+                        <input id="password" name="password" type="password" autocomplete="new-password" required class="relative block w-full appearance-none rounded-lg border border-gray-300 px-3 py-3 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" placeholder="Password (Minimal 6 Karakter)">
+                    </div>
+                    
+                    <div class="pt-4 border-t">
+                        <label for="secret-key" class="block text-sm font-medium text-gray-700">Kode Kunci Rahasia Admin</label>
+                        <input id="secret-key" name="secret-key" type="text" required class="mt-1 block w-full appearance-none rounded-lg border border-gray-300 px-3 py-3 text-gray-900 placeholder-gray-400 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" placeholder="Masukkan Kode Kunci Rahasia (UUID)">
+                        <p class="mt-2 text-xs text-gray-500">Diberikan oleh Admin Sekolah Anda setelah sekolah diverifikasi.</p>
+                    </div>
+
+                    <div>
+                        <button type="submit" id="submit-button" class="group relative flex w-full justify-center rounded-lg border border-transparent bg-green-600 py-3 px-4 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition">
                             Daftar sebagai Guru
                         </button>
                     </div>
                 </form>
             </div>
-             <div id="success-message-container" class="hidden text-center bg-white p-8 rounded-xl shadow-lg">
-                <h3 class="text-2xl font-bold text-green-600">Pendaftaran Guru Berhasil!</h3>
-                <p class="mt-4 text-gray-700">Akun guru Anda telah berhasil dibuat. Sekarang Anda bisa login untuk mulai mengelola data siswa, materi, dan nilai.</p>
-                <a href="login.html" class="mt-8 block w-full rounded-md border border-transparent bg-blue-600 py-3 px-4 text-sm font-medium text-white hover:bg-blue-700">Lanjut ke Halaman Login</a>
+            
+            <!-- Pesan Sukses -->
+            <div id="success-message-container" class="hidden mt-8 space-y-6 bg-white p-8 rounded-xl shadow-lg text-center">
+                <svg class="mx-auto h-12 w-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <h3 class="text-2xl font-bold text-gray-900">Pendaftaran Guru Berhasil!</h3>
+                <p class="text-gray-600">Akun Anda berhasil dibuat dan terhubung ke sekolah Anda. Anda sekarang dapat masuk.</p>
+                <button onclick="window.location.reload()" class="mt-6 text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                    Lanjutkan ke Halaman Login
+                </button>
             </div>
+
         </div>
     </div>
+
+    <!-- Firebase dan Logic Script -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-        import { getFirestore, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword,
+            signInWithCustomToken
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            query,
+            where,
+            getDocs,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        setLogLevel('Debug');
 
-        // TODO: Ganti dengan konfigurasi Firebase proyek Anda
-        const firebaseConfig = {
-            apiKey: "AIzaSyA6zXOerKvdPJTmBp5Y6R2yFsy98xLDsKc",
-  authDomain: "forumwidara.firebaseapp.com",
-  databaseURL: "https://forumwidara-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "forumwidara",
-  storageBucket: "forumwidara.firebasestorage.app",
-  messagingSenderId: "216895655168",
-  appId: "1:216895655168:web:59255f600fc3b3b44eb7e5",
-  measurementId: "G-GVD3VJ2HZN"
-        };
+        // Variabel Global dari Lingkungan Canvas
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        if (!firebaseConfig) {
+            // Handle error, though usually handled by environment setup
+            console.error("Firebase config not found.");
+            return;
+        }
+
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
         const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        // State global
+        let currentUserId = null;
 
-        const regForm = document.getElementById('registration-form');
+        // Fungsi inisialisasi otentikasi
+        async function initializeAuth() {
+            try {
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    // Sign in anonim jika tidak ada token, dibutuhkan untuk menjalankan query awal
+                    // Namun, di sini kita biarkan onAuthStateChanged menangani user baru setelah pendaftaran
+                }
+            } catch (error) {
+                console.error("Auth Initialization Error:", error);
+            }
+        }
+        
+        initializeAuth();
+        
+        // Listener Status Otentikasi
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUserId = user.uid;
+            } else {
+                currentUserId = null;
+            }
+        });
+        
+        // Event Listener Form Pendaftaran
+        const registrationForm = document.getElementById('registration-form');
         const errorNotification = document.getElementById('error-notification');
         const errorMessage = document.getElementById('error-message');
 
-        regForm.addEventListener('submit', async (e) => {
+        registrationForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const secretKey = regForm['secret-key'].value;
-            const teacherName = regForm['teacher-name'].value;
-            const email = regForm['email'].value;
-            const password = regForm['password'].value;
-            
             errorNotification.classList.add('hidden');
+            errorMessage.textContent = '';
+            
+            const submitButton = document.getElementById('submit-button');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Memproses Pendaftaran...';
+
+            const teacherName = document.getElementById('teacher-name').value;
+            const email = document.getElementById('email-address').value;
+            const password = document.getElementById('password').value;
+            const secretKey = document.getElementById('secret-key').value.trim();
 
             try {
-                // 1. Validasi Kode Kunci Rahasia
-                const schoolsRef = collection(db, "sekolah");
-                const q = query(schoolsRef, where("kode_kunci_rahasia", "==", secretKey));
+                // 1. Verifikasi Kunci Rahasia di koleksi 'sekolah' (Data Publik)
+                // Path: /artifacts/{appId}/public/data/sekolah
+                const schoolCollectionPath = `/artifacts/${appId}/public/data/sekolah`;
+                const q = query(
+                    collection(db, schoolCollectionPath), 
+                    where("kunci_rahasia", "==", secretKey),
+                    where("status_verifikasi", "==", "approved") // HANYA terima kunci dari admin yang sudah diverifikasi
+                );
+                
                 const querySnapshot = await getDocs(q);
 
                 if (querySnapshot.empty) {
-                    throw new Error("Kode Kunci Rahasia tidak valid atau tidak ditemukan.");
+                    throw new Error("Kode Kunci Rahasia tidak valid, status Admin belum disetujui, atau tidak ditemukan.");
                 }
                 
                 // Ambil ID sekolah dari dokumen yang ditemukan
                 const schoolDoc = querySnapshot.docs[0];
-                const schoolId = schoolDoc.id;
+                const schoolId = schoolDoc.id; // Ini adalah ID dokumen di koleksi 'sekolah' (ID Sekolah)
 
                 // 2. Buat pengguna di Firebase Authentication
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
-                // 3. Simpan data guru di koleksi 'guru'
+                // 3. Simpan data guru di koleksi 'guru' (Data Private User, menggunakan UID Guru sebagai docId untuk koleksi guru)
+                // Path: /artifacts/{appId}/users/{userId}/guru
+                
+                // Note: Karena menggunakan addDoc, docId akan dibuat otomatis. 
+                // Security Rules Anda: match /guru/{guruId} { allow create: if request.auth != null && request.resource.data.uid == request.auth.uid; ... }
+                // Jadi kita akan membuat koleksi 'guru' di root (karena rules Anda tidak spesifik ke user path)
+                // Berdasarkan rules: /guru/{guruId}
+                
                 await addDoc(collection(db, "guru"), {
-                    uid: user.uid, // Simpan UID untuk referensi
+                    uid: user.uid, // Simpan UID untuk referensi (sesuai rules: resource.data.uid == request.auth.uid)
                     id_sekolah: schoolId,
                     nama_guru: teacherName,
                     email: email,
                     createdAt: new Date()
                 });
                 
-                console.log("Guru berhasil didaftarkan!");
+                console.log("Guru berhasil didaftarkan! UID:", user.uid, "Sekolah ID:", schoolId);
 
                 // Tampilkan pesan sukses
                 document.getElementById('registration-form-container').classList.add('hidden');
@@ -126,8 +201,24 @@
 
             } catch (error) {
                 console.error("Error pendaftaran guru:", error);
-                errorMessage.textContent = "Gagal mendaftar. " + (error.message || "Silakan periksa kembali data Anda.");
+                let message = "Gagal mendaftar.";
+                 if (error.code === 'auth/email-already-in-use') {
+                    message = 'Email sudah digunakan. Silakan gunakan email lain.';
+                } else if (error.code === 'auth/weak-password') {
+                    message = 'Password terlalu lemah (minimal 6 karakter).';
+                } else if (error.message.includes("Kunci Rahasia")) {
+                    message = error.message; // Menampilkan pesan error khusus dari throw di atas
+                } else if (error.code === 'permission-denied') {
+                    message = 'Gagal menyimpan data ke Firestore. Silakan cek **Firestore Security Rules** Anda!';
+                } else {
+                    message += " " + (error.message || "Silakan periksa kembali data Anda.");
+                }
+
+                errorMessage.textContent = message;
                 errorNotification.classList.remove('hidden');
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Daftar sebagai Guru';
             }
         });
     </script>
