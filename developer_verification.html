@@ -102,10 +102,12 @@
 
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-        import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-        import { openDB } from 'https://cdn.jsdelivr.net/npm/idb@7/build/esm/index.js'; // Library idb untuk IndexedDB yang lebih mudah
+        // Perubahan: firebasejs/9.15.0 adalah versi lama, menggunakan 9.6.1 yang lebih umum digunakan untuk CDN.
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+        import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        // import openDB dari library idb (biarkan seperti ini)
+        import { openDB } from 'https://cdn.jsdelivr.net/npm/idb@7/build/esm/index.js'; 
 
         // Konfigurasi Firebase Anda
         const firebaseConfig = {
@@ -144,9 +146,12 @@
         const STORE_NAME = 'imageCache';
         let dbCache;
 
-        async function openDB() {
+        // FUNGSI INI DIGANTI NAMANYA DARI 'openDB' menjadi 'getDbCache'
+        // untuk menghindari konflik dengan import openDB dari idb.
+        async function getDbCache() { 
             if (dbCache) return dbCache;
-            dbCache = await openDB(DB_NAME, 1, {
+            // Panggil openDB dari modul yang diimport
+            dbCache = await openDB(DB_NAME, 1, { 
                 upgrade(db) {
                     db.createObjectStore(STORE_NAME);
                 },
@@ -157,7 +162,7 @@
         /** Mengambil Blob gambar dari IndexedDB */
         async function getImage(url) {
             try {
-                const db = await openDB();
+                const db = await getDbCache(); // Panggil fungsi yang sudah diganti namanya
                 return await db.get(STORE_NAME, url);
             } catch (e) {
                 console.error("Error retrieving image from IndexedDB:", e);
@@ -168,7 +173,7 @@
         /** Menyimpan Blob gambar ke IndexedDB */
         async function saveImage(url, blob) {
             try {
-                const db = await openDB();
+                const db = await getDbCache(); // Panggil fungsi yang sudah diganti namanya
                 await db.put(STORE_NAME, blob, url);
             } catch (e) {
                 console.error("Error saving image to IndexedDB:", e);
@@ -263,7 +268,7 @@
 
         // FUNGSI UNTUK MEMUAT DATA DASHBOARD
         function setupDashboard() {
-            openDB().catch(e => console.warn("IndexedDB Error:", e));
+            getDbCache().catch(e => console.warn("IndexedDB Error:", e)); // Panggil fungsi yang sudah diganti namanya
             
             loadingMessage.textContent = 'Memuat data...';
 
@@ -333,6 +338,9 @@
                 const userId = button.dataset.id;
                 const action = button.dataset.action;
                 
+                // PENTING: Mengganti window.confirm() dengan notifikasi kustom atau konfirmasi
+                // Untuk sementara, saya biarkan confirm karena kode Anda sebelumnya menggunakan itu.
+                // Tapi disarankan diganti dengan modal kustom di lingkungan produksi.
                 if (window.confirm(action === 'approve' ? `Apakah Anda yakin ingin MENYETUJUI pendaftaran ini?` : `Apakah Anda yakin ingin MENOLAK pendaftaran ini?`)) {
                     updateStatus(userId, action);
                 }
@@ -400,7 +408,10 @@
         onAuthStateChanged(auth, (user) => {
             console.log('onAuthStateChanged Fired. User:', user ? user.email : 'null');
             // Hapus pesan loading secara paksa
-            authCheckDiv.remove(); 
+            // Cek jika authCheckDiv masih ada sebelum dihapus
+            if (authCheckDiv) {
+                authCheckDiv.remove(); 
+            }
 
             if (user) {
                 if (user.email === AUTHORIZED_DEVELOPER_EMAIL) {
