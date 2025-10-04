@@ -13,14 +13,7 @@
     </style>
 </head>
 <body class="bg-gray-100 p-4 sm:p-8">
-
-    <!-- PENTING: GANTI EMAIL INI DENGAN EMAIL DEVELOPER ANDA YANG TERDAFTAR DI FIREBASE! -->
-    <script>
-        // JANGAN LUPA GANTI NILAI INI!!!
-        const AUTHORIZED_DEVELOPER_EMAIL = "developer@contoh.com"; 
-    </script>
-    <!-- AKHIR PENTING -->
-
+    
     <div class="max-w-4xl mx-auto">
         <div id="auth-check" class="text-center p-12">
              <p class="text-lg text-gray-600">Memeriksa otentikasi...</p>
@@ -62,13 +55,16 @@
         </div>
     </div>
 
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK & Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-        import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-        // Variabel AUTHORIZED_DEVELOPER_EMAIL sekarang didefinisikan di atas!
+        // ==============================================================================================
+        // KOREKSI UTAMA: Variabel Email Developer HANYA di sini dan WAJIB ada tanda kutip ("")!
+        const AUTHORIZED_DEVELOPER_EMAIL = "jujujuirah112@gmail.com"; 
+        // ==============================================================================================
         
         // Konfigurasi Firebase Anda (dari file yang diunggah)
         const firebaseConfig = {
@@ -243,7 +239,7 @@
             authCheckDiv.classList.add('hidden');
             if (user) {
                 // Pengguna masuk. Cek apakah pengguna ini adalah Developer yang sah
-                if (user.email === jujujuirah112@gmail.com) {
+                if (user.email === AUTHORIZED_DEVELOPER_EMAIL) {
                     // Beri hak akses ke Dashboard
                     loginFormContainer.classList.add('hidden');
                     verificationDashboard.classList.remove('hidden');
