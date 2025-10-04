@@ -1,0 +1,26 @@
+name: Deploy to Firebase Cloud Functions
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deploy_functions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - name: Install Dependencies
+        # Pergi ke folder functions (sesuai firebase.json) dan install
+        run: cd functions && npm install
+      - name: Deploy to Firebase
+        uses: w9jds/firebase-action@master
+        with:
+          action: deploy
+          project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
+          service_account: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+          # Deploy HANYA functions
+          cli_args: functions
