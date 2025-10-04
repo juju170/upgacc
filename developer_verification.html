@@ -10,6 +10,29 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
+        .thumbnail-container {
+            width: 100px; /* Ukuran thumbnail */
+            height: 100px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        .thumbnail-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        /* Style untuk modal (kotak dialog kustom) */
+        .modal {
+            background-color: rgba(0, 0, 0, 0.75);
+            transition: opacity 0.3s ease-out;
+            z-index: 1000;
+        }
+        .modal-content {
+            max-width: 90vw;
+            max-height: 90vh;
+        }
     </style>
 </head>
 <body class="bg-gray-100 p-4 sm:p-8">
@@ -17,7 +40,8 @@
     <!-- PENTING: GANTI EMAIL INI DENGAN EMAIL DEVELOPER ANDA YANG TERDAFTAR DI FIREBASE! -->
     <script>
         // JANGAN LUPA GANTI NILAI INI!!!
-        const AUTHORIZED_DEVELOPER_EMAIL = "jujujuirah112@gmail.com"; // Ganti dengan email Developer Anda!
+        // Ganti dengan email Developer Anda yang sudah terdaftar di Firebase Auth
+        const AUTHORIZED_DEVELOPER_EMAIL = "jujujuirah@gmail.com"; 
     </script>
     <!-- AKHIR PENTING -->
 
@@ -42,7 +66,7 @@
         <!-- Dashboard Verifikasi -->
         <div id="verification-dashboard" class="hidden">
             <h1 class="text-3xl font-bold text-gray-800 mb-6">Pusat Verifikasi Pendaftaran Admin</h1>
-            <p class="text-gray-600 mb-8">Tinjau dokumen bukti dari calon Admin Sekolah.</p>
+            <p class="text-gray-600 mb-8">Tinjau dokumen bukti dari calon Admin Sekolah. Gambar di-cache secara lokal (IndexedDB) untuk menghemat bandwidth.</p>
 
             <div id="pending-list" class="space-y-4">
                 <p id="loading-message" class="text-center text-gray-500">Memuat data verifikasi...</p>
@@ -59,11 +83,20 @@
     <!-- Kotak Notifikasi Global -->
     <div id="alert-container" class="fixed top-5 right-5 z-50 space-y-2"></div>
 
+    <!-- Modal Tampilan Gambar Penuh -->
+    <div id="image-modal" class="modal fixed inset-0 flex items-center justify-center opacity-0 pointer-events-none">
+        <div class="modal-content bg-white p-2 rounded-lg shadow-2xl relative">
+            <button id="close-modal" class="absolute top-2 right-2 text-white bg-black rounded-full w-8 h-8 flex items-center justify-center text-xl font-bold hover:bg-gray-700">&times;</button>
+            <img id="modal-image" src="" alt="Dokumen Bukti" class="max-h-[85vh] max-w-[85vw] object-contain">
+        </div>
+    </div>
+
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
         import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { openDB } from 'https://cdn.jsdelivr.net/npm/idb@7/build/esm/index.js'; // Library idb untuk IndexedDB yang lebih mudah
 
         // Konfigurasi Firebase Anda
         const firebaseConfig = {
@@ -91,7 +124,86 @@
         const loadingMessage = document.getElementById('loading-message');
         const logoutButton = document.getElementById('logout-button');
         const alertContainer = document.getElementById('alert-container');
+        const imageModal = document.getElementById('image-modal');
+        const modalImage = document.getElementById('modal-image');
+        const closeModalButton = document.getElementById('close-modal');
 
+        // =================================================================
+        // IndexedDB SETUP & FUNCTIONS
+        // =================================================================
+        const DB_NAME = 'SchoolVerificationDB';
+        const STORE_NAME = 'imageCache';
+        let dbCache;
+
+        async function openDB() {
+            if (dbCache) return dbCache;
+            dbCache = await openDB(DB_NAME, 1, {
+                upgrade(db) {
+                    // Buat store untuk menyimpan Blob gambar. KeyPath adalah URL gambar.
+                    db.createObjectStore(STORE_NAME);
+                },
+            });
+            return dbCache;
+        }
+        
+        /** Mengambil Blob gambar dari IndexedDB */
+        async function getImage(url) {
+            try {
+                const db = await openDB();
+                return await db.get(STORE_NAME, url);
+            } catch (e) {
+                console.error("Error retrieving image from IndexedDB:", e);
+                return null;
+            }
+        }
+
+        /** Menyimpan Blob gambar ke IndexedDB */
+        async function saveImage(url, blob) {
+            try {
+                const db = await openDB();
+                await db.put(STORE_NAME, blob, url);
+            } catch (e) {
+                console.error("Error saving image to IndexedDB:", e);
+            }
+        }
+
+        /** Mendapatkan gambar (dari cache atau download) dan merendernya */
+        async function renderImageFromDB(imgUrl, elementId) {
+            const imgElement = document.getElementById(elementId);
+            if (!imgElement) return;
+
+            imgElement.src = 'https://placehold.co/100x100/eeeeee/888888?text=Loading...'; // Placeholder
+
+            try {
+                let imageBlob = await getImage(imgUrl);
+                
+                if (imageBlob) {
+                    // 1. Gambar ada di cache! Tampilkan
+                    const imageUrl = URL.createObjectURL(imageBlob);
+                    imgElement.src = imageUrl;
+                    imgElement.alt = "Cached Document";
+                } else {
+                    // 2. Gambar belum ada di cache, download dari Cloudinary
+                    const response = await fetch(imgUrl);
+                    if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
+                    
+                    imageBlob = await response.blob();
+                    await saveImage(imgUrl, imageBlob); // Simpan ke cache
+                    
+                    const imageUrl = URL.createObjectURL(imageBlob);
+                    imgElement.src = imageUrl;
+                    imgElement.alt = "Downloaded Document";
+                }
+            } catch (e) {
+                console.error(`Gagal memuat gambar ${imgUrl}:`, e);
+                imgElement.src = 'https://placehold.co/100x100/ffdddd/990000?text=Error';
+                imgElement.alt = "Failed to load image";
+            }
+        }
+
+        // =================================================================
+        // UI AND FIREBASE FUNCTIONS
+        // =================================================================
 
         // Fungsi Notifikasi Popup
         function alertMessage(message, type = 'success') {
@@ -106,6 +218,133 @@
                 setTimeout(() => alertDiv.remove(), 300);
             }, 5000);
         }
+
+        // FUNGSI UTAMA: MENGUBAH STATUS VERIFIKASI
+        async function updateStatus(userId, action) {
+            const status = action === 'approve' ? 'approved' : 'rejected';
+            const message = status === 'approved' ? 'menyetujui' : 'menolak';
+
+            try {
+                const schoolDocRef = doc(db, "sekolah", userId);
+
+                await updateDoc(schoolDocRef, {
+                    status: status,
+                    verifiedAt: new Date(),
+                    verifiedBy: auth.currentUser.uid 
+                });
+
+                alertMessage(`Berhasil ${message} pendaftaran sekolah!`, 'success');
+            } catch (error) {
+                console.error("Gagal memperbarui status:", error);
+                let errorMessage = `Gagal memperbarui status. Pesan Error: ${error.code || error.message}`;
+
+                if (error.code === 'permission-denied') {
+                    errorMessage = "Gagal: Izin ditolak. Anda HARUS mengganti **Firestore Security Rules** dan menambahkan UID Developer Anda.";
+                }
+
+                alertMessage(errorMessage, 'error');
+            }
+        }
+
+        // FUNGSI UNTUK MEMUAT DATA DASHBOARD
+        function setupDashboard() {
+            // Inisialisasi IndexedDB saat dashboard dimuat
+            openDB().catch(e => alertMessage("Error: IndexedDB tidak didukung oleh browser Anda.", 'error'));
+            
+            loadingMessage.textContent = 'Memuat data...';
+
+            const q = query(collection(db, "sekolah"), where("status", "==", "pending"));
+
+            onSnapshot(q, (snapshot) => {
+                loadingMessage.classList.add('hidden');
+                pendingList.innerHTML = ''; 
+
+                if (snapshot.empty) {
+                    pendingList.innerHTML = '<div class="text-center p-8 bg-white rounded-lg shadow-inner text-gray-500">Tidak ada pendaftaran yang perlu diverifikasi saat ini.</div>';
+                } else {
+                    snapshot.forEach((doc) => {
+                        const data = doc.data();
+                        const userId = doc.id;
+                        
+                        const skKepsekId = `sk-kepsek-${userId}`;
+                        const izinSekolahId = `izin-sekolah-${userId}`;
+
+                        const item = document.createElement('div');
+                        item.className = 'bg-white p-6 rounded-lg shadow-md border-t-4 border-yellow-500 space-y-4';
+                        item.innerHTML = `
+                            <div class="font-bold text-lg text-gray-800">${data.nama_sekolah}</div>
+                            <div class="text-sm text-gray-600">Admin: ${data.nama_admin} (${data.email})</div>
+                            <div class="text-sm text-gray-600 mb-4">Kode Kunci: <span class="font-mono font-semibold text-indigo-600">${data.kode_kunci_rahasia}</span></div>
+                            
+                            <div class="flex space-x-4">
+                                <!-- Thumbnail SK Kepsek -->
+                                <div>
+                                    <p class="text-xs text-gray-500 mb-1">SK Kepsek:</p>
+                                    <div class="thumbnail-container" data-url="${data.url_sk_kepsek}">
+                                        <img id="${skKepsekId}" class="thumbnail-img" src="" alt="SK Kepsek">
+                                    </div>
+                                </div>
+                                <!-- Thumbnail Izin Operasional -->
+                                <div>
+                                    <p class="text-xs text-gray-500 mb-1">Izin Operasional:</p>
+                                    <div class="thumbnail-container" data-url="${data.url_izin_sekolah}">
+                                        <img id="${izinSekolahId}" class="thumbnail-img" src="" alt="Izin Sekolah">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end space-x-3 pt-2">
+                                <button data-id="${userId}" data-action="reject" class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition duration-150">
+                                    Tolak
+                                </button>
+                                <button data-id="${userId}" data-action="approve" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition duration-150">
+                                    Setujui
+                                </button>
+                            </div>
+                        `;
+                        pendingList.appendChild(item);
+
+                        // Panggil fungsi render untuk setiap gambar
+                        renderImageFromDB(data.url_sk_kepsek, skKepsekId);
+                        renderImageFromDB(data.url_izin_sekolah, izinSekolahId);
+                    });
+                }
+            });
+        }
+
+        // Event Listener untuk tombol Approve/Reject
+        pendingList.addEventListener('click', (e) => {
+            const button = e.target.closest('button[data-id][data-action]');
+            if (button) {
+                const userId = button.dataset.id;
+                const action = button.dataset.action;
+                
+                // Menggunakan window.confirm untuk notifikasi kustom
+                if (window.confirm(action === 'approve' ? `Apakah Anda yakin ingin MENYETUJUI pendaftaran ini?` : `Apakah Anda yakin ingin MENOLAK pendaftaran ini?`)) {
+                    updateStatus(userId, action);
+                }
+                return;
+            }
+
+            // Event Listener untuk membuka Modal Gambar
+            const thumbnail = e.target.closest('.thumbnail-container');
+            if (thumbnail) {
+                const url = thumbnail.dataset.url;
+                if (url) {
+                    modalImage.src = url; // Saat ini, modal masih menggunakan URL langsung
+                    imageModal.classList.remove('opacity-0', 'pointer-events-none');
+                    imageModal.classList.add('opacity-100', 'pointer-events-auto');
+                }
+            }
+        });
+
+        // Event Listener Modal
+        closeModalButton.addEventListener('click', () => {
+            imageModal.classList.add('opacity-0', 'pointer-events-none');
+            imageModal.classList.remove('opacity-100', 'pointer-events-auto');
+            modalImage.src = ''; // Bersihkan gambar
+        });
+
 
         // FUNGSI LOGIN DEVELOPER
         loginForm.addEventListener('submit', async (e) => {
@@ -122,7 +361,6 @@
 
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                // onAuthStateChanged akan menangani tampilan dashboard
             } catch (error) {
                 console.error("Login Error:", error);
                 loginErrorDiv.textContent = "Login gagal. Email atau password salah.";
@@ -137,117 +375,22 @@
         });
 
 
-        // FUNGSI UTAMA: MENGUBAH STATUS VERIFIKASI
-        async function updateStatus(userId, action) {
-            const status = action === 'approve' ? 'approved' : 'rejected';
-            const message = status === 'approved' ? 'menyetujui' : 'menolak';
-
-            try {
-                // Dokumen yang akan diubah
-                const schoolDocRef = doc(db, "sekolah", userId);
-
-                // Lakukan pembaruan status
-                await updateDoc(schoolDocRef, {
-                    status: status,
-                    verifiedAt: new Date(),
-                    verifiedBy: auth.currentUser.uid 
-                });
-
-                alertMessage(`Berhasil ${message} pendaftaran sekolah!`, 'success');
-            } catch (error) {
-                // TANGANI ERROR PERMISSION-DENIED
-                console.error("Gagal memperbarui status:", error);
-                let errorMessage = `Gagal memperbarui status. Pesan Error: ${error.code || error.message}`;
-
-                if (error.code === 'permission-denied') {
-                    errorMessage = "Gagal: Izin ditolak. Anda HARUS mengganti **Firestore Security Rules** dan menambahkan UID Developer Anda.";
-                }
-
-                alertMessage(errorMessage, 'error');
-            }
-        }
-
-        // Event Listener untuk tombol Approve/Reject
-        pendingList.addEventListener('click', (e) => {
-            const button = e.target.closest('button[data-id][data-action]');
-            if (!button) return;
-
-            const userId = button.dataset.id;
-            const action = button.dataset.action;
-            
-            // Konfirmasi sebelum melakukan aksi
-            const confirmationMessage = action === 'approve' 
-                ? `Apakah Anda yakin ingin MENYETUJUI pendaftaran ini?`
-                : `Apakah Anda yakin ingin MENOLAK pendaftaran ini?`;
-
-            // Karena kita tidak boleh menggunakan window.confirm, kita buat konfirmasi sederhana:
-            if (confirm(confirmationMessage)) {
-                updateStatus(userId, action);
-            }
-        });
-
-        // FUNGSI UNTUK MEMUAT DATA DASHBOARD
-        function setupDashboard() {
-            loadingMessage.textContent = 'Memuat data...';
-
-            // Query untuk dokumen dengan status 'pending'
-            const q = query(collection(db, "sekolah"), where("status", "==", "pending"));
-
-            onSnapshot(q, (snapshot) => {
-                loadingMessage.classList.add('hidden');
-                pendingList.innerHTML = ''; // Kosongkan daftar
-
-                if (snapshot.empty) {
-                    pendingList.innerHTML = '<div class="text-center p-8 bg-white rounded-lg shadow-inner text-gray-500">Tidak ada pendaftaran yang perlu diverifikasi saat ini.</div>';
-                } else {
-                    snapshot.forEach((doc) => {
-                        const data = doc.data();
-                        const userId = doc.id;
-                        
-                        const item = document.createElement('div');
-                        item.className = 'bg-white p-6 rounded-lg shadow-md border-t-4 border-yellow-500 space-y-4';
-                        item.innerHTML = `
-                            <div class="font-bold text-lg text-gray-800">${data.nama_sekolah}</div>
-                            <div class="text-sm text-gray-600">Admin: ${data.nama_admin} (${data.email})</div>
-                            <div class="text-sm text-gray-600">Kode Kunci: <span class="font-mono font-semibold text-indigo-600">${data.kode_kunci_rahasia}</span></div>
-                            <div class="mt-3 space-x-4">
-                                <a href="${data.url_sk_kepsek}" target="_blank" class="text-sm text-indigo-600 hover:underline">Lihat SK Kepsek</a>
-                                <a href="${data.url_izin_sekolah}" target="_blank" class="text-sm text-indigo-600 hover:underline">Lihat Izin Operasional</a>
-                            </div>
-                            <div class="flex justify-end space-x-3 pt-2">
-                                <button data-id="${userId}" data-action="reject" class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition duration-150">
-                                    Tolak
-                                </button>
-                                <button data-id="${userId}" data-action="approve" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition duration-150">
-                                    Setujui
-                                </button>
-                            </div>
-                        `;
-                        pendingList.appendChild(item);
-                    });
-                }
-            });
-        }
-
         // Cek Status Otentikasi
         onAuthStateChanged(auth, (user) => {
             authCheckDiv.classList.add('hidden');
             if (user) {
-                // Pengguna masuk. Cek apakah pengguna ini adalah Developer yang sah
                 if (user.email === AUTHORIZED_DEVELOPER_EMAIL) {
-                    // Beri hak akses ke Dashboard
                     loginFormContainer.classList.add('hidden');
                     verificationDashboard.classList.remove('hidden');
-                    setupDashboard(); // Mulai memuat data
+                    setupDashboard(); 
                 } else {
-                    // Pengguna masuk tapi bukan Developer
                     alertMessage("Anda bukan Developer/Administrator yang berwenang.", 'error');
                     signOut(auth);
                     loginFormContainer.classList.remove('hidden');
                 }
             } else {
-                // Pengguna tidak masuk. Tampilkan formulir login
                 loginFormContainer.classList.remove('hidden');
+                verificationDashboard.classList.add('hidden');
             }
         });
     </script>
