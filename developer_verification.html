@@ -80,29 +80,31 @@
         // Ganti dengan UID Developer/Super Admin yang berwenang
         const AUTHORIZED_DEVELOPER_UID = "W9ombzh6y0Mj1AAJEFxL53H1YAR2"; 
 
-        // DOM Elements
-        const loginFormContainer = document.getElementById('login-form-container');
-        const verificationDashboard = document.getElementById('verification-dashboard');
-        const adminList = document.getElementById('admin-list');
-        const loginForm = document.getElementById('login-form');
-        const authCheckDiv = document.getElementById('auth-check-status');
-
-        // Modal Elements
-        const modal = document.getElementById('document-modal');
-        const modalImage = document.getElementById('modal-image');
-        const modalCloseButton = document.getElementById('modal-close-button');
-        const modalTitle = document.getElementById('modal-title');
-        const modalDetails = document.getElementById('modal-details');
-        const modalApproveButton = document.getElementById('modal-approve-button');
-        const modalRejectButton = document.getElementById('modal-reject-button');
-        const modalVerificationKey = document.getElementById('modal-verification-key');
-        const modalDataContainer = document.getElementById('modal-data-container');
         let currentAdminDocRef = null; // Untuk menyimpan referensi dokumen admin yang sedang dilihat
 
         // ----------------------------------------------------
-        // FUNGSI UTAMA APP WRAPPER (untuk menghindari 'Illegal return statement')
+        // FUNGSI UTAMA APP WRAPPER 
         // ----------------------------------------------------
         function initApp() {
+            // *** PERBAIKAN: Semua pengambilan DOM Element dipindahkan ke sini ***
+            const loginFormContainer = document.getElementById('login-form-container');
+            const verificationDashboard = document.getElementById('verification-dashboard');
+            const adminList = document.getElementById('admin-list');
+            const loginForm = document.getElementById('login-form');
+            const authCheckDiv = document.getElementById('auth-check-status');
+            const logoutButton = document.getElementById('logout-button');
+
+            // Modal Elements
+            const modal = document.getElementById('document-modal');
+            const modalImage = document.getElementById('modal-image');
+            const modalCloseButton = document.getElementById('modal-close-button');
+            const modalTitle = document.getElementById('modal-title');
+            const modalDetails = document.getElementById('modal-details');
+            const modalApproveButton = document.getElementById('modal-approve-button');
+            const modalRejectButton = document.getElementById('modal-reject-button');
+            const modalVerificationKey = document.getElementById('modal-verification-key');
+            const modalDataContainer = document.getElementById('modal-data-container');
+            
             // ----------------------------------------------------
             // INITIALISASI FIREBASE & AUTENTIKASI
             // ----------------------------------------------------
@@ -339,7 +341,6 @@
             });
 
             // FUNGSI LOGOUT
-            const logoutButton = document.getElementById('logout-button');
             logoutButton.addEventListener('click', async () => {
                 await signOut(auth);
                 alertMessage("Anda telah keluar.", 'success');
@@ -406,6 +407,15 @@
         </svg>
         <p class="mt-4 text-gray-600">Memeriksa status otentikasi...</p>
     </div>
+    
+    <!-- Area Notifikasi Error Konfigurasi -->
+    <div id="config-error" class="hidden fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-75 z-50">
+        <div class="rounded-lg bg-red-100 p-6 shadow-xl max-w-sm mx-auto">
+            <h3 class="text-xl font-bold text-red-800 mb-2">Error Konfigurasi</h3>
+            <p class="text-sm font-medium text-red-800">Variabel lingkungan `__firebase_config` tidak ditemukan. Pastikan Anda menjalankan aplikasi ini di lingkungan yang mendukung Firebase/Canvas.</p>
+        </div>
+    </div>
+
 
     <!-- 1. Form Login Developer (Hidden Awalnya) -->
     <div id="login-form-container" class="hidden flex items-center justify-center min-h-screen">
