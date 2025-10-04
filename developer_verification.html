@@ -76,40 +76,8 @@
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        if (!firebaseConfig) {
-            document.getElementById('config-error').classList.remove('hidden');
-            return;
-        }
-
-        // ----------------------------------------------------
-        // INITIALISASI FIREBASE & AUTENTIKASI
-        // ----------------------------------------------------
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
         
-        // Fungsi untuk autentikasi awal (Custom Token atau Anonim)
-        async function initializeAuth() {
-            try {
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                    console.log("Signed in with Custom Token.");
-                } else {
-                    await signInAnonymously(auth);
-                    console.log("Signed in Anonymously.");
-                }
-            } catch (error) {
-                console.error("Auth Initialization Error:", error);
-            }
-        }
-        
-        // Panggil inisialisasi otentikasi
-        initializeAuth();
-
-
         // Ganti dengan UID Developer/Super Admin yang berwenang
-        // UID ini diambil dari rules Firestore Anda: W9ombzh6y0Mj1AAJEFxL53H1YAR2
         const AUTHORIZED_DEVELOPER_UID = "W9ombzh6y0Mj1AAJEFxL53H1YAR2"; 
 
         // DOM Elements
@@ -131,259 +99,300 @@
         const modalDataContainer = document.getElementById('modal-data-container');
         let currentAdminDocRef = null; // Untuk menyimpan referensi dokumen admin yang sedang dilihat
 
-        // Helper untuk Notifikasi
-        function alertMessage(message, type = 'info') {
-            const container = document.getElementById('notification-container');
-            const color = type === 'success' ? 'bg-green-100 border-green-400 text-green-700' : 
-                          type === 'error' ? 'bg-red-100 border-red-400 text-red-700' :
-                          'bg-blue-100 border-blue-400 text-blue-700';
-            
-            container.innerHTML = `
-                <div class="border px-4 py-3 rounded relative ${color}" role="alert">
-                    <span class="block sm:inline">${message}</span>
-                </div>
-            `;
-            container.classList.remove('hidden');
-            setTimeout(() => {
-                container.classList.add('hidden');
-                container.innerHTML = '';
-            }, 5000);
-        }
-
         // ----------------------------------------------------
-        // FUNGSI UTAMA (Developer Dashboard)
+        // FUNGSI UTAMA APP WRAPPER (untuk menghindari 'Illegal return statement')
         // ----------------------------------------------------
-
-        // 1. Mengambil dan Menampilkan Daftar Admin yang Belum Diverifikasi
-        async function fetchPendingAdmins() {
-            adminList.innerHTML = '<div class="text-center py-4 text-gray-500">Memuat data...</div>';
+        function initApp() {
+            // ----------------------------------------------------
+            // INITIALISASI FIREBASE & AUTENTIKASI
+            // ----------------------------------------------------
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
             
-            try {
-                // Query: Cari dokumen di koleksi 'sekolah' di public data yang status_verifikasi = 'pending'
-                const adminCollectionPath = `/artifacts/${appId}/public/data/sekolah`;
-                const q = query(collection(db, adminCollectionPath), where("status_verifikasi", "==", "pending"));
-                
-                const querySnapshot = await getDocs(q);
-                
-                if (querySnapshot.empty) {
-                    adminList.innerHTML = '<div class="text-center py-8 text-gray-500">Tidak ada pendaftaran Admin yang menunggu verifikasi.</div>';
-                    return;
+            // Fungsi untuk autentikasi awal (Custom Token atau Anonim)
+            async function initializeAuth() {
+                try {
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                        console.log("Signed in with Custom Token.");
+                    } else {
+                        await signInAnonymously(auth);
+                        console.log("Signed in Anonymously.");
+                    }
+                } catch (error) {
+                    console.error("Auth Initialization Error:", error);
                 }
-
-                adminList.innerHTML = ''; // Kosongkan
-                querySnapshot.forEach(doc => {
-                    const data = doc.data();
-                    const docId = doc.id;
-                    
-                    const adminItem = document.createElement('div');
-                    adminItem.className = 'flex items-center justify-between p-4 bg-white shadow-md rounded-lg mb-3 hover:shadow-lg transition duration-200';
-                    adminItem.innerHTML = `
-                        <div>
-                            <p class="text-lg font-semibold text-gray-800">${data.nama_sekolah}</p>
-                            <p class="text-sm text-gray-600">${data.nama_admin} (${data.email})</p>
-                            <p class="text-xs text-gray-500 mt-1">Diajukan pada: ${new Date(data.createdAt.seconds * 1000).toLocaleString()}</p>
-                        </div>
-                        <button data-doc-id="${docId}" data-school-name="${data.nama_sekolah}" data-proof-url="${data.url_bukti_verifikasi}" class="view-details-btn bg-indigo-600 text-white px-3 py-1 rounded-full text-sm hover:bg-indigo-700 transition">
-                            Lihat Detail
-                        </button>
-                    `;
-                    adminList.appendChild(adminItem);
-                });
-
-                // Tambahkan event listener untuk tombol "Lihat Detail"
-                document.querySelectorAll('.view-details-btn').forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        const docId = e.currentTarget.getAttribute('data-doc-id');
-                        openModal(docId);
-                    });
-                });
-
-            } catch (error) {
-                console.error("Error fetching pending admins:", error);
-                adminList.innerHTML = '<div class="text-center py-4 text-red-500">Gagal memuat data. Silakan cek koneksi atau rules Firestore Anda.</div>';
             }
-        }
-
-        // 2. Tampilkan Modal Detail
-        async function openModal(docId) {
-            const adminCollectionPath = `/artifacts/${appId}/public/data/sekolah`;
-            const docRef = doc(db, adminCollectionPath, docId);
-            currentAdminDocRef = docRef;
-
-            try {
-                const docSnap = await getDoc(docRef);
-                if (!docSnap.exists()) {
-                    alertMessage("Dokumen Admin tidak ditemukan.", 'error');
-                    return;
-                }
-                const data = docSnap.data();
+            
+            // Panggil inisialisasi otentikasi
+            initializeAuth();
+            
+            // Helper untuk Notifikasi
+            function alertMessage(message, type = 'info') {
+                const container = document.getElementById('notification-container');
+                const color = type === 'success' ? 'bg-green-100 border-green-400 text-green-700' : 
+                              type === 'error' ? 'bg-red-100 border-red-400 text-red-700' :
+                              'bg-blue-100 border-blue-400 text-blue-700';
                 
-                // Isi Modal
-                modalTitle.textContent = data.nama_sekolah;
-                modalImage.src = data.url_bukti_verifikasi || 'https://placehold.co/600x400/CCCCCC/000000?text=Bukti+Tidak+Tersedia';
-                
-                // Set detail teks
-                modalDetails.innerHTML = `
-                    <p class="text-sm"><strong>Admin:</strong> ${data.nama_admin}</p>
-                    <p class="text-sm"><strong>Email:</strong> ${data.email}</p>
-                    <p class="text-sm"><strong>UID Admin:</strong> <span class="text-xs-tight text-indigo-600 break-all">${data.uid}</span></p>
-                    <p class="text-sm"><strong>Status:</strong> <span class="font-semibold text-yellow-600">${data.status_verifikasi.toUpperCase()}</span></p>
-                    <p class="text-sm"><strong>Waktu Daftar:</strong> ${new Date(data.createdAt.seconds * 1000).toLocaleString()}</p>
-                    <p class="text-sm mt-3"><strong>Keterangan Admin:</strong> ${data.keterangan || 'Tidak ada keterangan.'}</p>
+                container.innerHTML = `
+                    <div class="border px-4 py-3 rounded relative ${color}" role="alert">
+                        <span class="block sm:inline">${message}</span>
+                    </div>
                 `;
-
-                // Tampilkan Kunci Rahasia jika sudah ada (seharusnya belum ada)
-                const secretKey = data.kunci_rahasia || '(Belum Dibuat)';
-                modalVerificationKey.textContent = secretKey;
-                
-                // Set event listener pada tombol persetujuan/penolakan
-                modalApproveButton.onclick = () => handleVerification('approved', data.uid, data.email, data.nama_sekolah);
-                modalRejectButton.onclick = () => handleVerification('rejected');
-
-                modal.classList.remove('hidden');
-            } catch (error) {
-                console.error("Error opening modal:", error);
-                alertMessage("Gagal memuat detail admin.", 'error');
+                container.classList.remove('hidden');
+                setTimeout(() => {
+                    container.classList.add('hidden');
+                    container.innerHTML = '';
+                }, 5000);
             }
-        }
 
-        // 3. Menghasilkan UUID
-        function generateUUID() {
-            // Function untuk menghasilkan UUID v4
-            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-            );
-        }
+            // ----------------------------------------------------
+            // FUNGSI UTAMA (Developer Dashboard)
+            // ----------------------------------------------------
 
-        // 4. Handle Persetujuan atau Penolakan
-        async function handleVerification(status, adminUid, adminEmail, schoolName) {
-            if (!currentAdminDocRef) return;
-            
-            modalDataContainer.classList.add('opacity-50', 'pointer-events-none');
-            
-            try {
-                let updateData = {
-                    status_verifikasi: status,
-                    verifiedAt: new Date()
-                };
-
-                let message = '';
+            // 1. Mengambil dan Menampilkan Daftar Admin yang Belum Diverifikasi
+            async function fetchPendingAdmins() {
+                adminList.innerHTML = '<div class="text-center py-4 text-gray-500">Memuat data...</div>';
                 
-                if (status === 'approved') {
-                    // 1. Generate Kunci Rahasia
-                    const secretKey = generateUUID();
-                    updateData.kunci_rahasia = secretKey;
+                try {
+                    // Query: Cari dokumen di koleksi 'sekolah' di public data yang status_verifikasi = 'pending'
+                    const adminCollectionPath = `/artifacts/${appId}/public/data/sekolah`;
+                    const q = query(collection(db, adminCollectionPath), where("status_verifikasi", "==", "pending"));
                     
-                    // 2. Simpan juga ID Sekolah ke dokumen pengguna Admin di koleksi 'sekolah'
-                    // Ini penting agar Admin tahu ID sekolahnya sendiri (docId)
-                    updateData.id_sekolah = currentAdminDocRef.id;
+                    const querySnapshot = await getDocs(q);
+                    
+                    if (querySnapshot.empty) {
+                        adminList.innerHTML = '<div class="text-center py-8 text-gray-500">Tidak ada pendaftaran Admin yang menunggu verifikasi.</div>';
+                        return;
+                    }
 
-                    message = `Pendaftaran ${schoolName} disetujui. Kunci Rahasia: ${secretKey}`;
-                } else { // rejected
-                    message = `Pendaftaran ${schoolName} ditolak.`;
-                }
+                    adminList.innerHTML = ''; // Kosongkan
+                    querySnapshot.forEach(doc => {
+                        const data = doc.data();
+                        const docId = doc.id;
+                        
+                        const adminItem = document.createElement('div');
+                        adminItem.className = 'flex items-center justify-between p-4 bg-white shadow-md rounded-lg mb-3 hover:shadow-lg transition duration-200';
+                        adminItem.innerHTML = `
+                            <div>
+                                <p class="text-lg font-semibold text-gray-800">${data.nama_sekolah}</p>
+                                <p class="text-sm text-gray-600">${data.nama_admin} (${data.email})</p>
+                                <p class="text-xs text-gray-500 mt-1">Diajukan pada: ${new Date(data.createdAt.seconds * 1000).toLocaleString()}</p>
+                            </div>
+                            <button data-doc-id="${docId}" data-school-name="${data.nama_sekolah}" data-proof-url="${data.url_bukti_verifikasi}" class="view-details-btn bg-indigo-600 text-white px-3 py-1 rounded-full text-sm hover:bg-indigo-700 transition">
+                                Lihat Detail
+                            </button>
+                        `;
+                        adminList.appendChild(adminItem);
+                    });
 
-                // 3. Update Dokumen di Firestore
-                await updateDoc(currentAdminDocRef, updateData);
-                
-                // Tampilkan Kunci Rahasia di modal jika disetujui
-                if (status === 'approved') {
-                    document.getElementById('modal-verification-key').textContent = updateData.kunci_rahasia;
+                    // Tambahkan event listener untuk tombol "Lihat Detail"
+                    document.querySelectorAll('.view-details-btn').forEach(button => {
+                        button.addEventListener('click', (e) => {
+                            const docId = e.currentTarget.getAttribute('data-doc-id');
+                            openModal(docId);
+                        });
+                    });
+
+                } catch (error) {
+                    console.error("Error fetching pending admins:", error);
+                    adminList.innerHTML = '<div class="text-center py-4 text-red-500">Gagal memuat data. Silakan cek koneksi atau rules Firestore Anda.</div>';
                 }
-                
-                alertMessage(message, 'success');
-                modal.classList.add('hidden');
-                fetchPendingAdmins(); // Refresh daftar
-            } catch (error) {
-                console.error("Error updating verification status:", error);
-                alertMessage("Gagal memperbarui status verifikasi. " + (error.message || "Pastikan rules Firestore mengizinkan Developer UID untuk UPDATE."), 'error');
-            } finally {
-                modalDataContainer.classList.remove('opacity-50', 'pointer-events-none');
             }
-        }
 
-        // Event Listener untuk menutup Modal
-        modalCloseButton.addEventListener('click', () => {
-            modal.classList.add('hidden');
-            modalImage.src = ''; // Bersihkan gambar
-            currentAdminDocRef = null;
-        });
+            // 2. Tampilkan Modal Detail
+            async function openModal(docId) {
+                const adminCollectionPath = `/artifacts/${appId}/public/data/sekolah`;
+                const docRef = doc(db, adminCollectionPath, docId);
+                currentAdminDocRef = docRef;
 
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
+                try {
+                    const docSnap = await getDoc(docRef);
+                    if (!docSnap.exists()) {
+                        alertMessage("Dokumen Admin tidak ditemukan.", 'error');
+                        return;
+                    }
+                    const data = docSnap.data();
+                    
+                    // Isi Modal
+                    modalTitle.textContent = data.nama_sekolah;
+                    modalImage.src = data.url_bukti_verifikasi || 'https://placehold.co/600x400/CCCCCC/000000?text=Bukti+Tidak+Tersedia';
+                    
+                    // Set detail teks
+                    modalDetails.innerHTML = `
+                        <p class="text-sm"><strong>Admin:</strong> ${data.nama_admin}</p>
+                        <p class="text-sm"><strong>Email:</strong> ${data.email}</p>
+                        <p class="text-sm"><strong>UID Admin:</strong> <span class="text-xs-tight text-indigo-600 break-all">${data.uid}</span></p>
+                        <p class="text-sm"><strong>Status:</strong> <span class="font-semibold text-yellow-600">${data.status_verifikasi.toUpperCase()}</span></p>
+                        <p class="text-sm"><strong>Waktu Daftar:</strong> ${new Date(data.createdAt.seconds * 1000).toLocaleString()}</p>
+                        <p class="text-sm mt-3"><strong>Keterangan Admin:</strong> ${data.keterangan || 'Tidak ada keterangan.'}</p>
+                    `;
+
+                    // Tampilkan Kunci Rahasia jika sudah ada (seharusnya belum ada)
+                    const secretKey = data.kunci_rahasia || '(Belum Dibuat)';
+                    modalVerificationKey.textContent = secretKey;
+                    
+                    // Set event listener pada tombol persetujuan/penolakan
+                    modalApproveButton.onclick = () => handleVerification('approved', data.uid, data.email, data.nama_sekolah);
+                    modalRejectButton.onclick = () => handleVerification('rejected');
+
+                    modal.classList.remove('hidden');
+                } catch (error) {
+                    console.error("Error opening modal:", error);
+                    alertMessage("Gagal memuat detail admin.", 'error');
+                }
+            }
+
+            // 3. Menghasilkan UUID
+            function generateUUID() {
+                // Function untuk menghasilkan UUID v4
+                return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+                    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+                );
+            }
+
+            // 4. Handle Persetujuan atau Penolakan
+            async function handleVerification(status, adminUid, adminEmail, schoolName) {
+                if (!currentAdminDocRef) return;
+                
+                modalDataContainer.classList.add('opacity-50', 'pointer-events-none');
+                
+                try {
+                    let updateData = {
+                        status_verifikasi: status,
+                        verifiedAt: new Date()
+                    };
+
+                    let message = '';
+                    
+                    if (status === 'approved') {
+                        // 1. Generate Kunci Rahasia
+                        const secretKey = generateUUID();
+                        updateData.kunci_rahasia = secretKey;
+                        
+                        // 2. Simpan juga ID Sekolah ke dokumen pengguna Admin
+                        updateData.id_sekolah = currentAdminDocRef.id;
+
+                        message = `Pendaftaran ${schoolName} disetujui. Kunci Rahasia: ${secretKey}`;
+                    } else { // rejected
+                        message = `Pendaftaran ${schoolName} ditolak.`;
+                    }
+
+                    // 3. Update Dokumen di Firestore
+                    await updateDoc(currentAdminDocRef, updateData);
+                    
+                    // Tampilkan Kunci Rahasia di modal jika disetujui
+                    if (status === 'approved') {
+                        document.getElementById('modal-verification-key').textContent = updateData.kunci_rahasia;
+                    }
+                    
+                    alertMessage(message, 'success');
+                    modal.classList.add('hidden');
+                    fetchPendingAdmins(); // Refresh daftar
+                } catch (error) {
+                    console.error("Error updating verification status:", error);
+                    alertMessage("Gagal memperbarui status verifikasi. " + (error.message || "Pastikan rules Firestore mengizinkan Developer UID untuk UPDATE."), 'error');
+                } finally {
+                    modalDataContainer.classList.remove('opacity-50', 'pointer-events-none');
+                }
+            }
+
+            // Event Listener untuk menutup Modal
+            modalCloseButton.addEventListener('click', () => {
                 modal.classList.add('hidden');
-                modalImage.src = ''; 
+                modalImage.src = ''; // Bersihkan gambar
                 currentAdminDocRef = null;
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                    modalImage.src = ''; 
+                    currentAdminDocRef = null;
+                }
+            });
+
+            // ----------------------------------------------------
+            // AUTENTIKASI DEVELOPER
+            // ----------------------------------------------------
+            
+            // FUNGSI LOGIN
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                const loginButton = document.getElementById('login-button');
+
+                loginButton.textContent = 'Memproses...';
+                loginButton.disabled = true;
+
+                try {
+                    await signInWithEmailAndPassword(auth, email, password);
+                    // onAuthStateChanged akan dipanggil setelah login berhasil
+                } catch (error) {
+                    console.error("Login Error:", error);
+                    alertMessage("Gagal masuk: " + (error.message || "Email atau password salah."), 'error');
+                    loginButton.textContent = 'Masuk sebagai Developer';
+                    loginButton.disabled = false;
+                }
+            });
+
+            // FUNGSI LOGOUT
+            const logoutButton = document.getElementById('logout-button');
+            logoutButton.addEventListener('click', async () => {
+                await signOut(auth);
+                alertMessage("Anda telah keluar.", 'success');
+            });
+
+            // Setup Dashboard setelah Developer terautentikasi
+            function setupDashboard() {
+                document.getElementById('dev-uid-display').textContent = AUTHORIZED_DEVELOPER_UID;
+                fetchPendingAdmins();
             }
-        });
+
+
+            // Cek Status Otentikasi
+            onAuthStateChanged(auth, (user) => {
+                console.log('onAuthStateChanged Fired. User:', user ? user.email : 'null');
+                // Hapus pesan loading secara paksa
+                if (authCheckDiv) {
+                    authCheckDiv.remove(); 
+                }
+
+                if (user) {
+                    // *** PERUBAHAN KRITIS: Cek menggunakan UID Super Admin ***
+                    if (user.uid === AUTHORIZED_DEVELOPER_UID) { 
+                        console.log('User is Authorized Developer.');
+                        loginFormContainer.classList.add('hidden');
+                        verificationDashboard.classList.remove('hidden');
+                        setupDashboard(); 
+                    } else {
+                        console.log('User logged in but not authorized. Signing out.');
+                        alertMessage("Anda bukan Developer/Administrator yang berwenang.", 'error');
+                        // Langsung sign out jika bukan Developer yang berhak
+                        signOut(auth); 
+                        // onAuthStateChanged akan dipanggil lagi dengan user=null
+                    }
+                } else {
+                    console.log('User is null. Showing login form.');
+                    verificationDashboard.classList.add('hidden');
+                    loginFormContainer.classList.remove('hidden');
+                }
+            });
+        } // END initApp function
 
         // ----------------------------------------------------
-        // AUTENTIKASI DEVELOPER
+        // INITIAL CALL (Periksa Config)
         // ----------------------------------------------------
         
-        // FUNGSI LOGIN
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            const loginButton = document.getElementById('login-button');
-
-            loginButton.textContent = 'Memproses...';
-            loginButton.disabled = true;
-
-            try {
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                // onAuthStateChanged akan dipanggil setelah login berhasil
-            } catch (error) {
-                console.error("Login Error:", error);
-                alertMessage("Gagal masuk: " + (error.message || "Email atau password salah."), 'error');
-                loginButton.textContent = 'Masuk sebagai Developer';
-                loginButton.disabled = false;
-            }
-        });
-
-        // FUNGSI LOGOUT
-        const logoutButton = document.getElementById('logout-button');
-        logoutButton.addEventListener('click', async () => {
-            await signOut(auth);
-            alertMessage("Anda telah keluar.", 'success');
-        });
-
-        // Setup Dashboard setelah Developer terautentikasi
-        function setupDashboard() {
-            document.getElementById('dev-uid-display').textContent = AUTHORIZED_DEVELOPER_UID;
-            fetchPendingAdmins();
+        // HANYA jalankan aplikasi jika konfigurasi Firebase tersedia.
+        if (!firebaseConfig) {
+            document.getElementById('config-error').classList.remove('hidden');
+        } else {
+            initApp();
         }
 
-
-        // Cek Status Otentikasi
-        onAuthStateChanged(auth, (user) => {
-            console.log('onAuthStateChanged Fired. User:', user ? user.email : 'null');
-            // Hapus pesan loading secara paksa
-            if (authCheckDiv) {
-                authCheckDiv.remove(); 
-            }
-
-            if (user) {
-                // *** PERUBAHAN KRITIS: Cek menggunakan UID Super Admin ***
-                if (user.uid === AUTHORIZED_DEVELOPER_UID) { 
-                    console.log('User is Authorized Developer.');
-                    loginFormContainer.classList.add('hidden');
-                    verificationDashboard.classList.remove('hidden');
-                    setupDashboard(); 
-                } else {
-                    console.log('User logged in but not authorized. Signing out.');
-                    alertMessage("Anda bukan Developer/Administrator yang berwenang.", 'error');
-                    // Langsung sign out jika bukan Developer yang berhak
-                    signOut(auth); 
-                    // onAuthStateChanged akan dipanggil lagi dengan user=null
-                }
-            } else {
-                console.log('User is null. Showing login form.');
-                verificationDashboard.classList.add('hidden');
-                loginFormContainer.classList.remove('hidden');
-            }
-        });
     </script>
 
     <!-- UI Halaman -->
@@ -406,11 +415,11 @@
             <form id="login-form" class="space-y-6">
                 <div>
                     <label for="login-email" class="sr-only">Email address</label>
-                    <input id="login-email" name="email" type="email" autocomplete="email" required class="relative block w-full appearance-none rounded-lg border border-gray-300 px-3 py-3 placeholder-gray-500 text-gray-900 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" placeholder="Email Developer" value="super.admin@example.com">
+                    <input id="login-email" name="email" type="email" autocomplete="email" required class="relative block w-full appearance-none rounded-lg border border-gray-300 px-3 py-3 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" placeholder="Email Developer" value="super.admin@example.com">
                 </div>
                 <div>
                     <label for="login-password" class="sr-only">Password</label>
-                    <input id="login-password" name="password" type="password" autocomplete="current-password" required class="relative block w-full appearance-none rounded-lg border border-gray-300 px-3 py-3 placeholder-gray-500 text-gray-900 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" placeholder="Password" value="123456">
+                    <input id="login-password" name="password" type="password" autocomplete="current-password" required class="relative block w-full appearance-none rounded-lg border border-gray-300 px-3 py-3 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" placeholder="Password" value="123456">
                 </div>
                 <div>
                     <button type="submit" id="login-button" class="group relative flex w-full justify-center rounded-lg border border-transparent bg-indigo-600 py-3 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition">
