@@ -14,59 +14,58 @@
 </head>
 <body class="bg-gray-100 p-4 sm:p-8">
     
+    <!-- PENTING: GANTI EMAIL INI DENGAN EMAIL DEVELOPER ANDA YANG TERDAFTAR DI FIREBASE! -->
+    <script>
+        // JANGAN LUPA GANTI NILAI INI!!!
+        const AUTHORIZED_DEVELOPER_EMAIL = "jujuirah112@gmail.com"; // Ganti dengan email Developer Anda!
+    </script>
+    <!-- AKHIR PENTING -->
+
     <div class="max-w-4xl mx-auto">
         <div id="auth-check" class="text-center p-12">
              <p class="text-lg text-gray-600">Memeriksa otentikasi...</p>
         </div>
         
+        <!-- Formulir Login Developer -->
+        <div id="login-form-container" class="hidden mt-8 space-y-6 bg-white p-8 rounded-xl shadow-lg w-full max-w-sm mx-auto">
+            <h2 class="text-2xl font-bold text-gray-800 text-center">Login Developer</h2>
+            <form id="login-form">
+                <input id="login-email" type="email" required class="relative block w-full appearance-none rounded-md border border-gray-300 px-3 py-3 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm mb-4" placeholder="Email Developer">
+                <input id="login-password" type="password" required class="relative block w-full appearance-none rounded-md border border-gray-300 px-3 py-3 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm mb-6" placeholder="Password">
+                <button type="submit" class="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-3 px-4 text-sm font-medium text-white hover:bg-indigo-700">
+                    Masuk
+                </button>
+                <div id="login-error" class="hidden text-red-500 text-center mt-3 text-sm"></div>
+            </form>
+        </div>
+
+        <!-- Dashboard Verifikasi -->
         <div id="verification-dashboard" class="hidden">
             <h1 class="text-3xl font-bold text-gray-800 mb-6">Pusat Verifikasi Pendaftaran Admin</h1>
             <p class="text-gray-600 mb-8">Tinjau dokumen bukti dari calon Admin Sekolah.</p>
 
-            <div id="pending-list" class="space-y-6">
-                <p id="loading-message" class="text-center text-lg text-indigo-600 font-semibold">Memuat daftar verifikasi...</p>
+            <div id="pending-list" class="space-y-4">
+                <p id="loading-message" class="text-center text-gray-500">Memuat data verifikasi...</p>
+                <!-- Daftar item pending akan dimuat di sini -->
             </div>
-
-            <div id="no-pending-message" class="hidden bg-white p-6 rounded-xl shadow-md text-center">
-                <p class="text-xl text-gray-600">🎉 Tidak ada pendaftar yang tertunda saat ini!</p>
-                <button id="logout-button-2" class="mt-4 px-4 py-2 text-sm font-medium rounded-lg text-red-600 border border-red-300 hover:bg-red-50 transition">
-                    Keluar (Logout)
-                </button>
-            </div>
-             <div class="mt-8 text-center" id="logout-container">
-                 <button id="logout-button" class="px-6 py-2 text-sm font-medium rounded-lg text-red-600 border border-red-300 hover:bg-red-50 transition">
-                    Keluar (Logout)
-                </button>
-            </div>
+            
+            <button id="logout-button" class="mt-8 px-4 py-2 bg-red-500 text-white font-semibold rounded-lg shadow-md hover:bg-red-600 transition duration-150">
+                Keluar
+            </button>
         </div>
-
-        <!-- Halaman Login Developer/Peringatan Akses -->
-        <div id="login-form-container" class="hidden w-full max-w-sm mx-auto mt-10 p-8 bg-white rounded-xl shadow-lg">
-            <h2 class="text-2xl font-bold text-gray-800 text-center mb-6">Login Developer</h2>
-            <p class="text-sm text-red-500 mb-4 text-center">Akses terbatas untuk Administrator Pusat.</p>
-            <form id="developer-login-form" class="space-y-4">
-                <input type="email" id="dev-email" placeholder="Email Developer" required class="block w-full px-3 py-2 border border-gray-300 rounded-md">
-                <input type="password" id="dev-password" placeholder="Password" required class="block w-full px-3 py-2 border border-gray-300 rounded-md">
-                <p id="login-error" class="text-sm text-red-600 hidden"></p>
-                <button type="submit" id="login-button" class="w-full bg-indigo-600 text-white py-2 rounded-md font-semibold hover:bg-indigo-700 transition">
-                    Masuk
-                </button>
-            </form>
-        </div>
+        
     </div>
+    
+    <!-- Kotak Notifikasi Global -->
+    <div id="alert-container" class="fixed top-5 right-5 z-50 space-y-2"></div>
 
-    <!-- Firebase SDK & Logic -->
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
         import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-        // ==============================================================================================
-        // KOREKSI UTAMA: Variabel Email Developer HANYA di sini dan WAJIB ada tanda kutip ("")!
-        const AUTHORIZED_DEVELOPER_EMAIL = "jujujuirah112@gmail.com"; 
-        // ==============================================================================================
-        
-        // Konfigurasi Firebase Anda (dari file yang diunggah)
+        // Konfigurasi Firebase Anda
         const firebaseConfig = {
             apiKey: "AIzaSyA6zXOerKvdPJTmBp5Y6R2yFsy98xLDsKc",
             authDomain: "forumwidara.firebaseapp.com",
@@ -77,150 +76,146 @@
             appId: "1:216895655168:web:59255f600fc3b3b44eb7e5",
             measurementId: "G-GVD3VJ2HZN"
         };
-        
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Elemen UI
+        // UI Elements
         const authCheckDiv = document.getElementById('auth-check');
         const loginFormContainer = document.getElementById('login-form-container');
         const verificationDashboard = document.getElementById('verification-dashboard');
+        const loginForm = document.getElementById('login-form');
+        const loginErrorDiv = document.getElementById('login-error');
         const pendingList = document.getElementById('pending-list');
         const loadingMessage = document.getElementById('loading-message');
-        const noPendingMessage = document.getElementById('no-pending-message');
-        const devLoginForm = document.getElementById('developer-login-form');
-        const loginError = document.getElementById('login-error');
-        const loginButton = document.getElementById('login-button');
         const logoutButton = document.getElementById('logout-button');
-        const logoutButton2 = document.getElementById('logout-button-2');
-        const logoutContainer = document.getElementById('logout-container');
+        const alertContainer = document.getElementById('alert-container');
 
-        // Fungsi Logout
-        function handleLogout() {
-            signOut(auth).then(() => {
-                window.location.reload(); 
-            }).catch((error) => {
-                console.error("Logout Gagal:", error);
-            });
+
+        // Fungsi Notifikasi Popup
+        function alertMessage(message, type = 'success') {
+            const colorClass = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `p-4 rounded-lg shadow-xl text-white ${colorClass} transition-opacity duration-300 z-50`;
+            alertDiv.textContent = message;
+            alertContainer.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.classList.add('opacity-0');
+                setTimeout(() => alertDiv.remove(), 300);
+            }, 5000);
         }
-        
-        logoutButton.addEventListener('click', handleLogout);
-        logoutButton2.addEventListener('click', handleLogout);
-        
-        // Fungsi Otentikasi
-        devLoginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            loginButton.disabled = true;
-            loginButton.textContent = 'Memproses...';
-            loginError.classList.add('hidden');
 
-            const email = document.getElementById('dev-email').value;
-            const password = document.getElementById('dev-password').value;
+        // FUNGSI LOGIN DEVELOPER
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            loginErrorDiv.classList.add('hidden');
+            
+            if (email !== AUTHORIZED_DEVELOPER_EMAIL) {
+                loginErrorDiv.textContent = "Email tidak terdaftar sebagai Developer.";
+                loginErrorDiv.classList.remove('hidden');
+                return;
+            }
 
             try {
                 await signInWithEmailAndPassword(auth, email, password);
                 // onAuthStateChanged akan menangani tampilan dashboard
             } catch (error) {
-                console.error("Login Error:", error.code, error.message);
-                loginError.textContent = "Gagal login. Email atau Password salah.";
-                loginError.classList.remove('hidden');
-                loginButton.disabled = false;
-                loginButton.textContent = 'Masuk';
+                console.error("Login Error:", error);
+                loginErrorDiv.textContent = "Login gagal. Email atau password salah.";
+                loginErrorDiv.classList.remove('hidden');
             }
         });
-
-        // Fungsi Update Status
-        async function updateAdminStatus(userId, newStatus) {
-            try {
-                const docRef = doc(db, "sekolah", userId);
-                await updateDoc(docRef, {
-                    status: newStatus,
-                    verifiedAt: newStatus === 'approved' ? new Date() : null,
-                    verifierId: auth.currentUser.uid 
-                });
-                alertMessage(`Pendaftar ${userId} telah ${newStatus === 'approved' ? 'Disetujui' : 'Ditolak'}!`, newStatus === 'approved' ? 'bg-green-500' : 'bg-red-500');
-            } catch (error) {
-                console.error("Gagal memperbarui status:", error);
-                alertMessage("Gagal memperbarui status. Coba lagi.", 'bg-red-500');
-            }
-        }
         
-        function alertMessage(message, colorClass) {
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `fixed top-5 right-5 p-4 rounded-lg shadow-xl text-white ${colorClass} transition-opacity duration-300 z-50`;
-            alertDiv.textContent = message;
-            document.body.appendChild(alertDiv);
-            setTimeout(() => {
-                alertDiv.classList.add('opacity-0');
-                setTimeout(() => alertDiv.remove(), 300);
-            }, 3000);
+        // FUNGSI LOGOUT
+        logoutButton.addEventListener('click', async () => {
+            await signOut(auth);
+            alertMessage("Anda telah keluar.", 'success');
+        });
+
+
+        // FUNGSI UTAMA: MENGUBAH STATUS VERIFIKASI
+        async function updateStatus(userId, action) {
+            const status = action === 'approve' ? 'approved' : 'rejected';
+            const message = status === 'approved' ? 'menyetujui' : 'menolak';
+
+            try {
+                // Dokumen yang akan diubah
+                const schoolDocRef = doc(db, "sekolah", userId);
+
+                // Lakukan pembaruan status
+                await updateDoc(schoolDocRef, {
+                    status: status,
+                    verifiedAt: new Date(),
+                    verifiedBy: auth.currentUser.uid 
+                });
+
+                alertMessage(`Berhasil ${message} pendaftaran sekolah!`, 'success');
+            } catch (error) {
+                // TANGANI ERROR PERMISSION-DENIED
+                console.error("Gagal memperbarui status:", error);
+                let errorMessage = `Gagal memperbarui status. Pesan Error: ${error.code || error.message}`;
+
+                if (error.code === 'permission-denied') {
+                    errorMessage = "Gagal: Izin ditolak. Anda HARUS mengganti **Firestore Security Rules** dan menambahkan UID Developer Anda.";
+                }
+
+                alertMessage(errorMessage, 'error');
+            }
         }
 
-        // Listener Global untuk Tombol Aksi
+        // Event Listener untuk tombol Approve/Reject
         pendingList.addEventListener('click', (e) => {
-            const target = e.target;
-            if (target.dataset.action === 'approve') {
-                updateAdminStatus(target.dataset.id, 'approved');
-            } else if (target.dataset.action === 'reject') {
-                updateAdminStatus(target.dataset.id, 'rejected');
+            const button = e.target.closest('button[data-id][data-action]');
+            if (!button) return;
+
+            const userId = button.dataset.id;
+            const action = button.dataset.action;
+            
+            // Konfirmasi sebelum melakukan aksi
+            const confirmationMessage = action === 'approve' 
+                ? `Apakah Anda yakin ingin MENYETUJUI pendaftaran ini?`
+                : `Apakah Anda yakin ingin MENOLAK pendaftaran ini?`;
+
+            // Karena kita tidak boleh menggunakan window.confirm, kita buat konfirmasi sederhana:
+            if (confirm(confirmationMessage)) {
+                updateStatus(userId, action);
             }
         });
 
-        // Setup Real-time Data Listener
+        // FUNGSI UNTUK MEMUAT DATA DASHBOARD
         function setupDashboard() {
+            loadingMessage.textContent = 'Memuat data...';
+
+            // Query untuk dokumen dengan status 'pending'
             const q = query(collection(db, "sekolah"), where("status", "==", "pending"));
 
             onSnapshot(q, (snapshot) => {
                 loadingMessage.classList.add('hidden');
-                pendingList.innerHTML = ''; // Bersihkan daftar lama
+                pendingList.innerHTML = ''; // Kosongkan daftar
 
                 if (snapshot.empty) {
-                    noPendingMessage.classList.remove('hidden');
-                    logoutContainer.classList.add('hidden');
+                    pendingList.innerHTML = '<div class="text-center p-8 bg-white rounded-lg shadow-inner text-gray-500">Tidak ada pendaftaran yang perlu diverifikasi saat ini.</div>';
                 } else {
-                    noPendingMessage.classList.add('hidden');
-                    logoutContainer.classList.remove('hidden');
-                    
                     snapshot.forEach((doc) => {
                         const data = doc.data();
                         const userId = doc.id;
                         
                         const item = document.createElement('div');
-                        item.className = 'bg-white p-6 rounded-xl shadow-md border-l-4 border-yellow-500';
+                        item.className = 'bg-white p-6 rounded-lg shadow-md border-t-4 border-yellow-500 space-y-4';
                         item.innerHTML = `
-                            <div class="flex justify-between items-start mb-4">
-                                <div>
-                                    <h3 class="text-xl font-bold text-gray-900">${data.nama_sekolah}</h3>
-                                    <p class="text-sm text-gray-500">Admin: ${data.nama_admin} (${data.email})</p>
-                                    <p class="text-xs text-gray-400 mt-1">Kode Kunci: <span class="font-mono text-gray-600">${data.kode_kunci_rahasia}</span></p>
-                                </div>
-                                <span class="px-3 py-1 text-sm font-semibold text-yellow-800 bg-yellow-100 rounded-full">PENDING</span>
+                            <div class="font-bold text-lg text-gray-800">${data.nama_sekolah}</div>
+                            <div class="text-sm text-gray-600">Admin: ${data.nama_admin} (${data.email})</div>
+                            <div class="text-sm text-gray-600">Kode Kunci: <span class="font-mono font-semibold text-indigo-600">${data.kode_kunci_rahasia}</span></div>
+                            <div class="mt-3 space-x-4">
+                                <a href="${data.url_sk_kepsek}" target="_blank" class="text-sm text-indigo-600 hover:underline">Lihat SK Kepsek</a>
+                                <a href="${data.url_izin_sekolah}" target="_blank" class="text-sm text-indigo-600 hover:underline">Lihat Izin Operasional</a>
                             </div>
-
-                            <div class="grid md:grid-cols-2 gap-4 border-t pt-4 mt-4">
-                                <!-- Bukti 1: SK Kepala Sekolah -->
-                                <div>
-                                    <p class="font-medium text-gray-700 mb-2">1. Bukti SK Kepala Sekolah:</p>
-                                    <a href="${data.url_sk_kepsek}" target="_blank" class="block w-full h-40 bg-gray-200 rounded-lg overflow-hidden border border-gray-300 hover:opacity-80 transition duration-150">
-                                        <img src="${data.url_sk_kepsek}" onerror="this.onerror=null;this.src='https://placehold.co/400x160/cccccc/333333?text=Klik+untuk+Lihat+Dokumen';" class="w-full h-full object-cover">
-                                    </a>
-                                    <a href="${data.url_sk_kepsek}" target="_blank" class="mt-2 text-xs text-blue-600 hover:underline block truncate" title="${data.url_sk_kepsek}">Lihat URL Asli</a>
-                                </div>
-
-                                <!-- Bukti 2: Izin Sekolah -->
-                                <div>
-                                    <p class="font-medium text-gray-700 mb-2">2. Bukti Izin Operasional Sekolah:</p>
-                                    <a href="${data.url_izin_sekolah}" target="_blank" class="block w-full h-40 bg-gray-200 rounded-lg overflow-hidden border border-gray-300 hover:opacity-80 transition duration-150">
-                                        <img src="${data.url_izin_sekolah}" onerror="this.onerror=null;this.src='https://placehold.co/400x160/cccccc/333333?text=Klik+untuk+Lihat+Dokumen';" class="w-full h-full object-cover">
-                                    </a>
-                                    <a href="${data.url_izin_sekolah}" target="_blank" class="mt-2 text-xs text-blue-600 hover:underline block truncate" title="${data.url_izin_sekolah}">Lihat URL Asli</a>
-                                </div>
-                            </div>
-                            
-                            <!-- Tombol Aksi -->
-                            <div class="mt-6 flex justify-end space-x-3">
-                                <button data-id="${userId}" data-action="reject" class="px-4 py-2 bg-red-500 text-white font-semibold rounded-lg shadow-md hover:bg-red-600 transition duration-150">
+                            <div class="flex justify-end space-x-3 pt-2">
+                                <button data-id="${userId}" data-action="reject" class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition duration-150">
                                     Tolak
                                 </button>
                                 <button data-id="${userId}" data-action="approve" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition duration-150">
@@ -246,7 +241,7 @@
                     setupDashboard(); // Mulai memuat data
                 } else {
                     // Pengguna masuk tapi bukan Developer
-                    alertMessage("Anda bukan Developer/Administrator yang berwenang.", 'bg-red-500');
+                    alertMessage("Anda bukan Developer/Administrator yang berwenang.", 'error');
                     signOut(auth);
                     loginFormContainer.classList.remove('hidden');
                 }
