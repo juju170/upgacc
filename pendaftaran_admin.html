@@ -52,15 +52,16 @@
                 </form>
             </div>
             <div id="success-message-container" class="hidden text-center bg-white p-8 rounded-xl shadow-lg">
-                <h3 class="text-2xl font-bold text-green-600">Pendaftaran Berhasil!</h3>
-                <p class="mt-4 text-gray-700">Akun admin sekolah Anda telah berhasil dibuat. Langkah selanjutnya adalah membagikan **Kode Kunci Rahasia** di bawah ini kepada para guru di sekolah Anda agar mereka bisa mendaftar.</p>
+                <h3 class="text-2xl font-bold text-green-600">Pendaftaran Diterima!</h3>
+                <!-- DIUBAH: Pesan sukses diubah untuk menginformasikan tentang proses verifikasi -->
+                <p class="mt-4 text-gray-700">Akun Anda akan aktif setelah diverifikasi oleh administrator pusat (biasanya dalam 1x24 jam). Setelah disetujui, Anda dapat login dan mulai menggunakan kode kunci rahasia di bawah ini.</p>
                 <div class="mt-6 bg-gray-100 p-4 rounded-lg border border-dashed">
                     <p class="text-gray-500 text-sm">Kode Kunci Rahasia Anda:</p>
                     <p id="secret-key" class="text-2xl font-mono font-bold text-indigo-600 break-all"></p>
                 </div>
                 <button id="copy-key-button" class="mt-4 inline-flex items-center rounded-md border border-transparent bg-gray-600 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700">Salin Kode</button>
                 <p id="copy-status" class="text-sm text-green-500 mt-2 h-4"></p>
-                <a href="login.html" class="mt-8 block w-full rounded-md border border-transparent bg-blue-600 py-3 px-4 text-sm font-medium text-white hover:bg-blue-700">Lanjut ke Halaman Login</a>
+                <a href="login.html" class="mt-8 block w-full rounded-md border border-transparent bg-blue-600 py-3 px-4 text-sm font-medium text-white hover:bg-blue-700">Kembali ke Halaman Login</a>
             </div>
         </div>
     </div>
@@ -69,7 +70,6 @@
         import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
         import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-        // TODO: Ganti dengan konfigurasi Firebase proyek Anda
         const firebaseConfig = {
             apiKey: "AIzaSyA6zXOerKvdPJTmBp5Y6R2yFsy98xLDsKc",
   authDomain: "forumwidara.firebaseapp.com",
@@ -88,7 +88,6 @@
         const errorNotification = document.getElementById('error-notification');
         const errorMessage = document.getElementById('error-message');
         
-        // Fungsi untuk generate UUID sederhana
         function generateUUID() {
             return 'xxxx-xxxx-xxxx'.replace(/[xy]/g, function(c) {
                 var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -106,25 +105,23 @@
             errorNotification.classList.add('hidden');
 
             try {
-                // 1. Buat pengguna di Firebase Authentication
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
-                // 2. Buat Kode Kunci Rahasia
                 const secretKey = `${generateUUID()}-${generateUUID()}`;
 
-                // 3. Simpan data sekolah di Firestore menggunakan UID pengguna sebagai ID Dokumen
+                // DIUBAH: Menambahkan field status: 'pending' saat data admin baru disimpan
                 await setDoc(doc(db, "sekolah", user.uid), {
                     nama_sekolah: schoolName,
                     nama_admin: adminName,
                     email: email,
                     kode_kunci_rahasia: secretKey,
-                    createdAt: new Date()
+                    createdAt: new Date(),
+                    status: "pending" // <-- Status default untuk persetujuan manual
                 });
 
-                console.log("Admin berhasil didaftarkan!");
+                console.log("Admin berhasil didaftarkan dengan status 'pending'.");
                 
-                // Tampilkan pesan sukses
                 document.getElementById('registration-form-container').classList.add('hidden');
                 document.getElementById('secret-key').textContent = secretKey;
                 document.getElementById('success-message-container').classList.remove('hidden');
@@ -136,7 +133,6 @@
             }
         });
 
-        // Logika untuk menyalin kode
         const copyBtn = document.getElementById('copy-key-button');
         const copyStatus = document.getElementById('copy-status');
         copyBtn.addEventListener('click', () => {
