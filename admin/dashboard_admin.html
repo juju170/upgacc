@@ -244,60 +244,89 @@
         /**
          * Menginisialisasi otentikasi, tampilan user, dan logika spesifik dashboard.
          */
-        async function initializeDashboardLogic() {
-            // 1. Inisialisasi Auth
-            try {
-                if (auth) {
-                    const userDisplay = document.getElementById('user-display');
-                    const logoutBtn = document.getElementById('logout-btn');
-                    
-                    if (initialAuthToken) {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
+        // Ganti fungsi initializeDashboardLogic() yang ada
+async function initializeDashboardLogic() {
+    
+    // Pastikan variabel-variabel ada sebelum digunakan
+    const userDisplay = document.getElementById('user-display');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const initialAuthToken = new URLSearchParams(window.location.search).get('auth');
 
-                    onAuthStateChanged(auth, (user) => {
-                        document.getElementById('loading-overlay').classList.add('hidden');
-                        if (user) {
-                            const userId = user.uid;
-                            userDisplay.textContent = `User ID: ${userId.substring(0, 8)}...`;
-                        } else {
-                            userDisplay.textContent = 'Guest User';
-                        }
-                    });
+    try {
+        if (auth) {
+            
+            // 1. Coba Otentikasi
+            if (initialAuthToken) {
+                // Mencoba sign-in dengan token dari URL
+                await signInWithCustomToken(auth, initialAuthToken);
+            } else {
+                // Jika tidak ada token, coba sign-in Anonymous (sesuai logika asli Anda)
+                await signInAnonymously(auth);
+            }
 
-                    // 2. Logika Logout (Dipertahankan dari file asli)
-                    logoutBtn.addEventListener('click', () => {
-                        signOut(auth).then(() => {
-                            console.log('Logout berhasil.');
-                            window.location.href = '../login.html';
-                        }).catch((error) => {
-                            console.error('Logout gagal:', error);
-                        });
-                    });
-
-                    // 3. Logika Copy Key (Dipertahankan dari file asli)
-                    const copyBtnDash = document.getElementById('copy-key-button-dash');
-                    const copyStatusDash = document.getElementById('copy-status-dash');
-                    copyBtnDash.addEventListener('click', () => {
-                        const secretKey = document.getElementById('secret-key-display').textContent;
-                        
-                        navigator.clipboard.writeText(secretKey)
-                            .then(() => {
-                                copyStatusDash.textContent = 'Kode berhasil disalin!';
-                                setTimeout(() => { copyStatusDash.textContent = '' }, 2000);
-                            })
-                            .catch(err => {
-                                console.error("Gagal menyalin menggunakan Clipboard API:", err);
-                                copyStatusDash.textContent = 'Gagal menyalin. Salin manual!';
-                                setTimeout(() => { copyStatusDash.textContent = '' }, 3000);
-                            });
-                    });
+            // Listener untuk memperbarui UI saat status berubah
+            // (Listener ini tetap penting untuk otentikasi berkelanjutan, tapi BUKAN untuk menghilangkan loading awal)
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    const userId = user.uid;
+                    userDisplay.textContent = `User ID: ${userId.substring(0, 8)}...`;
+                } else {
+                    userDisplay.textContent = 'Guest/Signed Out';
+                    // Opsional: Redirect ke login jika sudah sign-out
+                    // window.location.href = '../login.html';
                 }
-            } catch (e) {
-                 document.getElementById('loading-overlay').classList.add('hidden');
-                 console.error("Kesalahan saat inisialisasi otentikasi:", e);
+            });
+
+            // 2. Logika Logout dan Copy Key
+            // Dipindahkan ke dalam try agar hanya diinisialisasi jika Auth objek tersedia
+            
+            const logoutBtn = document.getElementById('logout-btn');
+            logoutBtn.addEventListener('click', () => {
+                signOut(auth).then(() => {
+                    console.log('Logout berhasil.');
+                    window.location.href = '../login.html';
+                }).catch((error) => {
+                    console.error('Logout gagal:', error);
+                });
+            });
+
+            const copyBtnDash = document.getElementById('copy-key-button-dash');
+            // ... (Kode Copy Key yang sudah ada di file Anda) ...
+            if (copyBtnDash) {
+                const copyStatusDash = document.getElementById('copy-status-dash');
+                copyBtnDash.addEventListener('click', () => {
+                    const secretKey = document.getElementById('secret-key-display').textContent;
+                    
+                    navigator.clipboard.writeText(secretKey)
+                        .then(() => {
+                            copyStatusDash.textContent = 'Kode berhasil disalin!';
+                            setTimeout(() => { copyStatusDash.textContent = '' }, 2000);
+                        })
+                        .catch(err => {
+                            console.error("Gagal menyalin menggunakan Clipboard API:", err);
+                            copyStatusDash.textContent = 'Gagal menyalin. Salin manual!';
+                            setTimeout(() => { copyStatusDash.textContent = '' }, 3000);
+                        });
+                });
+            }
+
+        } else {
+            userDisplay.textContent = 'Firebase Auth Error';
+        }
+        
+    } catch (e) {
+         // Blok ini menangkap error inisialisasi otentikasi (misal: token tidak valid)
+         console.error("Kesalahan saat inisialisasi otentikasi:", e);
+         userDisplay.textContent = 'Error Auth';
+         
+    } finally {
+        // *** BAGIAN PENTING: Selalu sembunyikan overlay setelah TRY atau CATCH selesai ***
+        if (loadingOverlay) {
+            loadingOverlay.classList.add('hidden');
+        }
+    }
+}        
+        console.error("Kesalahan saat inisialisasi otentikasi:", e);
                  document.getElementById('user-display').textContent = 'Error Auth';
             }
         }
