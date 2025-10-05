@@ -46,7 +46,14 @@
     }
     #docPreviewViewer {
       max-width: 100%; max-height: 80vh; 
-      object-fit: contain; /* Agar gambar tidak terpotong */
+      object-fit: contain; 
+    }
+    #docPreviewImage {
+        max-width: 80vw; 
+        max-height: 80vh; 
+        object-fit: contain; 
+        display: block; /* Memastikan gambar berada di tengah */
+        margin: auto;
     }
   </style>
 </head>
@@ -63,16 +70,16 @@
 
   <div id="errorMsg" class="hidden mt-4 p-4 bg-red-100 text-red-700 border border-red-400 rounded-lg"></div>
 
-  <!-- Developer Login Modal -->
+  <!-- Developer Login Modal (Fixed: Must be hidden on success) -->
   <div id="devLoginModal" class="hidden">
     <div class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full">
       <h3 class="text-xl font-bold mb-4 text-red-700">Akses Dibatasi</h3>
       <div id="devLoginMsg" class="text-sm text-gray-700 mb-3">Anda harus login sebagai Developer UID yang disyaratkan: **W9ombzh6y0Mj1AAJEFxL53H1YAR2**</div>
       <label class="block mb-3">Email
-        <input id="devEmail" type="email" placeholder="Email Developer" class="rounded-lg">
+        <input id="devEmail" type="email" placeholder="Email Developer" class="rounded-lg p-2 border w-full">
       </label>
       <label class="block mb-4">Password
-        <input id="devPass" type="password" placeholder="Password Developer" class="rounded-lg">
+        <input id="devPass" type="password" placeholder="Password Developer" class="rounded-lg p-2 border w-full">
       </label>
       <button id="devLoginBtn" class="w-full bg-red-600 text-white p-2 rounded-lg font-semibold hover:bg-red-700">Login Developer</button>
     </div>
@@ -81,7 +88,7 @@
   <!-- Document Preview Modal -->
   <div id="docPreviewModal" style="display: none;">
     <div id="docPreviewContent">
-      <span id="docPreviewClose">X</span>
+      <span id="docPreviewClose" class="shadow-xl">X</span>
       <div id="docPreviewViewer" class="bg-gray-100 p-2 rounded-lg"></div>
     </div>
   </div>
@@ -155,6 +162,8 @@ onAuthStateChanged(auth, (user) => {
     if (user && user.uid === DEVELOPER_UID) {
         currentUserId = user.uid;
         statusEl.innerHTML = `<span class="text-green-600 font-bold">Authenticated as Developer: ${DEVELOPER_UID}</span>`;
+        // FIX: Sembunyikan modal login jika user terautentikasi dengan benar
+        devLoginModal.style.display = 'none';
         devLoginModal.classList.add('hidden');
         fetchVerificationData();
     } else {
@@ -179,8 +188,10 @@ devLoginBtn.addEventListener('click', async () => {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         
         if (userCredential.user.uid === DEVELOPER_UID) {
-            // onAuthStateChanged akan menangani UI setelah login berhasil
-            devLoginMsg.textContent = 'Login Berhasil. Memuat Dashboard...';
+            // FIX: Langsung sembunyikan modal setelah berhasil
+            devLoginModal.style.display = 'none';
+            devLoginModal.classList.add('hidden');
+            // onAuthStateChanged akan menangani pemuatan data
         } else {
             await auth.signOut();
             devLoginMsg.innerHTML = `<span class="text-red-700">Gagal: UID tidak cocok.</span>`;
@@ -212,15 +223,15 @@ function showDocumentPreview(url, title) {
     let content;
     const isPdf = url.includes('.pdf') || url.includes('/pdf/');
     
-    // Perbaikan: gunakan transformasi Cloudinary untuk optimasi bandwidth saat menampilkan gambar
+    // Cloudinary transformation untuk optimasi bandwidth saat menampilkan gambar/dokumen
     const optimizedUrl = url.replace('/upload/', '/upload/q_auto,f_auto,w_800/');
 
     if (isPdf) {
         // Gunakan iframe untuk PDF
-        content = `<iframe src="${optimizedUrl}" class="w-full h-full" style="width: 80vw; height: 80vh; border: none;"></iframe>`;
+        content = `<iframe src="${optimizedUrl}" title="${title}" style="width: 80vw; height: 80vh; border: none; display: block;"></iframe>`;
     } else {
         // Gunakan tag img untuk gambar dengan batas ukuran
-        content = `<img src="${optimizedUrl}" alt="${title}" id="docPreviewImage" style="max-width: 80vw; max-height: 80vh;" class="object-contain mx-auto">`;
+        content = `<img src="${optimizedUrl}" alt="${title}" id="docPreviewImage">`;
     }
 
     docPreviewViewer.innerHTML = content;
@@ -229,9 +240,6 @@ function showDocumentPreview(url, title) {
 
 // 3. Fungsi Pengambilan Data
 function fetchVerificationData() {
-    // Karena data yang diambil adalah dokumen kecil dari Firestore (hanya link), 
-    // IndexedDB tidak diperlukan untuk optimasi bandwidth pada data ini.
-    // Fokus pada onSnapshot untuk real-time.
     const q = query(collection(db, VERIFICATION_COLLECTION_PATH));
 
     onSnapshot(q, (snapshot) => {
@@ -272,7 +280,7 @@ function createCard(docId, data) {
         <p><strong>Kepala:</strong> ${escapeHtml(data.nama_kepala)}</p>
         <p><strong>Email:</strong> ${escapeHtml(data.email_admin)}</p>
         <p><strong>Kode Sekolah:</strong> ${escapeHtml(data.kode_sekolah)}</p>
-        <p class="text-xs text-gray-500 mt-2">Daftar: ${data.created_at ? new Date(data.created_at.seconds * 1000).toLocaleString() : 'N/A'}</p>
+        <p class="text-xs text-gray-500 mt-2">Daftar: ${data.created_at && data.created_at.seconds ? new Date(data.created_at.seconds * 1000).toLocaleString() : 'N/A'}</p>
 
         <div class="flex flex-wrap gap-2 mt-4 text-sm">
             <button data-url="${escapeHtml(data.url_sk_pengangkatan)}" data-title="SK Pengangkatan" class="preview-doc-btn info">Preview SK</button>
@@ -301,6 +309,7 @@ function createCard(docId, data) {
 
     // Aksi Verifikasi
     approveBtn.addEventListener('click', async () => {
+        // IMPORTANT: Ganti confirm() dengan modal UI jika ini adalah aplikasi produksi
         if (!confirm('Yakin ingin menandai pendaftaran ini sebagai TERVERIFIKASI?')) return;
         
         try {
@@ -325,6 +334,7 @@ function createCard(docId, data) {
 
     // Aksi Hapus/Tolak
     deleteBtn.addEventListener('click', async () => {
+        // IMPORTANT: Ganti confirm() dengan modal UI jika ini adalah aplikasi produksi
         if (!confirm('Yakin ingin MENGHAPUS dokumen pendaftaran ini? Tindakan ini permanen.')) return;
         try {
             const docRef = doc(db, VERIFICATION_COLLECTION_PATH, docId);
@@ -338,7 +348,15 @@ function createCard(docId, data) {
     return card;
 }
 
-function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": "&#39;" }[c])); }
+function escapeHtml(s) { 
+    return String(s).replace(/[&<>"']/g, c => ({ 
+        '&': '&amp;', 
+        '<': '&lt;', 
+        '>': '&gt;', 
+        '"': '&quot;', 
+        "'": '&#39;' 
+    }[c])); 
+}
 </script>
 </body>
 </html>
