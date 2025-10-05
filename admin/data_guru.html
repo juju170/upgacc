@@ -11,10 +11,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+ <style>
         body {
             font-family: 'Inter', sans-serif;
         }
-        /* Styling untuk scrollbar sidebar sekarang dipindah ke main_admin.js atau CSS global jika perlu */
+        /* Styling untuk modal (bisa dihapus jika sudah ada di Tailwind) */
         .modal {
             transition: opacity 0.25s ease;
         }
@@ -22,27 +23,31 @@
 </head>
 <body class="bg-gray-100">
 
-    <div class="flex h-screen bg-gray-100">
-        <!-- 
-        PERUBAHAN 1: Sidebar yang ditulis langsung (hardcoded) dihapus.
-        Digantikan dengan div container ini, yang akan diisi secara dinamis oleh main_admin.js
-        -->
-        <div id="sidebar-container"></div>
+  <div id="loading-overlay" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+    <div class="text-center">
+      <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z"></path>
+      </svg>
+      <p class="text-sm text-gray-600 mt-3">Memuat data...</p>
+    </div>
+  </div>
 
+  <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-30 hidden z-30 transition-opacity duration-300"></div>
+
+    <div class="flex h-screen bg-gray-100">
+        <div id="sidebar-container"></div>
         <!-- Main content -->
         <div class="flex flex-col flex-1 overflow-y-auto">
-            <header class="h-16 bg-white shadow-md flex items-center justify-between px-6 sticky top-0 z-10">
+              <header class="h-16 bg-white shadow-md flex items-center justify-between px-6 sticky top-0 z-50">
                 <button id="sidebar-toggle" class="md:hidden text-gray-600">
                     <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
                 </button>
                 <div class="flex items-center">
-                    <span class="text-lg font-semibold text-gray-700">Admin Area</span>
+                    <span class="text-lg font-semibold text-gray-700">Manajemen Guru</span>
                 </div>
-                <div class="flex items-center">
-                    <a href="../login.html" class="text-sm font-medium text-gray-600 hover:text-red-500">Logout</a>
-                </div>
-            </header>
-            
+                <button id="logout-btn" class="text-sm font-medium text-gray-600 hover:text-red-500">Logout</button>
+            </header>            
             <main class="p-6 sm:p-10 space-y-10">
                 <!-- Hero Section -->
                 <section>
@@ -166,12 +171,47 @@
             </div>
         </div>
     </div>
+        <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        // import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"; // Tidak perlu untuk halaman ini
 
-    <!-- 
-    PERUBAHAN 2: Seluruh blok <script>...</script> dihapus dari sini.
-    Cukup panggil file main_admin.js yang akan mengurus semuanya.
-    -->
+        // *PASTIKAN* Menggunakan konfigurasi Firebase yang SAMA dengan dashboard_admin.html
+        const firebaseConfig = {
+            apiKey: "AIzaSyA6zXOerKvdPJTmBp5Y6R2yFsy98xLDsKc",
+            authDomain: "forumwidara.firebaseapp.com",
+            projectId: "forumwidara",
+            storageBucket: "forumwidara.appspot.com",
+            messagingSenderId: "216895655168",
+            appId: "1:216895655168:web:59255f600fc3b3b44eb7e5",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        // const db = getFirestore(app); // Tidak perlu untuk halaman ini
+
+        const logoutBtn = document.getElementById("logout-btn");
+        const loadingOverlay = document.getElementById("loading-overlay");
+        
+        // Logika Logout
+        logoutBtn.addEventListener("click", async () => {
+          await signOut(auth);
+          window.location.href = "../login.html";
+        });
+
+        // Cek Status Login
+        onAuthStateChanged(auth, (user) => {
+          if (!user) { 
+            window.location.href = "../login.html"; 
+            return; 
+          }
+          // Sembunyikan loading setelah otentikasi selesai
+          loadingOverlay.classList.add("hidden");
+          
+          // Di sini Anda bisa menambahkan kode untuk memuat data guru dari Firestore
+        });
+    </script>
+    
     <script src="./main_admin.js"></script>
 </body>
 </html>
-
