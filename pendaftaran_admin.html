@@ -11,12 +11,14 @@
     input, textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;margin-top:6px;box-sizing:border-box}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .file-row{display:flex;gap:12px;align-items:center;margin-top:8px}
-    button{margin-top:12px;padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:700}
+    button{margin-top:12px;padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:700;transition:background 0.2s, box-shadow 0.2s}
+    button:hover:not(:disabled){box-shadow:0 4px 10px rgba(37, 99, 235, 0.3)}
+    button:disabled{opacity:0.6;cursor:not-allowed}
     .primary{background:#2563eb;color:#fff}
     .muted{background:#eef2ff;color:#223}
     .meta{color:#555;font-size:13px;margin-top:6px}
-    .success{color:#14532d;background:#ecfdf5;padding:10px;border-radius:8px}
-    .error{color:#7f1d1d;background:#fff1f2;padding:10px;border-radius:8px}
+    .success{color:#14532d;background:#ecfdf5;padding:10px;border-radius:8px;font-weight:600}
+    .error{color:#7f1d1d;background:#fff1f2;padding:10px;border-radius:8px;font-weight:600}
     .copy-row{display:flex;gap:8px;align-items:center;margin-top:8px}
     pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow:auto}
   </style>
@@ -75,40 +77,65 @@
     </label>
 
     <div>
-      <button type="submit" class="primary">Daftar & Buat Kode Sekolah</button>
+      <button type="submit" class="primary" id="submitBtn">Daftar & Buat Kode Sekolah</button>
       <button type="button" id="signInExisting" class="muted">Saya sudah punya akun — Login</button>
     </div>
 
     <div id="msg" style="margin-top:12px"></div>
   </form>
 
+  <div id="loginModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:100; align-items:center; justify-content:center;">
+    <div style="background:#fff; padding:20px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.2); max-width:400px; width:90%">
+      <h3 style="margin-top:0">Login Admin Sekolah</h3>
+      <div id="loginMsg" class="meta"></div>
+      <label>Email
+        <input id="loginEmail" type="email" placeholder="email@example.com">
+      </label>
+      <label>Password
+        <input id="loginPassword" type="password" placeholder="******">
+      </label>
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px">
+        <button id="closeLogin" type="button" class="muted">Batal</button>
+        <button id="doLogin" type="button" class="primary">Login</button>
+      </div>
+    </div>
+  </div>
+
   <div id="result" style="margin-top:18px; display:none; max-width:860px"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc, serverTimestamp, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
+// Ganti konfigurasi ini dengan konfigurasi Firebase Anda yang sebenarnya
 const firebaseConfig = {
   apiKey: "AIzaSyA6zXOerKvdPJTmBp5Y6R2yFsy98xLDsKc",
   authDomain: "forumwidara.firebaseapp.com",
   databaseURL: "https://forumwidara-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "forumwidara",
-  storageBucket: "forumwidara.firebasestorage.app",
+  storageBucket: "forumwidara.appspot.com", // Mengubah ini ke bucket storage untuk upload
   messagingSenderId: "216895655168",
   appId: "1:216895655168:web:59255f600fc3b3b44eb7e5",
   measurementId: "G-GVD3VJ2HZN"
 };
-const CLOUDINARY_CONFIG = { cloud_name: "dgqg7w1p3", upload_preset: "sekolah_unsigned" };
+const CLOUDINARY_CONFIG = { cloud_name: "dgqg7w1p3", upload_preset: "sekolah_unsigned" }; // Cloudinary masih digunakan
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+// const storage = getStorage(app); // Menggunakan Cloudinary, jadi Firebase Storage dinonaktifkan
 
 const form = document.getElementById('regForm');
 const msg = document.getElementById('msg');
 const result = document.getElementById('result');
 const signInExisting = document.getElementById('signInExisting');
+const submitBtn = document.getElementById('submitBtn');
+const loginModal = document.getElementById('loginModal');
+const doLogin = document.getElementById('doLogin');
+const closeLogin = document.getElementById('closeLogin');
+const loginMsg = document.getElementById('loginMsg');
 
 function showMsg(text, type='info'){
   if(!text){ msg.innerHTML=''; return; }
@@ -117,6 +144,7 @@ function showMsg(text, type='info'){
   else msg.innerHTML = `<div class="meta">${escapeHtml(text)}</div>`;
 }
 function escapeHtml(s){return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]));}
+
 function uuidv4(){
   try{
     return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c/4).toString(16));
@@ -125,22 +153,45 @@ function uuidv4(){
   }
 }
 
-signInExisting.addEventListener('click', async ()=>{
-  const email = prompt('Masukkan email:'); if(!email) return;
-  const password = prompt('Masukkan password:'); if(!password) return;
-  showMsg('Mencoba login...','info');
+// --- Login Modal Logic ---
+signInExisting.addEventListener('click', ()=>{
+  loginModal.style.display = 'flex';
+  loginMsg.textContent = 'Masukkan kredensial akun admin yang sudah terdaftar.';
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPassword').value = '';
+});
+closeLogin.addEventListener('click', ()=> {
+  loginModal.style.display = 'none';
+});
+
+doLogin.addEventListener('click', async ()=>{
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if(!email || !password) { loginMsg.textContent = 'Email dan password wajib diisi.'; return; }
+
+  loginMsg.textContent = 'Mencoba login...';
+  doLogin.disabled = true;
   try{
     await signInWithEmailAndPassword(auth, email, password);
-    showMsg('Berhasil login. Jika akun sudah terdaftar sebagai kepala sekolah, data tampil di halaman admin.','ok');
+    loginMsg.textContent = 'Berhasil login.';
+    loginModal.style.display = 'none';
+    showMsg('Berhasil login. Anda dapat melanjutkan ke halaman admin atau dashboard.','ok');
   }catch(err){
-    console.error(err); showMsg('Gagal login: '+(err.message||err.code),'err');
+    console.error(err);
+    loginMsg.innerHTML = `<span style="color:#7f1d1d">Gagal login: ${err.message || err.code}</span>`;
+  } finally {
+    doLogin.disabled = false;
   }
 });
+// --- End Login Modal Logic ---
+
 
 form.addEventListener('submit', async (ev)=>{
   ev.preventDefault();
+  submitBtn.disabled = true;
   showMsg('Memproses pendaftaran...');
   result.style.display='none';
+  
   const nama_sekolah = document.getElementById('nama_sekolah').value.trim();
   const alamat = document.getElementById('alamat').value.trim();
   const nama_kepala = document.getElementById('nama_kepala').value.trim();
@@ -150,23 +201,34 @@ form.addEventListener('submit', async (ev)=>{
   const fileSk = document.getElementById('file_sk').files[0];
   const fileBukti = document.getElementById('file_bukti').files[0];
 
-  if(!nama_sekolah||!nama_kepala||!email||!password||!fileSk||!fileBukti){ showMsg('Mohon lengkapi semua isian dan unggah kedua file.','err'); return; }
-  if(password.length < 6){ showMsg('Password minimal 6 karakter.','err'); return; }
+  if(!nama_sekolah||!nama_kepala||!email||!password||!fileSk||!fileBukti){ 
+    showMsg('Mohon lengkapi semua isian dan unggah kedua file.','err');
+    submitBtn.disabled = false;
+    return;
+  }
+  if(password.length < 6){ 
+    showMsg('Password minimal 6 karakter.','err');
+    submitBtn.disabled = false;
+    return;
+  }
 
+  let user = null;
+  let kode_sekolah = null;
   try{
+    // 1. BUAT AKUN ADMIN
     showMsg('Membuat akun Firebase...');
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+    user = userCredential.user;
     const uid = user.uid;
-    const kode_sekolah = uuidv4();
+    kode_sekolah = uuidv4();
 
-    // upload ke Cloudinary (SK)
+    // 2. UNGGAH FILE KE CLOUDINARY
     showMsg('Mengunggah SK ke Cloudinary...');
     const urlSk = await uploadToCloudinary(fileSk, `sekolah/${uid}/sk_${Date.now()}`);
     showMsg('Mengunggah bukti pendirian ke Cloudinary...');
     const urlBukti = await uploadToCloudinary(fileBukti, `sekolah/${uid}/bukti_${Date.now()}`);
 
-    // buat object data
+    // 3. SIAPKAN DATA
     const data = {
       uid_admin: uid,
       nama_sekolah,
@@ -174,71 +236,94 @@ form.addEventListener('submit', async (ev)=>{
       nama_kepala,
       email_admin: email,
       no_hp: no_hp || null,
-      foto_sk_pengangkatan: urlSk,
-      foto_bukti_pendirian: urlBukti,
+      url_sk_pengangkatan: urlSk, // Ganti nama field untuk kejelasan
+      url_bukti_pendirian: urlBukti, // Ganti nama field untuk kejelasan
       kode_sekolah,
       status_verifikasi: 'pending',
-      created_at: serverTimestamp()
+      created_at: serverTimestamp(),
+      updated_at: serverTimestamp()
     };
 
-    // simpan ke /sekolah/{uid}
+    // 4. SIMPAN KE FIREBASE (KOLEKSI MASTER)
+    // Ini harus berhasil karena aturan /sekolah/{uid} mengizinkan create jika UID cocok.
     showMsg('Menyimpan data master ke /sekolah/' + uid + ' ...');
     await setDoc(doc(db, 'sekolah', uid), data);
 
-    // simpan juga ke /artifacts/forumwidara/public/data/sekolah/{uid}
+    // 5. SIMPAN KE FIREBASE (KOLEKSI VERIFIKASI)
+    // Menggunakan addDoc untuk membuat ID dokumen acak di koleksi verifikasi.
+    // Ini memastikan operasi 'create' murni yang diizinkan oleh rules /artifacts/{appId}/public/data/sekolah/{docId}.
     showMsg('Menyimpan salinan ke artifacts untuk verifikasi developer...');
-    await setDoc(doc(db, 'artifacts', 'forumwidara', 'public', 'data', 'sekolah', uid), Object.assign({}, data, { source: 'admin_signup' }));
+    const verifRef = collection(db, 'artifacts', 'forumwidara', 'public', 'data', 'sekolah');
+    await addDoc(verifRef, Object.assign({}, data, { source: 'admin_signup', original_uid: uid }));
 
+    // 6. TAMPILKAN HASIL SUKSES
     showMsg('Pendaftaran berhasil — simpan kode sekolah dan bagikan ke guru.','ok');
-
+    
     result.style.display='block';
     result.innerHTML = `
-      <div class="success">Akun admin berhasil dibuat. Dokumen disimpan.</div>
+      <div class="success">
+        Akun admin berhasil dibuat dan dokumen pendaftaran telah dikirim untuk diverifikasi.
+      </div>
       <p style="margin-top:8px"><strong>Kode Sekolah (UUID)</strong></p>
       <div class="copy-row">
         <input id="kodeField" type="text" value="${escapeHtml(kode_sekolah)}" readonly style="padding:8px;border-radius:8px;border:1px solid #ddd;width:420px">
         <button id="copyBtn" class="muted">Salin</button>
       </div>
-      <p class="meta">Bagikan kode ini kepada guru agar mereka dapat mendaftar ke sekolah yang sama.</p>
-      <h4 style="margin-top:10px">Preview Data</h4>
+      <p class="meta">Bagikan kode ini kepada guru agar mereka dapat mendaftar ke sekolah yang sama. Status verifikasi dapat dipantau di halaman admin Anda.</p>
+      <h4 style="margin-top:10px">Preview Data Pendaftaran</h4>
       <pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>
     `;
 
-    document.getElementById('copyBtn').addEventListener('click', async ()=>{
-      try{ await navigator.clipboard.writeText(kode_sekolah); alert('Kode sekolah disalin ke clipboard.'); }
-      catch(e){ prompt('Salin manual kode sekolah ini:', kode_sekolah); }
+    document.getElementById('copyBtn').addEventListener('click', ()=>{
+      const kodeField = document.getElementById('kodeField');
+      kodeField.select();
+      document.execCommand('copy');
+      document.getElementById('copyBtn').textContent = 'Tersalin!';
+      setTimeout(()=>document.getElementById('copyBtn').textContent = 'Salin', 2000);
     });
 
   }catch(err){
     console.error('Register error:', err);
-    if(err.code === 'auth/email-already-in-use' || /email.*already/.test(err.message || '')) {
-      showMsg('Email sudah terdaftar. Jika Anda sudah punya akun, silakan gunakan tombol "Saya sudah punya akun — Login".','err');
-    } else {
-      showMsg('Terjadi kesalahan: ' + (err.message || err.code || String(err)),'err');
+    let errorMessage = 'Terjadi kesalahan tidak terduga: ' + (err.message || err.code || String(err));
+    
+    if(err.code === 'auth/email-already-in-use') {
+      errorMessage = 'Email sudah terdaftar. Silakan gunakan tombol "Saya sudah punya akun — Login" di bawah.';
+    } else if (err.code === 'storage/unauthorized') {
+      errorMessage = 'Gagal mengunggah file. Periksa Cloudinary Config atau Firebase Storage Rules Anda.';
     }
+    
+    // Opsional: Hapus akun yang baru dibuat jika pendaftaran data ke Firestore gagal
+    if(user && auth.currentUser.uid === user.uid) {
+        // Ini kompleks untuk dilakukan dengan aman di klien, jadi kita tampilkan error saja
+        console.warn("Pendaftaran data gagal, akun admin baru berhasil dibuat. Pengguna harus menghapus/mendaftar ulang.");
+    }
+
+    showMsg(errorMessage,'err');
+    
+  } finally {
+    submitBtn.disabled = false;
   }
 });
 
 async function uploadToCloudinary(file, publicId){
-  // unsigned upload to Cloudinary, with auto compression
+  // Menggunakan fetch untuk upload ke Cloudinary (seperti kode Anda sebelumnya)
+  // Tidak ada perubahan signifikan di sini, Cloudinary harus dikonfigurasi dengan benar
   const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloud_name}/upload`;
   const fd = new FormData();
   fd.append('file', file);
   fd.append('upload_preset', CLOUDINARY_CONFIG.upload_preset);
   fd.append('folder', publicId.split('/').slice(0,1).join('/') || 'sekolah');
-  // transformation param (quality auto, auto format)
   fd.append('transformation', JSON.stringify([{ quality: "auto" }, { fetch_format: "auto" }]));
-  // allow unsigned
+  
   const res = await fetch(url, { method:'POST', body: fd });
   if(!res.ok){
     const txt = await res.text();
-    throw new Error('Cloudinary upload failed: ' + res.status + ' ' + txt);
+    throw new Error(`Cloudinary upload failed (${res.status}): ${txt.substring(0, 100)}...`);
   }
   const data = await res.json();
   return data.secure_url;
 }
-
-function escapeHtml(s){return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]));}
 </script>
 </body>
 </html>
+
