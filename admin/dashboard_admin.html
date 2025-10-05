@@ -55,7 +55,7 @@
             <main class="p-6">
                 <h1 class="text-3xl font-extrabold text-gray-900 mb-6">Dashboard Admin</h1>
                 
-                <!-- Section: Informasi Sekolah (Diperbaiki di sini) -->
+                <!-- Section: Informasi Sekolah -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                     <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg border-l-4 border-blue-600">
                         <h2 class="text-2xl font-semibold text-gray-800 mb-4">Informasi Sekolah</h2>
@@ -63,13 +63,13 @@
                         <p class="text-sm text-gray-500 mb-2">Nama Sekolah:</p>
                         <p id="school-name-display" class="text-xl font-bold text-blue-600 mb-4">Memuat...</p>
                         
-                        <!-- FIX: Elemen untuk menampilkan UID/Kode Unik -->
+                        <!-- Elemen untuk menampilkan UID/Kode Unik -->
                         <p class="text-sm text-gray-500 mb-2">Kode Unik Admin (UID Sekolah):</p>
                         <p id="school-id-display" class="text-lg font-mono bg-gray-50 text-gray-700 p-2 rounded-lg break-all mb-4">Memuat...</p>
                         
                         <p class="text-sm text-gray-500 mb-2 mt-4">Kunci Rahasia Aplikasi (API Key):</p>
                         <div class="flex items-center space-x-2">
-                            <span id="secret-key-display" class="text-lg font-mono bg-yellow-50 text-yellow-800 p-2 rounded-lg rounded-r-none select-none">***********</span>
+                            <span id="secret-key-display" class="text-lg font-mono bg-yellow-50 text-yellow-800 p-2 rounded-lg rounded-r-none select-none">Memuat...</span>
                             <button id="copy-key-button-dash" class="text-sm font-medium bg-blue-100 text-blue-700 p-2 rounded-lg rounded-l-none hover:bg-blue-200 transition duration-150">
                                 Salin
                             </button>
@@ -85,7 +85,6 @@
                                 <span class="text-gray-600">Total Guru Terdaftar:</span>
                                 <span id="total-guru" class="text-2xl font-bold text-green-600">0</span>
                             </div>
-                            <!-- Tambahkan statistik lain di sini (misal: siswa, kelas) -->
                             <div class="flex justify-between items-center border-b pb-2">
                                 <span class="text-gray-600">Status Verifikasi:</span>
                                 <span id="verification-status" class="text-base font-bold text-green-500">Terverifikasi</span>
@@ -105,8 +104,10 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, collection, query, where, getDocs, setLogLevel } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // setLogLevel('debug'); // Aktifkan log untuk debugging permissions
+        
         // --- GLOBAL VARIABLES (MANDATORY FOR CANVAS ENVIRONMENT) ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
@@ -126,7 +127,7 @@
 
         const loadingOverlay = document.getElementById('loading-overlay');
         const appContent = document.getElementById('app-content');
-        const schoolIdDisplay = document.getElementById('school-id-display'); // Element untuk menampilkan UID
+        const schoolIdDisplay = document.getElementById('school-id-display'); 
 
         // Inisialisasi Auth
         if (initialAuthToken) {
@@ -154,14 +155,15 @@
                 if (!docSnap.exists() || docSnap.data().status_verifikasi !== 'terverifikasi') {
                     // Cek keamanan ganda: Jika dokumen tidak ada atau belum terverifikasi, paksa logout.
                     await signOut(auth);
-                    alert("Akses ditolak: Akun belum terverifikasi atau data sekolah hilang.");
+                    // Gunakan modal/pesan kustom jika alert() tidak diizinkan, tapi untuk error fatal ini, alert() adalah yang tercepat.
+                    alert("Akses ditolak: Akun belum terverifikasi atau data sekolah hilang. Mengarahkan kembali ke login.");
                     window.location.href = '../login.html';
                     return;
                 }
                 
                 const adminData = docSnap.data();
                 
-                // 2. TAMPILKAN UID ADMIN (FIXED)
+                // 2. TAMPILKAN UID ADMIN
                 schoolIdDisplay.textContent = schoolId;
                 
                 // 3. Tampilkan data lainnya
@@ -180,7 +182,18 @@
 
             } catch(error) {
                 console.error("Gagal memuat data Admin:", error);
-                alert("Gagal memuat data dashboard. Error: " + error.message);
+                
+                let errorMsg = "Gagal memuat data dashboard.";
+                
+                // FIX Permissions: Memberi panduan spesifik jika ada error permission-denied
+                if (error.code === 'permission-denied') {
+                    errorMsg = "Akses Ditolak (Firestore): Akun Anda telah terverifikasi, tetapi terjadi error 'missing or insufficient permissions'. \n\nMohon periksa FIREBASE SECURITY RULES Anda. Aturan Anda harus mengizinkan pengguna yang sudah login (request.auth != null) untuk membaca koleksi 'sekolah' (hanya dokumen mereka) dan melakukan query pada koleksi 'guru'.";
+                } else {
+                    errorMsg += " Error: " + error.message;
+                }
+                
+                // Tampilkan pesan error dan paksa logout
+                alert(errorMsg);
                 await signOut(auth);
                 window.location.href = '../login.html';
             }
@@ -202,35 +215,19 @@
         const copyBtnDash = document.getElementById('copy-key-button-dash');
         const copyStatusDash = document.getElementById('copy-status-dash');
         copyBtnDash.addEventListener('click', () => {
-            // Menggunakan innerText untuk menyalin teks yang terlihat (bintang)
             const secretKey = document.getElementById('secret-key-display').textContent;
             
-            // Mengambil Kunci Rahasia asli dari data (jika tidak mau menyalin bintang-bintang)
-            // Karena ini dashboard admin, kita asumsikan kunci sudah tampil penuh.
-            // Jika Anda menyembunyikan kuncinya di UI, Anda perlu mengambil data aslinya.
-            // Karena di sini tampil sebagai `***********`, saya akan menggunakan Clipboard API.
-            
-            // Catatan: Jika Anda ingin menampilkan kunci asli saat di-klik, Anda perlu menyesuaikan logika ini.
-            // Untuk amannya, kita salin teks yang ada, yang seharusnya berupa kode rahasia yang asli setelah dimuat.
-
-            // Saat data dimuat, isinya adalah kode rahasia asli, bukan bintang.
-            // Kode rahasia asli ada di document.getElementById('secret-key-display').textContent
-            
+            // FIX ERROR 'appendChild': Menggunakan API Clipboard modern saja (menghapus fallback yang tidak stabil)
             navigator.clipboard.writeText(secretKey)
                 .then(() => {
                     copyStatusDash.textContent = 'Kode berhasil disalin!';
                     setTimeout(() => { copyStatusDash.textContent = '' }, 2000);
                 })
-                .catch(() => {
-                    // Fallback untuk iFrame / browser lama
-                    const tempInput = document.createElement('textarea');
-                    tempInput.value = secretKey;
-                    document.body.appendChild(tempInput);
-                    tempInput.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(tempInput);
-                    copyStatusDash.textContent = 'Kode berhasil disalin!';
-                    setTimeout(() => { copyStatusDash.textContent = '' }, 2000);
+                .catch(err => {
+                    // Jika Clipboard API gagal (misalnya, browser tidak mendukung), tampilkan pesan
+                    console.error("Gagal menyalin menggunakan Clipboard API:", err);
+                    copyStatusDash.textContent = 'Gagal menyalin. Salin manual!';
+                    setTimeout(() => { copyStatusDash.textContent = '' }, 3000);
                 });
         });
 
