@@ -13,43 +13,50 @@
     <style>
         body { font-family: 'Inter', sans-serif; }
         .sidebar-item:hover { background-color: #3b82f6; }
-        /* Style untuk mobile sidebar agar bisa digeser keluar */
+        
+        /* MOBILE STYLES */
         .sidebar {
-            /* Pastikan sidebar tersembunyi di mobile secara default */
             transform: translateX(-100%);
             position: fixed;
-            z-index: 40; /* Di atas konten lain, di bawah overlay */
+            z-index: 40; 
             height: 100vh;
+            transition: transform 0.3s ease-in-out;
         }
         .sidebar.open {
             transform: translateX(0);
         }
-        /* Style untuk overlay mobile */
         .sidebar-overlay {
             z-index: 30;
             opacity: 0;
             transition: opacity 0.3s ease;
+            pointer-events: none; /* Penting agar tidak menghalangi klik saat tersembunyi */
         }
         .sidebar-overlay.open {
-            opacity: 1;
+            opacity: 0.5;
+            pointer-events: auto;
         }
+
+        /* LOADING OVERLAY STYLES (Diperbaiki) */
         .loading-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             z-index: 50;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            /* Pastikan opacity 1 saat dimuat */
+            opacity: 1; 
             transition: opacity 0.3s ease-in-out;
         }
         .loading-overlay.hidden {
-            display: none;
             opacity: 0;
+            /* Gunakan visibility: hidden agar tidak mengganggu klik setelah opacity 0 */
+            visibility: hidden; 
         }
         .spinner {
             border: 4px solid rgba(0, 0, 0, 0.1);
@@ -66,11 +73,11 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
 
-    <!-- Loading Overlay (diperbaiki agar selalu muncul di awal) -->
+    <!-- Loading Overlay -->
     <div id="loading-overlay" class="loading-overlay">
         <div class="spinner mb-3"></div>
-        <p class="text-gray-700 font-medium">Memuat Dashboard...</p>
-        <p id="loading-error" class="text-red-600 text-sm mt-2 hidden"></p>
+        <p class="text-gray-700 font-medium">Memuat Dashboard, harap tunggu...</p>
+        <p id="loading-error" class="text-red-600 text-sm mt-2 hidden text-center max-w-sm"></p>
     </div>
 
     <!-- Konten Utama -->
@@ -90,6 +97,7 @@
                 <div class="flex items-center mt-1">
                     <span id="user-uid" class="text-xs text-gray-400 truncate w-40"></span>
                     <button id="copy-uid-dash" class="ml-2 p-1 text-gray-400 hover:text-white transition duration-150">
+                        <!-- Ikon Copy -->
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v2M8 7h12"></path></svg>
                     </button>
                     <span id="copy-status-dash" class="text-xs text-green-400 ml-2"></span>
@@ -115,7 +123,7 @@
         </aside>
 
         <!-- Sidebar Overlay untuk Mobile -->
-        <div id="sidebar-overlay" class="sidebar-overlay fixed inset-0 bg-black opacity-0 transition-opacity duration-300 lg:hidden pointer-events-none"></div>
+        <div id="sidebar-overlay" class="sidebar-overlay fixed inset-0 bg-black lg:hidden"></div>
 
         <!-- Konten Utama Dashboard (Kanan) -->
         <main class="flex-1 p-6 lg:p-10">
@@ -170,7 +178,7 @@
                 </div>
             </div>
 
-            <p id="dashboard-error-msg" class="text-red-600 mt-4 hidden">Terjadi kesalahan dalam memuat data. Periksa konsol untuk detail error (kemungkinan **Security Rules**).</p>
+            <p id="dashboard-error-msg" class="text-red-600 mt-4 hidden text-sm font-medium"></p>
 
         </main>
 
@@ -197,27 +205,35 @@
             app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
-            // Setelah inisialisasi, kita akan menunggu status autentikasi
+            // Autentikasi token kustom jika tersedia
+            if (initialAuthToken) {
+                // Set persistence agar sesi tetap ada
+                setPersistence(auth, browserLocalPersistence)
+                    .then(() => {
+                        return signInWithCustomToken(auth, initialAuthToken);
+                    })
+                    .catch((error) => {
+                        console.error("Gagal signInWithCustomToken:", error);
+                        // Lanjutkan ke onAuthStateChanged, yang akan menangani jika user tidak ada
+                    });
+            } else {
+                 signInAnonymously(auth).catch(e => console.error("Gagal sign in anonymously:", e));
+            }
         } catch (e) {
             console.error("Gagal menginisialisasi Firebase:", e);
-            document.getElementById('loading-overlay').classList.add('hidden');
-            document.getElementById('loading-error').textContent = "Kesalahan Inisialisasi Firebase. Periksa konfigurasi.";
-            document.getElementById('loading-error').classList.remove('hidden');
         }
 
         /**
          * Fungsi untuk memuat data dashboard (Admin Sekolah)
-         * DIPANGGIL HANYA SETELAH onAuthStateChanged mengkonfirmasi user.
          */
         async function loadDashboardData(adminId) {
-            // ===============================================
-            // 1. Data Admin Sekolah (Koleksi: /sekolah/{userId})
-            // ===============================================
-            const sekolahDocRef = doc(db, 'sekolah', adminId);
-            const guruCollectionRef = collection(db, 'guru');
+            const dashboardErrorMsg = document.getElementById('dashboard-error-msg');
+            const guruListElement = document.getElementById('guru-list');
+            dashboardErrorMsg.classList.add('hidden'); // Sembunyikan pesan error lama
             
+            // 1. Ambil Data Sekolah (Doc Admin)
+            const sekolahDocRef = doc(db, 'sekolah', adminId);
             try {
-                // A. Ambil Data Sekolah
                 const sekolahDoc = await getDoc(sekolahDocRef);
                 if (sekolahDoc.exists()) {
                     const dataSekolah = sekolahDoc.data();
@@ -225,28 +241,36 @@
                     document.getElementById('sekolah-status').textContent = dataSekolah.status_verifikasi || 'Belum Diverifikasi';
                     document.getElementById('sekolah-status').className = dataSekolah.status_verifikasi === 'terverifikasi' ? 'font-medium text-green-600' : 'font-medium text-yellow-500';
                 } else {
-                    document.getElementById('sekolah-nama').textContent = 'Data sekolah tidak ditemukan!';
-                    throw new Error("Dokumen Sekolah tidak ditemukan untuk UID ini.");
+                    document.getElementById('sekolah-nama').textContent = 'Data sekolah tidak ditemukan! Perlu pendaftaran ulang.';
+                    // Ini adalah error yang harusnya ditangkap
+                    throw new Error(`Dokumen Sekolah (${adminId}) tidak ditemukan.`);
                 }
+            } catch (e) {
+                 // Tampilkan error spesifik untuk data sekolah
+                console.error("❌ Kesalahan saat mengambil Data Sekolah:", e);
+                dashboardErrorMsg.textContent = `Gagal memuat info sekolah. Pastikan dokumen Anda ada di /sekolah/${adminId}. Error: ${e.message}`;
+                dashboardErrorMsg.classList.remove('hidden');
+            }
 
-                // B. Ambil Data Guru (PENTING: Query harus sesuai Security Rules)
-                // Rules: allow read: if request.auth.uid == resource.data.id_sekolah
-                // Maka, kita harus query di mana id_sekolah dokumen guru sama dengan UID Admin yang login.
-                const qGuru = query(guruCollectionRef, where('id_sekolah', '==', adminId));
+
+            // 2. Ambil Data Guru (HARUS Sesuai Security Rules)
+            const guruCollectionRef = collection(db, 'guru');
+            // Rules: allow read: if request.auth.uid == resource.data.id_sekolah
+            // Query di sisi klien WAJIB memfilter:
+            const qGuru = query(guruCollectionRef, where('id_sekolah', '==', adminId));
+            
+            try {
                 const guruSnapshot = await getDocs(qGuru);
                 
-                // C. Update Ringkasan
+                // Update Ringkasan
                 const totalGuru = guruSnapshot.size;
                 document.getElementById('total-guru').textContent = totalGuru;
                 
-                // D. Tampilkan Guru Terbaru
-                const guruListElement = document.getElementById('guru-list');
-                guruListElement.innerHTML = ''; // Bersihkan loading message
-
+                // Tampilkan Guru Terbaru
+                guruListElement.innerHTML = ''; // Bersihkan
                 if (totalGuru === 0) {
-                    guruListElement.innerHTML = '<tr><td colspan="3" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Belum ada data guru terdaftar.</td></tr>';
+                    guruListElement.innerHTML = '<tr><td colspan="3" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Belum ada data guru terdaftar di sekolah ini.</td></tr>';
                 } else {
-                    let count = 0;
                     guruSnapshot.docs.slice(0, 5).forEach(doc => {
                         const dataGuru = doc.data();
                         const row = `
@@ -257,45 +281,42 @@
                             </tr>
                         `;
                         guruListElement.innerHTML += row;
-                        count++;
                     });
                 }
-
-                // C. Data Siswa dan Kelas (Contoh: Di sini Anda akan menambahkan query untuk koleksi 'siswa' dan 'kelas')
-                // Misalnya, query siswa juga harus difilter berdasarkan id_sekolah
-                document.getElementById('total-siswa').textContent = '50'; // Placeholder
-                document.getElementById('total-kelas').textContent = '4'; // Placeholder
-                document.getElementById('siswa-nonaktif').textContent = '3'; // Placeholder
-
             } catch (e) {
-                console.error("❌ Kesalahan saat mengambil data Firestore:", e);
-                document.getElementById('dashboard-error-msg').textContent = `Terjadi kesalahan dalam memuat data: ${e.message || 'Unknown Error'}. Ini seringkali karena pelanggaran Security Rules.`;
-                document.getElementById('dashboard-error-msg').classList.remove('hidden');
+                // Tampilkan error spesifik untuk data guru
+                console.error("❌ Kesalahan saat mengambil Data Guru:", e);
+                guruListElement.innerHTML = `<tr><td colspan="3" class="px-6 py-4 whitespace-nowrap text-sm text-red-500">GAGAL MEMUAT DATA GURU (Check Rules!)</td></tr>`;
+                dashboardErrorMsg.textContent = `Gagal memuat data guru. Error: ${e.message}. Pastikan field 'id_sekolah' di dokumen guru ada dan sesuai dengan UID Admin.`;
+                dashboardErrorMsg.classList.remove('hidden');
             }
+
+            // Placeholder untuk data lain (siswa, kelas, dll.)
+            document.getElementById('total-siswa').textContent = '—';
+            document.getElementById('total-kelas').textContent = '—';
+            document.getElementById('siswa-nonaktif').textContent = '—';
         }
 
         /**
-         * Logika inisialisasi utama
-         * (Mengambil alih initializeDashboardLogic lama)
+         * Logika inisialisasi utama yang menunggu Auth siap.
          */
         async function initializeAdminLogic() {
             const loadingOverlay = document.getElementById('loading-overlay');
             const loadingError = document.getElementById('loading-error');
-
+            
             // 1. Pastikan overlay loading muncul sebelum proses
             if (loadingOverlay) {
                  loadingOverlay.classList.remove('hidden');
             }
             
             try {
-                // Autentikasi dilakukan di onAuthStateChanged
-                // Kita hanya menunggu Auth siap dan mendapatkan user
-                
+                // Gunakan Promise untuk menunggu onAuthStateChanged selesai
                 await new Promise((resolve, reject) => {
                     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-                        unsubscribe(); // Hentikan listener setelah mendapatkan status awal
+                        // Hentikan listener setelah mendapatkan status awal
+                        unsubscribe(); 
 
-                        if (user) {
+                        if (user && user.uid) {
                             adminUID = user.uid;
 
                             // Tampilkan Info User
@@ -305,26 +326,26 @@
                             // 2. Muat Data Dashboard
                             await loadDashboardData(adminUID);
                             
-                            resolve(); // Lanjutkan
+                            resolve(); 
                         } else {
-                            // Jika tidak ada user, redirect ke halaman login
-                            console.log("User tidak terautentikasi. Redirect ke login.");
+                            // Jika user tidak ada atau anonymous, arahkan ke login
+                            console.log("Sesi tidak valid atau user tidak terautentikasi. Redirect ke login.");
                             window.location.href = '/login.html';
-                            // Kita tidak perlu memanggil reject() karena redirect akan menghentikan alur
+                            // Penting: Jangan resolve/reject di sini, biarkan redirect yang menangani
                         }
                     }, (error) => {
-                        // Jika ada error dalam onAuthStateChanged (misal: token expired/invalid)
+                        // Error dalam proses onAuthStateChanged
                         reject(error);
                     });
                 });
                 
             } catch (e) {
-                // Tangani Error Inisialisasi/Data
+                // Tangani Error Kritis (misalnya: gagal inisialisasi Firebase/Auth)
                 console.error("Kesalahan kritis saat inisialisasi dashboard:", e);
-                loadingError.textContent = `Gagal memuat: ${e.message}. Mengarahkan ke login.`;
+                loadingError.textContent = `Gagal memuat sistem: ${e.message}. Mengarahkan ke login.`;
                 loadingError.classList.remove('hidden');
                 
-                // Beri waktu sebentar sebelum redirect, agar user bisa melihat error
+                // Beri waktu sebentar sebelum redirect
                 setTimeout(() => {
                     window.location.href = '/login.html';
                 }, 3000);
@@ -338,7 +359,7 @@
         }
 
         /**
-         * Logika UI (Sidebar & Logout)
+         * Logika UI (Sidebar & Logout & Copy)
          */
         function setupUI() {
             const sidebar = document.getElementById('sidebar');
@@ -352,11 +373,10 @@
             const toggleSidebar = () => {
                 sidebar.classList.toggle('open');
                 overlay.classList.toggle('open');
-                overlay.classList.toggle('pointer-events-none');
             };
 
-            toggleButton.addEventListener('click', toggleSidebar);
-            overlay.addEventListener('click', toggleSidebar); // Tutup saat klik overlay
+            if (toggleButton) toggleButton.addEventListener('click', toggleSidebar);
+            if (overlay) overlay.addEventListener('click', toggleSidebar); 
 
             // Logout
             if (logoutButton) {
@@ -366,7 +386,8 @@
                         window.location.href = '/login.html';
                     } catch (e) {
                         console.error("Gagal logout:", e);
-                        alert("Gagal logout. Silakan coba lagi.");
+                        // Ganti alert() dengan UI modal di aplikasi produksi
+                        alert("Gagal logout. Silakan coba lagi."); 
                     }
                 });
             }
@@ -376,7 +397,7 @@
                 copyButton.addEventListener('click', () => {
                     const uidText = document.getElementById('user-uid').textContent;
                     
-                    // Fallback menggunakan document.execCommand('copy') untuk kompatibilitas iFrame
+                    // Menggunakan document.execCommand('copy') untuk kompatibilitas iFrame
                     const tempInput = document.createElement('input');
                     document.body.appendChild(tempInput);
                     tempInput.value = uidText;
@@ -392,10 +413,7 @@
 
         // Event listener utama
         document.addEventListener('DOMContentLoaded', () => {
-            // 1. Muat setup UI (seperti sidebar dan tombol)
             setupUI();
-
-            // 2. Muat Logika Admin (termasuk Auth dan Data)
             initializeAdminLogic();
         });
 
