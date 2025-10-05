@@ -159,5 +159,91 @@
 
   <!-- Firebase + Sidebar Logic -->
   <script src="./main_admin.js" defer></script>
+  <script>
+document.addEventListener('DOMContentLoaded', () => {
+  const addStudentBtn = document.getElementById('add-student-btn');
+  const studentModal = document.getElementById('student-modal');
+  const deleteModal = document.getElementById('delete-modal');
+  const modalTitle = document.getElementById('modal-title');
+  const studentForm = document.getElementById('student-form');
+  const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+  const cancelButtons = document.querySelectorAll('.modal-cancel, .modal-close');
+
+  let selectedRow = null; // menyimpan baris siswa yang sedang di-edit atau dihapus
+
+  // 🔹 Fungsi bantu untuk menampilkan modal
+  function showModal(modal) {
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      modal.classList.remove('opacity-0');
+      modal.querySelector('.modal-content').classList.remove('scale-95');
+    }, 10);
+  }
+
+  // 🔹 Fungsi bantu untuk menyembunyikan modal
+  function hideModal(modal) {
+    modal.classList.add('opacity-0');
+    modal.querySelector('.modal-content').classList.add('scale-95');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+    }, 200);
+  }
+
+  // 🔹 Tombol tambah siswa
+  addStudentBtn.addEventListener('click', () => {
+    modalTitle.textContent = 'Tambah Data Siswa';
+    studentForm.reset();
+    document.getElementById('student-id').value = '';
+    showModal(studentModal);
+  });
+
+  // 🔹 Tombol edit siswa
+  document.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const row = e.target.closest('tr');
+      selectedRow = row;
+      document.getElementById('student-id').value = row.dataset.id;
+      document.getElementById('nis').value = row.dataset.nis;
+      document.getElementById('nama').value = row.dataset.nama;
+      document.getElementById('kelas').value = row.dataset.kelas;
+      document.getElementById('email').value = row.dataset.email;
+      modalTitle.textContent = 'Edit Data Siswa';
+      showModal(studentModal);
+    });
+  });
+
+  // 🔹 Tombol hapus siswa
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      selectedRow = e.target.closest('tr');
+      showModal(deleteModal);
+    });
+  });
+
+  // 🔹 Tombol batal & tutup di modal
+  cancelButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      hideModal(studentModal);
+      hideModal(deleteModal);
+    });
+  });
+
+  // 🔹 Konfirmasi hapus
+  confirmDeleteBtn.addEventListener('click', () => {
+    if (selectedRow) {
+      selectedRow.remove();
+      selectedRow = null;
+    }
+    hideModal(deleteModal);
+  });
+
+  // 🔹 Simpan form (dummy)
+  studentForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    hideModal(studentModal);
+    alert('Data siswa berhasil disimpan (simulasi).');
+  });
+});
+</script>
 </body>
 </html>
