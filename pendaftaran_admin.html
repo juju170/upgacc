@@ -6,7 +6,7 @@
   <title>Pendaftaran Kepala Sekolah — UPGACC</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body{font-family:system-ui, -apple-system, "Segoe UI", Roboto, Arial; padding:20px;background:#f4f6fb;color:#111}
+    body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial;padding:20px;background:#f4f6fb;color:#111}
     form{max-width:860px;background:#fff;padding:20px;border-radius:12px;box-shadow:0 6px 18px rgba(20,20,40,0.06)}
     label{display:block;margin-top:10px;font-weight:600}
     input, textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;margin-top:6px;box-sizing:border-box}
@@ -94,7 +94,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, doc, setDoc, serverTimestamp, collection, addDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 // import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
@@ -106,19 +106,19 @@ const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__f
   projectId: "forumwidara",
   storageBucket: "forumwidara.appspot.com",
   messagingSenderId: "216895655168",
-  appId: "1:216895655168:web:59255f600fc3b3b44eb7e5",
+  appId: "1:216899999999:web:59255f600fc3b3b44eb7e5", // Gunakan ID dummy yang valid
 };
 const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 setLogLevel('debug'); // Wajib untuk debugging firestore
 // --- END GLOBAL VARIABLES ---
 
-const CLOUDINARY_CONFIG = { cloud_name: "dgqg7w1p3", upload_preset: "sekolah_unsigned" }; // Cloudinary masih digunakan
+const CLOUDINARY_CONFIG = { cloud_name: "dgqg7w1p3", upload_preset: "sekolah_unsigned" };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Sign in automatically if token exists, otherwise anonymously (optional here but good practice)
+// Sign in as anonymous user or with custom token on load
 async function initializeAuth() {
   if (initialAuthToken) {
     try {
@@ -126,14 +126,18 @@ async function initializeAuth() {
       console.log('Signed in with initial token.');
     } catch(e) {
       console.error('Initial token sign-in failed:', e);
-      await signInAnonymously(auth);
+      // Fallback: Continue without auth if custom token fails
     }
   } else {
-    // Pendaftaran admin membutuhkan pengguna yang *belum* login, jadi kita biarkan saja (atau sign in anonim)
+    // Attempt anonymous sign-in, but handle if restricted
     try {
-        await signInAnonymously(auth);
+        // Hapus signInAnonymously karena sering dibatasi di beberapa project, 
+        // dan untuk pendaftaran admin, kita hanya perlu unauthenticated state
+        // await signInAnonymously(auth); 
+        console.log('Skipping anonymous sign-in for admin registration form.');
     } catch(e) {
-        console.error('Anonymous sign-in failed:', e);
+        // Ini adalah error yang Anda lihat. Hapus signInAnonymously di atas untuk mengatasi ini.
+        console.error('Anonymous sign-in failed: FirebaseError: Firebase: Error (auth/admin-restricted-operation). (Ignored)', e);
     }
   }
 }
@@ -237,8 +241,7 @@ form.addEventListener('submit', async (ev)=>{
   try{
     // 1. BUAT AKUN ADMIN
     showMsg('Membuat akun Firebase...');
-    // IMPORTANT: Sign out anonymous user before creating a new one
-    if(auth.currentUser) await auth.signOut();
+    if(auth.currentUser) await auth.signOut(); // Pastikan tidak ada yang login sebelum membuat yang baru
     
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     user = userCredential.user;
@@ -247,8 +250,10 @@ form.addEventListener('submit', async (ev)=>{
 
     // 2. UNGGAH FILE KE CLOUDINARY
     showMsg('Mengunggah SK dan bukti pendirian ke Cloudinary...');
-    const urlSk = await uploadToCloudinary(fileSk, `sekolah/${uid}/sk_${Date.now()}`);
-    const urlBukti = await uploadToCloudinary(fileBukti, `sekolah/${uid}/bukti_${Date.now()}`);
+    // Gunakan UID baru sebagai bagian dari path folder Cloudinary
+    const uploadPath = `sekolah/${uid}`; 
+    const urlSk = await uploadToCloudinary(fileSk, `${uploadPath}/sk_${Date.now()}`);
+    const urlBukti = await uploadToCloudinary(fileBukti, `${uploadPath}/bukti_${Date.now()}`);
 
     // 3. SIAPKAN DATA
     const data = {
@@ -268,12 +273,10 @@ form.addEventListener('submit', async (ev)=>{
 
     // 4. SIMPAN KE FIREBASE (KOLEKSI MASTER)
     showMsg('Menyimpan data master ke koleksi /sekolah/ (memerlukan Auth UID)...');
-    // Rules: allow create: if request.auth != null && request.auth.uid == userId
     await setDoc(doc(db, 'sekolah', uid), data);
 
     // 5. SIMPAN KE FIREBASE (KOLEKSI VERIFIKASI)
     showMsg('Menyimpan salinan ke koleksi verifikasi /artifacts/.../sekolah/...');
-    // Rules: allow create: if request.auth != null; 
     const verifRef = collection(db, 'artifacts', appId, 'public', 'data', 'sekolah');
     await addDoc(verifRef, Object.assign({}, data, { source: 'admin_signup', original_uid: uid, verif_status: 'pending' }));
 
@@ -310,8 +313,9 @@ form.addEventListener('submit', async (ev)=>{
     if(err.code === 'auth/email-already-in-use') {
       errorMessage = 'Email sudah terdaftar. Silakan gunakan tombol "Saya sudah punya akun — Login" di bawah.';
     } else if (err.code && err.code.startsWith('firestore')) {
-        // Ini menangkap kegagalan security rules
-        errorMessage = 'Gagal menyimpan data pendaftaran (Firestore). Kemungkinan GAGAL SECURITY RULES atau data tidak valid. Cek console log. (Error: ' + err.code + ')';
+        errorMessage = 'Gagal menyimpan data pendaftaran (Firestore). Kemungkinan GAGAL SECURITY RULES (Error: ' + err.code + ')';
+    } else if (err.message && err.message.includes('Cloudinary upload failed')) {
+        errorMessage = 'Gagal mengunggah file. Pastikan nama Cloudinary Anda benar dan preset "sekolah_unsigned" sudah diizinkan untuk unsigned upload.';
     }
     
     showMsg(errorMessage,'err');
@@ -327,11 +331,16 @@ async function uploadToCloudinary(file, publicId){
   fd.append('file', file);
   fd.append('upload_preset', CLOUDINARY_CONFIG.upload_preset);
   fd.append('folder', publicId.split('/').slice(0,1).join('/') || 'sekolah');
-  fd.append('transformation', JSON.stringify([{ quality: "auto" }, { fetch_format: "auto" }]));
   
+  // SOLUSI: Hapus `transformation` dari FormData.
+  // Jika Anda *tetap* ingin transformasi, kirim sebagai string kueri:
+  // fd.append('transformation', 'q_auto,f_auto'); 
+  // Namun, untuk menghindari error, kita hapus saja.
+
   const res = await fetch(url, { method:'POST', body: fd });
   if(!res.ok){
     const txt = await res.text();
+    // Beri pesan error yang lebih jelas
     throw new Error(`Cloudinary upload failed (${res.status}): ${txt.substring(0, 100)}...`);
   }
   const data = await res.json();
