@@ -4,128 +4,142 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Pendaftaran Kepala Sekolah — UPGACC</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body{font-family:system-ui, -apple-system, "Segoe UI", Roboto, Arial; padding:20px;background:#f4f6fb;color:#111}
-    form{max-width:860px;background:#fff;padding:16px;border-radius:12px;box-shadow:0 6px 18px rgba(20,20,40,0.06)}
+    form{max-width:860px;background:#fff;padding:20px;border-radius:12px;box-shadow:0 6px 18px rgba(20,20,40,0.06)}
     label{display:block;margin-top:10px;font-weight:600}
     input, textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;margin-top:6px;box-sizing:border-box}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .file-row{display:flex;gap:12px;align-items:center;margin-top:8px}
-    button{margin-top:12px;padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:700;transition:background 0.2s, box-shadow 0.2s}
-    button:hover:not(:disabled){box-shadow:0 4px 10px rgba(37, 99, 235, 0.3)}
     button:disabled{opacity:0.6;cursor:not-allowed}
-    .primary{background:#2563eb;color:#fff}
-    .muted{background:#eef2ff;color:#223}
-    .meta{color:#555;font-size:13px;margin-top:6px}
-    .success{color:#14532d;background:#ecfdf5;padding:10px;border-radius:8px;font-weight:600}
-    .error{color:#7f1d1d;background:#fff1f2;padding:10px;border-radius:8px;font-weight:600}
     .copy-row{display:flex;gap:8px;align-items:center;margin-top:8px}
     pre{background:#f3f4f6;padding:10px;border-radius:8px;overflow:auto}
   </style>
 </head>
 <body>
-  <h1>Pendaftaran Kepala Sekolah</h1>
-  <p class="meta">Isi data, unggah SK + bukti pendirian. Setelah berhasil, akan muncul <strong>Kode Sekolah (UUID)</strong> yang dapat disalin.</p>
-
-  <form id="regForm">
-    <label>Nama Sekolah
-      <input id="nama_sekolah" required placeholder="Contoh: SMP Negeri 1 Contoh">
-    </label>
-
-    <label>Alamat Sekolah
-      <textarea id="alamat" rows="2" required placeholder="Alamat lengkap..."></textarea>
-    </label>
-
-    <div class="row">
-      <div>
-        <label>Nama Kepala Sekolah
-          <input id="nama_kepala" required placeholder="Nama kepala sekolah">
-        </label>
-      </div>
-      <div>
-        <label>Email (akun admin)
-          <input id="email" type="email" required placeholder="admin@example.com">
-        </label>
-      </div>
-    </div>
-
-    <div class="row">
-      <div>
-        <label>No. HP (optional)
-          <input id="no_hp" placeholder="+62...">
-        </label>
-      </div>
-      <div>
-        <label>Password akun (minimal 6 karakter)
-          <input id="password" type="text" required placeholder="isi password untuk akun admin">
-        </label>
-      </div>
-    </div>
-
-    <label>Unggah Foto / Scan SK Pengangkatan Kepala Sekolah (image/pdf)
-      <div class="file-row">
-        <input id="file_sk" type="file" accept="image/*,application/pdf" required>
-        <div class="meta">Max ~5MB disarankan</div>
-      </div>
-    </label>
-
-    <label>Unggah Bukti Pendirian Sekolah / Foto Bangunan (image)
-      <div class="file-row">
-        <input id="file_bukti" type="file" accept="image/*" required>
-        <div class="meta">Max ~5MB disarankan</div>
-      </div>
-    </label>
-
-    <div>
-      <button type="submit" class="primary" id="submitBtn">Daftar & Buat Kode Sekolah</button>
-      <button type="button" id="signInExisting" class="muted">Saya sudah punya akun — Login</button>
-    </div>
-
-    <div id="msg" style="margin-top:12px"></div>
-  </form>
-
-  <div id="loginModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:100; align-items:center; justify-content:center;">
-    <div style="background:#fff; padding:20px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.2); max-width:400px; width:90%">
-      <h3 style="margin-top:0">Login Admin Sekolah</h3>
-      <div id="loginMsg" class="meta"></div>
-      <label>Email
-        <input id="loginEmail" type="email" placeholder="email@example.com">
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-2xl font-bold mb-2">Pendaftaran Kepala Sekolah</h1>
+    <p class="text-gray-500 text-sm mb-4">Isi data, unggah SK + bukti pendirian. Setelah berhasil, akan muncul <strong class="text-blue-600">Kode Sekolah (UUID)</strong> yang dapat disalin.</p>
+  
+    <form id="regForm">
+      <label class="block mb-3">Nama Sekolah
+        <input id="nama_sekolah" required placeholder="Contoh: SMP Negeri 1 Contoh" class="rounded-lg">
       </label>
-      <label>Password
-        <input id="loginPassword" type="password" placeholder="******">
+
+      <label class="block mb-3">Alamat Sekolah
+        <textarea id="alamat" rows="2" required placeholder="Alamat lengkap..." class="rounded-lg"></textarea>
       </label>
-      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px">
-        <button id="closeLogin" type="button" class="muted">Batal</button>
-        <button id="doLogin" type="button" class="primary">Login</button>
+
+      <div class="row">
+        <label class="block mb-3">Nama Kepala Sekolah
+          <input id="nama_kepala" required placeholder="Nama kepala sekolah" class="rounded-lg">
+        </label>
+        <label class="block mb-3">Email (akun admin)
+          <input id="email" type="email" required placeholder="admin@example.com" class="rounded-lg">
+        </label>
+      </div>
+
+      <div class="row">
+        <label class="block mb-3">No. HP (optional)
+          <input id="no_hp" placeholder="+62..." class="rounded-lg">
+        </label>
+        <label class="block mb-3">Password akun (minimal 6 karakter)
+          <input id="password" type="text" required placeholder="isi password untuk akun admin" class="rounded-lg">
+        </label>
+      </div>
+
+      <label class="block mb-3">Unggah Foto / Scan SK Pengangkatan Kepala Sekolah (image/pdf)
+        <div class="flex items-center gap-3 mt-1">
+          <input id="file_sk" type="file" accept="image/*,application/pdf" required class="w-2/3">
+          <div class="text-xs text-gray-500">Max ~5MB disarankan</div>
+        </div>
+      </label>
+
+      <label class="block mb-3">Unggah Bukti Pendirian Sekolah / Foto Bangunan (image)
+        <div class="flex items-center gap-3 mt-1">
+          <input id="file_bukti" type="file" accept="image/*" required class="w-2/3">
+          <div class="text-xs text-gray-500">Max ~5MB disarankan</div>
+        </div>
+      </label>
+
+      <div class="flex gap-3 mt-4">
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-blue-700 transition" id="submitBtn">Daftar & Buat Kode Sekolah</button>
+        <button type="button" id="signInExisting" class="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-200 transition">Saya sudah punya akun — Login</button>
+      </div>
+
+      <div id="msg" class="mt-4"></div>
+    </form>
+
+    <div id="result" class="mt-8 hidden"></div>
+  </div>
+
+
+  <!-- Login Modal -->
+  <div id="loginModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden items-center justify-center">
+    <div class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full">
+      <h3 class="text-xl font-bold mb-4">Login Admin Sekolah</h3>
+      <div id="loginMsg" class="text-sm text-gray-600 mb-3"></div>
+      <label class="block mb-3">Email
+        <input id="loginEmail" type="email" placeholder="email@example.com" class="rounded-lg">
+      </label>
+      <label class="block mb-4">Password
+        <input id="loginPassword" type="password" placeholder="******" class="rounded-lg">
+      </label>
+      <div class="flex justify-end gap-2">
+        <button id="closeLogin" type="button" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">Batal</button>
+        <button id="doLogin" type="button" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Login</button>
       </div>
     </div>
   </div>
 
-  <div id="result" style="margin-top:18px; display:none; max-width:860px"></div>
-
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, serverTimestamp, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, serverTimestamp, collection, addDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+// import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-// Ganti konfigurasi ini dengan konfigurasi Firebase Anda yang sebenarnya
-const firebaseConfig = {
+// --- GLOBAL VARIABLES (MANDATORY FOR CANVAS ENVIRONMENT) ---
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
   apiKey: "AIzaSyA6zXOerKvdPJTmBp5Y6R2yFsy98xLDsKc",
   authDomain: "forumwidara.firebaseapp.com",
-  databaseURL: "https://forumwidara-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "forumwidara",
-  storageBucket: "forumwidara.appspot.com", // Mengubah ini ke bucket storage untuk upload
+  storageBucket: "forumwidara.appspot.com",
   messagingSenderId: "216895655168",
   appId: "1:216895655168:web:59255f600fc3b3b44eb7e5",
-  measurementId: "G-GVD3VJ2HZN"
 };
+const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+setLogLevel('debug'); // Wajib untuk debugging firestore
+// --- END GLOBAL VARIABLES ---
+
 const CLOUDINARY_CONFIG = { cloud_name: "dgqg7w1p3", upload_preset: "sekolah_unsigned" }; // Cloudinary masih digunakan
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-// const storage = getStorage(app); // Menggunakan Cloudinary, jadi Firebase Storage dinonaktifkan
+
+// Sign in automatically if token exists, otherwise anonymously (optional here but good practice)
+async function initializeAuth() {
+  if (initialAuthToken) {
+    try {
+      await signInWithCustomToken(auth, initialAuthToken);
+      console.log('Signed in with initial token.');
+    } catch(e) {
+      console.error('Initial token sign-in failed:', e);
+      await signInAnonymously(auth);
+    }
+  } else {
+    // Pendaftaran admin membutuhkan pengguna yang *belum* login, jadi kita biarkan saja (atau sign in anonim)
+    try {
+        await signInAnonymously(auth);
+    } catch(e) {
+        console.error('Anonymous sign-in failed:', e);
+    }
+  }
+}
+
+initializeAuth();
+
 
 const form = document.getElementById('regForm');
 const msg = document.getElementById('msg');
@@ -139,9 +153,11 @@ const loginMsg = document.getElementById('loginMsg');
 
 function showMsg(text, type='info'){
   if(!text){ msg.innerHTML=''; return; }
-  if(type==='ok') msg.innerHTML = `<div class="success">${escapeHtml(text)}</div>`;
-  else if(type==='err') msg.innerHTML = `<div class="error">${escapeHtml(text)}</div>`;
-  else msg.innerHTML = `<div class="meta">${escapeHtml(text)}</div>`;
+  let cls = 'p-3 rounded-lg mt-3 text-sm';
+  if(type==='ok') cls += ' bg-green-100 text-green-800';
+  else if(type==='err') cls += ' bg-red-100 text-red-800';
+  else cls += ' bg-blue-100 text-blue-700';
+  msg.innerHTML = `<div class="${cls}">${escapeHtml(text)}</div>`;
 }
 function escapeHtml(s){return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]));}
 
@@ -155,12 +171,14 @@ function uuidv4(){
 
 // --- Login Modal Logic ---
 signInExisting.addEventListener('click', ()=>{
+  loginModal.classList.remove('hidden');
   loginModal.style.display = 'flex';
   loginMsg.textContent = 'Masukkan kredensial akun admin yang sudah terdaftar.';
   document.getElementById('loginEmail').value = '';
   document.getElementById('loginPassword').value = '';
 });
 closeLogin.addEventListener('click', ()=> {
+  loginModal.classList.add('hidden');
   loginModal.style.display = 'none';
 });
 
@@ -174,11 +192,12 @@ doLogin.addEventListener('click', async ()=>{
   try{
     await signInWithEmailAndPassword(auth, email, password);
     loginMsg.textContent = 'Berhasil login.';
+    loginModal.classList.add('hidden');
     loginModal.style.display = 'none';
     showMsg('Berhasil login. Anda dapat melanjutkan ke halaman admin atau dashboard.','ok');
   }catch(err){
     console.error(err);
-    loginMsg.innerHTML = `<span style="color:#7f1d1d">Gagal login: ${err.message || err.code}</span>`;
+    loginMsg.innerHTML = `<span class="text-red-700">Gagal login: ${err.message || err.code}</span>`;
   } finally {
     doLogin.disabled = false;
   }
@@ -190,7 +209,7 @@ form.addEventListener('submit', async (ev)=>{
   ev.preventDefault();
   submitBtn.disabled = true;
   showMsg('Memproses pendaftaran...');
-  result.style.display='none';
+  result.classList.add('hidden');
   
   const nama_sekolah = document.getElementById('nama_sekolah').value.trim();
   const alamat = document.getElementById('alamat').value.trim();
@@ -214,18 +233,21 @@ form.addEventListener('submit', async (ev)=>{
 
   let user = null;
   let kode_sekolah = null;
+  
   try{
     // 1. BUAT AKUN ADMIN
     showMsg('Membuat akun Firebase...');
+    // IMPORTANT: Sign out anonymous user before creating a new one
+    if(auth.currentUser) await auth.signOut();
+    
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     user = userCredential.user;
     const uid = user.uid;
     kode_sekolah = uuidv4();
 
     // 2. UNGGAH FILE KE CLOUDINARY
-    showMsg('Mengunggah SK ke Cloudinary...');
+    showMsg('Mengunggah SK dan bukti pendirian ke Cloudinary...');
     const urlSk = await uploadToCloudinary(fileSk, `sekolah/${uid}/sk_${Date.now()}`);
-    showMsg('Mengunggah bukti pendirian ke Cloudinary...');
     const urlBukti = await uploadToCloudinary(fileBukti, `sekolah/${uid}/bukti_${Date.now()}`);
 
     // 3. SIAPKAN DATA
@@ -236,8 +258,8 @@ form.addEventListener('submit', async (ev)=>{
       nama_kepala,
       email_admin: email,
       no_hp: no_hp || null,
-      url_sk_pengangkatan: urlSk, // Ganti nama field untuk kejelasan
-      url_bukti_pendirian: urlBukti, // Ganti nama field untuk kejelasan
+      url_sk_pengangkatan: urlSk, 
+      url_bukti_pendirian: urlBukti, 
       kode_sekolah,
       status_verifikasi: 'pending',
       created_at: serverTimestamp(),
@@ -245,33 +267,32 @@ form.addEventListener('submit', async (ev)=>{
     };
 
     // 4. SIMPAN KE FIREBASE (KOLEKSI MASTER)
-    // Ini harus berhasil karena aturan /sekolah/{uid} mengizinkan create jika UID cocok.
-    showMsg('Menyimpan data master ke /sekolah/' + uid + ' ...');
+    showMsg('Menyimpan data master ke koleksi /sekolah/ (memerlukan Auth UID)...');
+    // Rules: allow create: if request.auth != null && request.auth.uid == userId
     await setDoc(doc(db, 'sekolah', uid), data);
 
     // 5. SIMPAN KE FIREBASE (KOLEKSI VERIFIKASI)
-    // Menggunakan addDoc untuk membuat ID dokumen acak di koleksi verifikasi.
-    // Ini memastikan operasi 'create' murni yang diizinkan oleh rules /artifacts/{appId}/public/data/sekolah/{docId}.
-    showMsg('Menyimpan salinan ke artifacts untuk verifikasi developer...');
-    const verifRef = collection(db, 'artifacts', 'forumwidara', 'public', 'data', 'sekolah');
-    await addDoc(verifRef, Object.assign({}, data, { source: 'admin_signup', original_uid: uid }));
+    showMsg('Menyimpan salinan ke koleksi verifikasi /artifacts/.../sekolah/...');
+    // Rules: allow create: if request.auth != null; 
+    const verifRef = collection(db, 'artifacts', appId, 'public', 'data', 'sekolah');
+    await addDoc(verifRef, Object.assign({}, data, { source: 'admin_signup', original_uid: uid, verif_status: 'pending' }));
 
     // 6. TAMPILKAN HASIL SUKSES
     showMsg('Pendaftaran berhasil — simpan kode sekolah dan bagikan ke guru.','ok');
     
-    result.style.display='block';
+    result.classList.remove('hidden');
     result.innerHTML = `
-      <div class="success">
+      <div class="bg-green-100 border border-green-400 text-green-700 p-4 rounded-lg">
         Akun admin berhasil dibuat dan dokumen pendaftaran telah dikirim untuk diverifikasi.
       </div>
-      <p style="margin-top:8px"><strong>Kode Sekolah (UUID)</strong></p>
+      <p class="mt-4 text-lg font-semibold">Kode Sekolah (UUID)</p>
       <div class="copy-row">
-        <input id="kodeField" type="text" value="${escapeHtml(kode_sekolah)}" readonly style="padding:8px;border-radius:8px;border:1px solid #ddd;width:420px">
-        <button id="copyBtn" class="muted">Salin</button>
+        <input id="kodeField" type="text" value="${escapeHtml(kode_sekolah)}" readonly class="p-3 border border-blue-400 bg-blue-50 rounded-lg w-full max-w-lg font-mono">
+        <button id="copyBtn" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">Salin</button>
       </div>
-      <p class="meta">Bagikan kode ini kepada guru agar mereka dapat mendaftar ke sekolah yang sama. Status verifikasi dapat dipantau di halaman admin Anda.</p>
-      <h4 style="margin-top:10px">Preview Data Pendaftaran</h4>
-      <pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>
+      <p class="text-sm text-gray-500 mt-2">Bagikan kode ini kepada guru agar mereka dapat mendaftar ke sekolah yang sama.</p>
+      <h4 class="mt-4 text-lg font-semibold">Preview Data Pendaftaran</h4>
+      <pre class="text-xs">${escapeHtml(JSON.stringify(data, null, 2))}</pre>
     `;
 
     document.getElementById('copyBtn').addEventListener('click', ()=>{
@@ -288,16 +309,11 @@ form.addEventListener('submit', async (ev)=>{
     
     if(err.code === 'auth/email-already-in-use') {
       errorMessage = 'Email sudah terdaftar. Silakan gunakan tombol "Saya sudah punya akun — Login" di bawah.';
-    } else if (err.code === 'storage/unauthorized') {
-      errorMessage = 'Gagal mengunggah file. Periksa Cloudinary Config atau Firebase Storage Rules Anda.';
+    } else if (err.code && err.code.startsWith('firestore')) {
+        // Ini menangkap kegagalan security rules
+        errorMessage = 'Gagal menyimpan data pendaftaran (Firestore). Kemungkinan GAGAL SECURITY RULES atau data tidak valid. Cek console log. (Error: ' + err.code + ')';
     }
     
-    // Opsional: Hapus akun yang baru dibuat jika pendaftaran data ke Firestore gagal
-    if(user && auth.currentUser.uid === user.uid) {
-        // Ini kompleks untuk dilakukan dengan aman di klien, jadi kita tampilkan error saja
-        console.warn("Pendaftaran data gagal, akun admin baru berhasil dibuat. Pengguna harus menghapus/mendaftar ulang.");
-    }
-
     showMsg(errorMessage,'err');
     
   } finally {
@@ -306,8 +322,6 @@ form.addEventListener('submit', async (ev)=>{
 });
 
 async function uploadToCloudinary(file, publicId){
-  // Menggunakan fetch untuk upload ke Cloudinary (seperti kode Anda sebelumnya)
-  // Tidak ada perubahan signifikan di sini, Cloudinary harus dikonfigurasi dengan benar
   const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloud_name}/upload`;
   const fd = new FormData();
   fd.append('file', file);
