@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Developer Verification — UPGACC</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial;margin:0;padding:24px;background:#f6f7fb;color:#111}
     header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
@@ -14,231 +15,240 @@
     .card h3{margin:0 0 8px 0;font-size:16px}
     .meta{color:#666;font-size:13px;margin-bottom:10px}
     .buttons{display:flex;gap:8px}
-    button{padding:8px 12px;border-radius:8px;border:0;cursor:pointer;font-weight:600}
-    .approve{background:#16a34a;color:#fff}
-    .reject{background:#ef4444;color:#fff}
-    .small{font-size:13px;padding:6px 10px;border-radius:8px}
-    .img-wrap{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-    .img-wrap img{width:280px;height:auto;border-radius:8px;object-fit:cover;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.06)}
-    .placeholder{width:280px;height:180px;background:#fee2e2;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#7f1d1d}
-    pre.err{background:#ffecec;color:#900;padding:10px;border-radius:8px;overflow:auto}
-    .kode{background:#eef2ff;padding:8px;border-radius:8px;font-weight:700}
+    button{padding:8px 12px;border-radius:8px;border:0;cursor:pointer;font-weight:600;transition:background 0.2s}
+    button:disabled{opacity:0.6;cursor:not-allowed}
+    .danger{background:#fee2e2;color:#991b1b}
+    .danger:hover:not(:disabled){background:#fecaca}
+    .success{background:#d1fae5;color:#065f46}
+    .success:hover:not(:disabled){background:#a7f3d0}
+    .info{background:#eff6ff;color:#1d4ed8}
+    .info:hover:not(:disabled){background:#dbeafe}
+    .status-pending{color:#f59e0b; font-weight:700;}
+    .status-verified{color:#059669; font-weight:700;}
   </style>
 </head>
 <body>
   <header>
-    <div>
-      <h1>Developer — Verifikasi Sekolah</h1>
-      <div id="status">Memeriksa status otentikasi...</div>
-    </div>
+    <h1>Developer Verification Dashboard</h1>
+    <div id="status" class="text-sm">Memeriksa status otentikasi...</div>
   </header>
+  
+  <div id="loader" class="text-gray-500">Memuat data pendaftaran...</div>
+  <div id="cards">
+    <!-- Data pendaftaran akan dimuat di sini -->
+  </div>
 
-  <main>
-    <div id="controls" style="display:flex;gap:8px;align-items:center;">
-      <button id="refresh" class="small">Refresh Data</button>
-      <div id="loading" style="display:none;margin-left:6px;color:#555">Memuat data...</div>
-    </div>
-
-    <div id="cards" aria-live="polite"></div>
-    <div id="empty" style="display:none;margin-top:18px;color:#666">Tidak ada data sekolah untuk diverifikasi.</div>
-    <div id="errorWrap" style="margin-top:18px;"></div>
-  </main>
+  <div id="errorMsg" class="hidden mt-4 p-4 bg-red-100 text-red-700 border border-red-400 rounded-lg"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, getDocs, query, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, doc, updateDoc, deleteDoc, collection, query, onSnapshot, setLogLevel } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const firebaseConfig = {
+// --- GLOBAL VARIABLES (MANDATORY FOR CANVAS ENVIRONMENT) ---
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+  // Ganti dengan konfigurasi Anda jika Anda tidak menggunakan Canvas
   apiKey: "AIzaSyA6zXOerKvdPJTmBp5Y6R2yFsy98xLDsKc",
   authDomain: "forumwidara.firebaseapp.com",
-  databaseURL: "https://forumwidara-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "forumwidara",
-  storageBucket: "forumwidara.firebasestorage.app",
-  messagingSenderId: "216895655168",
+  storageBucket: "forumwidara.appspot.com",
   appId: "1:216895655168:web:59255f600fc3b3b44eb7e5",
-  measurementId: "G-GVD3VJ2HZN"
 };
+setLogLevel('debug'); // Wajib untuk debugging firestore
+// --- END GLOBAL VARIABLES ---
 
-const DEV_EMAIL = "jujujuirah112@gmail.com";
-const DEV_PASSWORD = "tes123";
-const appId = "forumwidara";
+// --- CONFIG KHUSUS ---
+// Developer UID yang diizinkan sesuai security rules:
+const DEVELOPER_UID = "W9ombzh6y0Mj1AAJEFxL53H1YAR2";
+// Path koleksi yang dipantau (harus sama dengan rules)
+const VERIFICATION_COLLECTION_PATH = `artifacts/${appId}/public/data/sekolah`;
+// --- END CONFIG KHUSUS ---
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
 const statusEl = document.getElementById('status');
+const loaderEl = document.getElementById('loader');
 const cardsEl = document.getElementById('cards');
-const loadingEl = document.getElementById('loading');
-const emptyEl = document.getElementById('empty');
-const errorWrap = document.getElementById('errorWrap');
-const refreshBtn = document.getElementById('refresh');
+const errorMsgEl = document.getElementById('errorMsg');
 
-refreshBtn.addEventListener('click', () => loadData());
+let isAuthReady = false;
+let currentUserId = null;
 
-function showError(msg, err){
-  console.error(msg, err);
-  errorWrap.innerHTML = `<pre class="err">${escapeHtml(msg)}${err?"\n\n"+escapeHtml(String(err)):""}</pre>`;
-}
-function clearError(){ errorWrap.innerHTML = ""; }
-function escapeHtml(s){ return (s+'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c])); }
-
-async function signInDeveloper(){
-  statusEl.textContent = "Mencoba masuk sebagai developer...";
-  try{
-    await signInWithEmailAndPassword(auth, DEV_EMAIL, DEV_PASSWORD);
-  }catch(err){
-    showError("Gagal login otomatis. Periksa kredensial developer.", err);
-    statusEl.textContent = "Login otomatis gagal — silakan perbaiki kredensial.";
-    renderLoginFallback();
-  }
+function showError(message, error = null) {
+    console.error(message, error);
+    errorMsgEl.classList.remove('hidden');
+    errorMsgEl.innerHTML = `<strong>ERROR:</strong> ${message} ${error ? `<br/>(${error.code || error.message})` : ''}`;
 }
 
-function renderLoginFallback(){
-  const fallback = document.createElement('div');
-  fallback.innerHTML = `<p style="color:#444">Silakan login developer di Firebase Console atau perbaiki kredensial otomatis.</p>
-    <p style="margin:8px 0"><a href="#" id="manualSignOut">Sign out (coba login manual)</a></p>`;
-  errorWrap.appendChild(fallback);
-  const a = document.getElementById('manualSignOut');
-  a.addEventListener('click', async (e)=>{
-    e.preventDefault();
-    try{ await signOut(auth); statusEl.textContent = "Telah sign out. Reload halaman dan login manual jika perlu."; }
-    catch(e){ showError('Gagal sign out', e); }
-  });
-}
-
-onAuthStateChanged(auth, async (user)=>{
-  clearError();
-  if(user){
-    statusEl.textContent = `Masuk sebagai ${user.email} (uid: ${user.uid})`;
-    await loadData();
-  }else{
-    statusEl.textContent = "Belum login. Mencoba login otomatis...";
-    await signInDeveloper();
-  }
+// 1. Inisialisasi Auth Listener
+onAuthStateChanged(auth, (user) => {
+    isAuthReady = true;
+    loaderEl.classList.add('hidden');
+    
+    if (user && user.uid === DEVELOPER_UID) {
+        currentUserId = user.uid;
+        statusEl.innerHTML = `<span class="text-green-600 font-bold">Authenticated as Developer: ${DEVELOPER_UID}</span>`;
+        // Panggil fungsi untuk mengambil data HANYA JIKA ini adalah Developer UID
+        fetchVerificationData();
+    } else {
+        // Tampilkan pesan error jika bukan developer atau tidak login
+        statusEl.innerHTML = `<span class="text-red-600 font-bold">Unauthorized. UID required: ${DEVELOPER_UID}</span>`;
+        showError('Akses Ditolak. Anda harus login sebagai Developer UID yang disyaratkan.', { message: 'Unauthorized Access' });
+        
+        // Tampilkan prompt login jika belum login
+        if(!user) displayLoginPrompt();
+    }
 });
 
-async function loadData(){
-  cardsEl.innerHTML = '';
-  emptyEl.style.display = 'none';
-  loadingEl.style.display = 'inline';
-  clearError();
-
-  try{
-    const sekolahCol = collection(db, 'artifacts', appId, 'public', 'data', 'sekolah');
-    const q = query(sekolahCol);
-    const snap = await getDocs(q);
-
-    if(snap.empty){
-      emptyEl.style.display = 'block';
-      return;
-    }
-
-    snap.forEach(docSnap => {
-      const data = docSnap.data();
-      renderCard(docSnap.id, data);
-    });
-  }catch(err){
-    showError("Gagal memuat data dari Firestore. Periksa konfigurasi dan rules.", err);
-  }finally{
-    loadingEl.style.display = 'none';
-  }
-}
-
-function renderCard(docId, data){
-  const c = document.createElement('div'); c.className='card';
-  const nama = data.nama_sekolah || data.nama || "Nama sekolah tidak tersedia";
-  const kepala = data.nama_kepala || data.nama_pendaftar || "-";
-  const email = data.email_admin || data.email || data.uid || "-";
-  const status = data.status_verifikasi || data.status || "pending";
-  const kode = data.kode_sekolah || data.kode || '-';
-
-  // header + meta
-  const headerHtml = `
-    <h3>${escapeHtml(nama)}</h3>
-    <div class="meta">Kepala: ${escapeHtml(kepala)} • Email/ID: ${escapeHtml(email)}</div>
-    <div class="meta">Status: <strong>${escapeHtml(status)}</strong></div>
-    <div class="meta">Kode Sekolah: <span class="kode">${escapeHtml(kode)}</span></div>
-  `;
-  c.innerHTML = headerHtml;
-
-  // auto-detect gambar fields (scan all string fields)
-  const imgWrap = document.createElement('div'); imgWrap.className='img-wrap';
-  let foundImage=false;
-  for(const k in data){
-    try{
-      const v = data[k];
-      if(typeof v === 'string' && v.indexOf('http')!==-1){
-        const low = v.toLowerCase();
-        if(low.includes('cloudinary') || low.includes('res.cloudinary') || low.includes('firebasestorage') || low.includes('googleapis')){
-          foundImage = true;
-          const img = document.createElement('img');
-          img.src = v;
-          img.alt = `${nama} - ${k}`;
-          img.title = k;
-          img.loading = 'lazy';
-          img.addEventListener('click', ()=> window.open(v, '_blank'));
-          imgWrap.appendChild(img);
+// 2. Fungsi Login Developer Manual (Jika diperlukan)
+async function developerLogin(email, password) {
+    try {
+        await setPersistence(auth, browserSessionPersistence);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        if (userCredential.user.uid === DEVELOPER_UID) {
+            alert('Login Berhasil. Dashboard akan di refresh.'); // Menggunakan alert karena ini adalah skenario developer/debug
+            window.location.reload();
+        } else {
+            // Log out user yang salah
+            await auth.signOut();
+            showError('Login Berhasil, tetapi UID tidak cocok dengan Developer UID yang disyaratkan.');
         }
-      }
-    }catch(e){}
-  }
-  if(!foundImage){
-    const placeholder = document.createElement('div'); placeholder.className='placeholder';
-    placeholder.textContent = 'Tidak ada gambar terdeteksi';
-    imgWrap.appendChild(placeholder);
-  }
-  c.appendChild(imgWrap);
-
-  // description / raw toggle
-  if(data.deskripsi || data.keterangan){
-    const desc = document.createElement('div'); desc.style.marginTop='10px'; desc.textContent = data.deskripsi || data.keterangan;
-    c.appendChild(desc);
-  }
-
-  const btns = document.createElement('div'); btns.className='buttons';
-  const approveBtn = document.createElement('button'); approveBtn.className='approve small'; approveBtn.textContent='Setujui';
-  const rejectBtn = document.createElement('button'); rejectBtn.className='reject small'; rejectBtn.textContent='Tolak & Hapus';
-  const viewRawBtn = document.createElement('button'); viewRawBtn.className='small'; viewRawBtn.textContent='Lihat Raw';
-
-  btns.appendChild(approveBtn); btns.appendChild(rejectBtn); btns.appendChild(viewRawBtn);
-  c.appendChild(btns);
-
-  // raw toggle
-  const rawPre = document.createElement('pre'); rawPre.style.whiteSpace='pre-wrap'; rawPre.style.marginTop='10px'; rawPre.textContent = JSON.stringify(data, null, 2);
-  let rawVisible=false;
-  viewRawBtn.addEventListener('click', ()=> {
-    if(!rawVisible){ c.appendChild(rawPre); rawVisible=true; viewRawBtn.textContent='Sembunyikan Raw'; }
-    else{ rawPre.remove(); rawVisible=false; viewRawBtn.textContent='Lihat Raw'; }
-  });
-
-  // actions
-  approveBtn.addEventListener('click', async ()=>{
-    if(!confirm('Yakin ingin menandai sebagai TERVERIFIKASI?')) return;
-    try{
-      const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'sekolah', docId);
-      await updateDoc(docRef, { status_verifikasi: 'terverifikasi', verified_at: new Date().toISOString() });
-      approveBtn.textContent = '✔️ Terverifikasi'; approveBtn.disabled = true;
-    }catch(err){
-      showError('Gagal mengubah status verifikasi. Periksa permissions (rules).', err);
+    } catch(err) {
+        showError('Gagal Login Developer.', err);
     }
-  });
-
-  rejectBtn.addEventListener('click', async ()=>{
-    if(!confirm('Yakin ingin MENGHAPUS dokumen ini? Tindakan ini permanen.')) return;
-    try{
-      const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'sekolah', docId);
-      await deleteDoc(docRef);
-      c.remove();
-    }catch(err){
-      showError('Gagal menghapus dokumen. Periksa permissions (rules).', err);
-    }
-  });
-
-  cardsEl.appendChild(c);
 }
-function escapeHtml(s){return (s+'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]));}
+
+function displayLoginPrompt() {
+    // Implementasi UI prompt sederhana untuk login developer
+    const loginDiv = document.createElement('div');
+    loginDiv.className = 'mt-4 p-4 bg-yellow-100 border border-yellow-400 rounded-lg max-w-sm';
+    loginDiv.innerHTML = `
+        <h4 class="font-bold text-yellow-800">Login Developer</h4>
+        <p class="text-xs text-gray-700 mb-2">Login sebagai ${DEVELOPER_UID} untuk melanjutkan.</p>
+        <input id="devEmail" type="email" placeholder="Email Developer" class="w-full p-2 border rounded-lg mb-2 text-sm">
+        <input id="devPass" type="password" placeholder="Password Developer" class="w-full p-2 border rounded-lg mb-4 text-sm">
+        <button id="devLoginBtn" class="w-full bg-yellow-600 text-white p-2 rounded-lg font-semibold hover:bg-yellow-700">Login</button>
+    `;
+    document.body.appendChild(loginDiv);
+
+    document.getElementById('devLoginBtn').addEventListener('click', () => {
+        const email = document.getElementById('devEmail').value;
+        const password = document.getElementById('devPass').value;
+        document.getElementById('devLoginBtn').textContent = 'Loading...';
+        developerLogin(email, password);
+    });
+}
+
+
+// 3. Fungsi Pengambilan Data
+function fetchVerificationData() {
+    const q = query(collection(db, VERIFICATION_COLLECTION_PATH));
+
+    // Gunakan onSnapshot untuk real-time update
+    onSnapshot(q, (snapshot) => {
+        cardsEl.innerHTML = ''; // Kosongkan tampilan
+        
+        if (snapshot.empty) {
+            cardsEl.innerHTML = `<div class="text-gray-500 col-span-full">Tidak ada pendaftaran baru yang perlu diverifikasi.</div>`;
+            return;
+        }
+
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            const docId = doc.id;
+            
+            // Render Card
+            const card = createCard(docId, data);
+            cardsEl.appendChild(card);
+        });
+    }, (error) => {
+        showError('Gagal mengambil data dari Firestore. Cek Security Rules dan koneksi Anda.', error);
+    });
+}
+
+// 4. Fungsi Pembuatan Kartu
+function createCard(docId, data) {
+    const statusClass = data.status_verifikasi === 'terverifikasi' ? 'status-verified' : 'status-pending';
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.id = `card-${docId}`;
+    card.innerHTML = `
+        <h3 class="text-blue-700">${escapeHtml(data.nama_sekolah)}</h3>
+        <p class="meta">Admin UID: ${escapeHtml(data.original_uid)}</p>
+        <p class="meta">Dokumen ID: ${escapeHtml(docId)}</p>
+        <p class="mb-3">Status: <span class="${statusClass}">${escapeHtml(data.status_verifikasi || 'pending')}</span></p>
+        
+        <p><strong>Kepala:</strong> ${escapeHtml(data.nama_kepala)}</p>
+        <p><strong>Email:</strong> ${escapeHtml(data.email_admin)}</p>
+        <p><strong>Kode Sekolah:</strong> ${escapeHtml(data.kode_sekolah)}</p>
+        <p class="text-xs text-gray-500 mt-2">Daftar: ${data.created_at ? new Date(data.created_at.seconds * 1000).toLocaleString() : 'N/A'}</p>
+
+        <div class="buttons mt-4">
+            <button class="info view-raw-btn">Lihat Raw</button>
+            <button class="success approve-btn" ${data.status_verifikasi === 'terverifikasi' ? 'disabled' : ''}>Verifikasi & Approve</button>
+            <button class="danger delete-btn">Hapus/Tolak</button>
+        </div>
+    `;
+
+    const approveBtn = card.querySelector('.approve-btn');
+    const deleteBtn = card.querySelector('.delete-btn');
+    const viewRawBtn = card.querySelector('.view-raw-btn');
+
+    // Menampilkan Raw Data
+    const rawPre = document.createElement('pre');
+    rawPre.className = 'text-xs p-2 bg-gray-50 mt-2 rounded-lg overflow-auto';
+    rawPre.textContent = JSON.stringify(data, null, 2);
+    let rawVisible = false;
+    viewRawBtn.addEventListener('click', () => {
+        if (!rawVisible) { card.appendChild(rawPre); rawVisible = true; viewRawBtn.textContent = 'Sembunyikan Raw'; }
+        else { rawPre.remove(); rawVisible = false; viewRawBtn.textContent = 'Lihat Raw'; }
+    });
+
+    // Aksi Verifikasi
+    approveBtn.addEventListener('click', async () => {
+        if (!confirm('Yakin ingin menandai pendaftaran ini sebagai TERVERIFIKASI?')) return;
+        
+        try {
+            const verifDocRef = doc(db, VERIFICATION_COLLECTION_PATH, docId);
+            const masterDocRef = doc(db, 'sekolah', data.original_uid);
+
+            // 1. Update status di koleksi verifikasi
+            await updateDoc(verifDocRef, { status_verifikasi: 'terverifikasi', verified_by: currentUserId, verified_at: serverTimestamp() });
+            
+            // 2. Update status di koleksi master (opsional, untuk cross-reference)
+            // Rules: allow update: if request.auth != null && (request.auth.uid == userId || request.auth.uid == DEVELOPER_UID)
+            await updateDoc(masterDocRef, { status_verifikasi: 'terverifikasi', verified_by_dev: currentUserId, updated_at: serverTimestamp() });
+
+            approveBtn.textContent = '✔️ Terverifikasi';
+            approveBtn.disabled = true;
+            card.querySelector(`.${statusClass}`).textContent = 'terverifikasi';
+            card.querySelector(`.${statusClass}`).className = 'status-verified';
+            
+        } catch (err) {
+            showError('Gagal mengubah status verifikasi. Periksa permissions (rules) atau apakah dokumen master sudah terhapus.', err);
+        }
+    });
+
+    // Aksi Hapus/Tolak
+    deleteBtn.addEventListener('click', async () => {
+        if (!confirm('Yakin ingin MENGHAPUS dokumen pendaftaran ini? Tindakan ini permanen.')) return;
+        try {
+            const docRef = doc(db, VERIFICATION_COLLECTION_PATH, docId);
+            await deleteDoc(docRef);
+            // Kartu akan otomatis hilang karena onSnapshot
+        } catch (err) {
+            showError('Gagal menghapus dokumen. Periksa permissions (rules).', err);
+        }
+    });
+
+    return card;
+}
+
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": "&#39;" }[c])); }
 </script>
 </body>
 </html>
+
