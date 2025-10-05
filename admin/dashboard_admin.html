@@ -33,311 +33,370 @@
         .sidebar-overlay.open {
             opacity: 1;
         }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .loading-overlay.hidden {
+            display: none;
+            opacity: 0;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #2563eb;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-50 min-h-screen">
 
-    <!-- Overlay Loading (dipertahankan dari file asli) -->
-    <div id="loading-overlay" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
-        <div class="text-center">
-            <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <p class="text-sm text-gray-600 mt-3">Memuat data...</p>
-        </div>
+    <!-- Loading Overlay (diperbaiki agar selalu muncul di awal) -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner mb-3"></div>
+        <p class="text-gray-700 font-medium">Memuat Dashboard...</p>
+        <p id="loading-error" class="text-red-600 text-sm mt-2 hidden"></p>
     </div>
 
-    <!-- Container Utama - Menggunakan sistem sidebar dinamis -->
-    <div class="flex h-screen bg-gray-100">
+    <!-- Konten Utama -->
+    <div id="main-content" class="min-h-screen flex">
         
-        <!-- Overlay untuk Mobile Sidebar (Sesuai sistem di main_admin.txt) -->
-        <div id="sidebar-overlay" class="sidebar-overlay hidden fixed inset-0 bg-black bg-opacity-50 transition-opacity md:hidden"></div>
+        <!-- Mobile Sidebar Button -->
+        <button id="sidebar-toggle" class="lg:hidden fixed top-4 left-4 z-50 p-2 bg-blue-600 text-white rounded-lg shadow-lg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
 
-        <!-- Placeholder untuk Sidebar (Akan diisi oleh JavaScript) -->
-        <!-- Ini adalah pengganti untuk sidebar yang dulunya hardcoded di sini -->
-        <div id="sidebar-container"></div>
+        <!-- Sidebar (Kiri) -->
+        <aside id="sidebar" class="sidebar lg:relative w-64 bg-gray-800 text-white shadow-xl flex-shrink-0 p-4 transition-transform duration-300 ease-in-out lg:transform-none">
+            <h2 class="text-2xl font-bold mb-6 text-blue-300">Admin Panel</h2>
+            <p class="text-sm text-gray-400 mb-2">Login Sebagai:</p>
+            <div class="mb-6 bg-gray-700 p-2 rounded-lg break-words">
+                <p id="user-display" class="font-medium text-yellow-300 text-sm">Memuat user...</p>
+                <div class="flex items-center mt-1">
+                    <span id="user-uid" class="text-xs text-gray-400 truncate w-40"></span>
+                    <button id="copy-uid-dash" class="ml-2 p-1 text-gray-400 hover:text-white transition duration-150">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v2M8 7h12"></path></svg>
+                    </button>
+                    <span id="copy-status-dash" class="text-xs text-green-400 ml-2"></span>
+                </div>
+            </div>
 
-        <!-- Main content -->
-        <div class="flex flex-col flex-1 overflow-y-auto">
+            <nav class="space-y-2">
+                <a href="#" class="sidebar-item block py-2 px-3 rounded-lg bg-blue-600 text-white font-semibold">
+                    Dashboard
+                </a>
+                <a href="#guru" id="menu-guru" class="sidebar-item block py-2 px-3 rounded-lg text-gray-300 hover:bg-gray-700 transition duration-150">
+                    Data Guru
+                </a>
+                <a href="#siswa" id="menu-siswa" class="sidebar-item block py-2 px-3 rounded-lg text-gray-300 hover:bg-gray-700 transition duration-150">
+                    Data Siswa
+                </a>
+            </nav>
+            <div class="mt-8 pt-4 border-t border-gray-700">
+                <button id="logout-button" class="w-full py-2 px-3 bg-red-600 hover:bg-red-700 rounded-lg text-white font-semibold transition duration-150">
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Sidebar Overlay untuk Mobile -->
+        <div id="sidebar-overlay" class="sidebar-overlay fixed inset-0 bg-black opacity-0 transition-opacity duration-300 lg:hidden pointer-events-none"></div>
+
+        <!-- Konten Utama Dashboard (Kanan) -->
+        <main class="flex-1 p-6 lg:p-10">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">Dashboard Admin Sekolah</h1>
             
-            <!-- Header/Navbar (Dipertahankan dari file asli) -->
-            <header class="flex items-center justify-between p-4 bg-white border-b border-gray-200 sticky top-0 z-10">
-                <div class="flex items-center">
-                    <!-- Tombol Hamburger untuk Mobile (Penting untuk sistem sidebar) -->
-                    <button id="sidebar-toggle-btn" class="text-gray-500 hover:text-gray-700 md:hidden mr-4">
-                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                        </svg>
-                    </button>
-                    <h1 class="text-2xl font-semibold text-gray-800">Dashboard Admin</h1>
+            <!-- Informasi Sekolah -->
+            <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Informasi Sekolah</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <p><strong>Nama Sekolah:</strong> <span id="sekolah-nama" class="font-medium text-blue-600">Memuat...</span></p>
+                    <p><strong>Status Verifikasi:</strong> <span id="sekolah-status" class="font-medium text-yellow-500">Memuat...</span></p>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <span id="user-display" class="text-sm font-medium text-gray-600">Loading User...</span>
-                    <button id="logout-btn" class="text-red-500 hover:text-red-700 transition duration-150">
-                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12" />
-                        </svg>
-                    </button>
+            </div>
+
+            <!-- Ringkasan Data -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white p-5 rounded-xl shadow-lg border-l-4 border-blue-500">
+                    <p class="text-sm font-medium text-gray-500">Total Guru</p>
+                    <p id="total-guru" class="text-3xl font-extrabold text-gray-900 mt-1">0</p>
                 </div>
-            </header>
+                <div class="bg-white p-5 rounded-xl shadow-lg border-l-4 border-green-500">
+                    <p class="text-sm font-medium text-gray-500">Total Siswa</p>
+                    <p id="total-siswa" class="text-3xl font-extrabold text-gray-900 mt-1">0</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-lg border-l-4 border-yellow-500">
+                    <p class="text-sm font-medium text-gray-500">Kelas Aktif</p>
+                    <p id="total-kelas" class="text-3xl font-extrabold text-gray-900 mt-1">0</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-lg border-l-4 border-red-500">
+                    <p class="text-sm font-medium text-gray-500">Siswa Belum Aktif</p>
+                    <p id="siswa-nonaktif" class="text-3xl font-extrabold text-gray-900 mt-1">0</p>
+                </div>
+            </div>
 
-            <!-- Main Content Area -->
-            <main class="p-6">
-                <!-- Status & Welcome Section -->
-                <section class="mb-8">
-                    <h2 class="text-3xl font-bold text-gray-900 mb-4">Selamat Datang, Admin!</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <!-- Card 1: Total Pengguna -->
-                        <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-                            <p class="text-sm font-medium text-gray-500">Total Pengguna Aktif</p>
-                            <p class="text-3xl font-extrabold text-indigo-600 mt-1">1,245</p>
-                            <span class="text-xs text-green-500 mt-2 block">+12% Bulan Ini</span>
-                        </div>
-                        <!-- Card 2: Kelas Aktif -->
-                        <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-                            <p class="text-sm font-medium text-gray-500">Kelas Program Aktif</p>
-                            <p class="text-3xl font-extrabold text-green-600 mt-1">15</p>
-                            <span class="text-xs text-yellow-500 mt-2 block">2 Kelas Baru Menunggu</span>
-                        </div>
-                        <!-- Card 3: Pesan Baru -->
-                        <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-                            <p class="text-sm font-medium text-gray-500">Pesan/Masukan Baru</p>
-                            <p class="text-3xl font-extrabold text-red-600 mt-1">4</p>
-                            <span class="text-xs text-blue-500 mt-2 block">Perlu Ditindaklanjuti</span>
-                        </div>
-                    </div>
-                </section>
+            <!-- Daftar Guru Terbaru -->
+            <div class="bg-white p-6 rounded-xl shadow-lg mt-8">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Daftar Guru (5 Terbaru)</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mata Pelajaran</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            </tr>
+                        </thead>
+                        <tbody id="guru-list" class="bg-white divide-y divide-gray-200">
+                            <!-- Data Guru akan diisi oleh JavaScript -->
+                            <tr><td colspan="3" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Memuat data guru...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-                <!-- API Key Section (Dipertahankan dari file asli) -->
-                <section class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-                    <h3 class="text-xl font-bold text-gray-900 mb-4">Kunci API Rahasia</h3>
-                    <p class="text-gray-600 mb-3">Gunakan kunci ini untuk otentikasi layanan eksternal. Jaga kerahasiaannya!</p>
-                    <div class="flex flex-col md:flex-row items-start md:items-center space-y-3 md:space-y-0 md:space-x-4">
-                        <code id="secret-key-display" class="bg-gray-100 text-sm p-3 rounded-lg flex-1 font-mono break-all">
-                            xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
-                        </code>
-                        <button id="copy-key-button-dash" class="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition duration-150">
-                            <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75M17.25 17.25H12c-.621 0-1.125-.504-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v9.375c0 .621-.504 1.125-1.125 1.125z" />
-                            </svg>
-                            Salin Kode
-                        </button>
-                    </div>
-                    <p id="copy-status-dash" class="text-xs mt-2 text-green-600"></p>
-                </section>
-                
-            </main>
-        </div>
+            <p id="dashboard-error-msg" class="text-red-600 mt-4 hidden">Terjadi kesalahan dalam memuat data. Periksa konsol untuk detail error (kemungkinan **Security Rules**).</p>
+
+        </main>
+
     </div>
-    
-    <!-- Script untuk Firebase dan Logika Halaman -->
-    <script type="module">
-        // Import Firebase (Mengikuti sistem yang diharapkan ada)
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Global Variables (Penting untuk lingkungan Canvas)
+    <!-- Firebase SDKs -->
+    <script type="module">
+        // Global variables provided by the environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection, query, where, onSnapshot, getDocs, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
         // Inisialisasi Firebase
         let app, db, auth;
+        let adminUID = null; // UID Admin yang login
+
+        // setLogLevel('debug'); // Uncomment untuk debugging Firestore lebih dalam
+
         try {
             app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
-            setLogLevel('Debug'); // Aktifkan logging debug
+            // Setelah inisialisasi, kita akan menunggu status autentikasi
         } catch (e) {
             console.error("Gagal menginisialisasi Firebase:", e);
+            document.getElementById('loading-overlay').classList.add('hidden');
+            document.getElementById('loading-error').textContent = "Kesalahan Inisialisasi Firebase. Periksa konfigurasi.";
+            document.getElementById('loading-error').classList.remove('hidden');
         }
 
-        // --- Konten HTML Sidebar (Diambil dari sidebar_template.html) ---
-        const SIDEBAR_HTML_CONTENT = `
-            <aside id="sidebar" class="sidebar flex flex-col w-64 bg-indigo-900 text-white transition-all duration-300 md:translate-x-0">
-                <div class="flex items-center justify-center h-16 bg-indigo-950">
-                    <svg class="h-8 w-8 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.906 59.906 0 0112 3.493a59.906 59.906 0 0110.375 2.844c-.832.502-1.649.92-2.458 1.31M12 20.904l9.26-4.996m-18.52 0l9.26 4.996" />
-                    </svg>
-                    <span class="text-xl font-bold ml-3 text-indigo-100">Admin Panel</span>
-                </div>
-                <nav class="flex-1 px-2 py-4 space-y-2 overflow-y-auto">
-                    <p class="px-4 pt-4 pb-2 text-xs font-semibold text-indigo-400 uppercase tracking-wider">Navigasi Utama</p>
-                    <a href="./dashboard_admin.html" class="flex items-center px-4 py-2 text-white bg-indigo-700 rounded-md">
-                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h7.5A2.25 2.25 0 0113.5 5.25v2.25M3.75 3h-2.25M13.5 7.5h3.75A2.25 2.25 0 0119.5 9.75v3.75c0 .604-.158 1.177-.432 1.684l-1.077 1.615.41.979c.67.994 1.137 2.152 1.137 3.376 0 .621-.504 1.125-1.125 1.125H4.125A2.25 2.25 0 012 19.125V4.875A2.25 2.25 0 014.125 2.625h12.125a2.25 2.25 0 012.25 2.25z" />
-                        </svg>
-                        <span class="ml-3">Dashboard</span>
-                    </a>
-                    <p class="px-4 pt-4 pb-2 text-xs font-semibold text-indigo-400 uppercase tracking-wider">Kelola Data</p>
-                    <a href="./data_siswa.html" class="flex items-center px-4 py-2 text-indigo-200 hover:bg-indigo-700 rounded-md">
-                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a4.5 4.5 0 002.343-3.375m0 0H15M4.297 17.5l.593-.593.582.582.592.592.583-.583.592-.592.583.583 2.072-2.072M16.5 12a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM12 18.75a4.5 4.5 0 004.5-4.5v-2.25m-4.5 2.25h-2.25" />
-                        </svg>
-                        <span class="ml-3">Data Siswa</span>
-                    </a>
-                    <a href="./data_guru.html" class="flex items-center px-4 py-2 text-indigo-200 hover:bg-indigo-700 rounded-md">
-                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0v2.25H4.5v-2.25z" />
-                        </svg>
-                        <span class="ml-3">Data Guru</span>
-                    </a>
-                    <a href="./data_kelas.html" class="flex items-center px-4 py-2 text-indigo-200 hover:bg-indigo-700 rounded-md">
-                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 21v-4.5M8.25 3v4.5M16.5 21v-4.5M16.5 3v4.5M3.75 12h17.5" />
-                        </svg>
-                        <span class="ml-3">Data Kelas</span>
-                    </a>
-                    <p class="px-4 pt-4 pb-2 text-xs font-semibold text-indigo-400 uppercase tracking-wider">Kelola Konten</p>
-                    <a href="./data_program.html" class="flex items-center px-4 py-2 text-indigo-200 hover:bg-indigo-700 rounded-md">
-                       <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                           <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6-2.292m0-14.25v14.25" />
-                       </svg>
-                       <span class="ml-3">Data Program</span>
-                    </a>
-                </nav>
-            </aside>
-        `;
-
-        // --- Logika Sidebar dan Halaman (Mengikuti main_admin.txt) ---
-
         /**
-         * Memuat sidebar secara dinamis ke dalam container.
-         * Ini mensimulasikan fetch di main_admin.txt dengan menggunakan string hardcoded.
+         * Fungsi untuk memuat data dashboard (Admin Sekolah)
+         * DIPANGGIL HANYA SETELAH onAuthStateChanged mengkonfirmasi user.
          */
-        function loadSidebar() {
-            const sidebarContainer = document.getElementById('sidebar-container');
-            if (!sidebarContainer) return;
-
-            // Masukkan konten sidebar ke dalam container
-            sidebarContainer.innerHTML = SIDEBAR_HTML_CONTENT;
+        async function loadDashboardData(adminId) {
+            // ===============================================
+            // 1. Data Admin Sekolah (Koleksi: /sekolah/{userId})
+            // ===============================================
+            const sekolahDocRef = doc(db, 'sekolah', adminId);
+            const guruCollectionRef = collection(db, 'guru');
             
-            // Panggil fungsi inisialisasi setelah sidebar berhasil dimuat
-            initializeSidebarEvents();
+            try {
+                // A. Ambil Data Sekolah
+                const sekolahDoc = await getDoc(sekolahDocRef);
+                if (sekolahDoc.exists()) {
+                    const dataSekolah = sekolahDoc.data();
+                    document.getElementById('sekolah-nama').textContent = dataSekolah.nama_sekolah || 'Nama Sekolah Tidak Ditemukan';
+                    document.getElementById('sekolah-status').textContent = dataSekolah.status_verifikasi || 'Belum Diverifikasi';
+                    document.getElementById('sekolah-status').className = dataSekolah.status_verifikasi === 'terverifikasi' ? 'font-medium text-green-600' : 'font-medium text-yellow-500';
+                } else {
+                    document.getElementById('sekolah-nama').textContent = 'Data sekolah tidak ditemukan!';
+                    throw new Error("Dokumen Sekolah tidak ditemukan untuk UID ini.");
+                }
+
+                // B. Ambil Data Guru (PENTING: Query harus sesuai Security Rules)
+                // Rules: allow read: if request.auth.uid == resource.data.id_sekolah
+                // Maka, kita harus query di mana id_sekolah dokumen guru sama dengan UID Admin yang login.
+                const qGuru = query(guruCollectionRef, where('id_sekolah', '==', adminId));
+                const guruSnapshot = await getDocs(qGuru);
+                
+                // C. Update Ringkasan
+                const totalGuru = guruSnapshot.size;
+                document.getElementById('total-guru').textContent = totalGuru;
+                
+                // D. Tampilkan Guru Terbaru
+                const guruListElement = document.getElementById('guru-list');
+                guruListElement.innerHTML = ''; // Bersihkan loading message
+
+                if (totalGuru === 0) {
+                    guruListElement.innerHTML = '<tr><td colspan="3" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Belum ada data guru terdaftar.</td></tr>';
+                } else {
+                    let count = 0;
+                    guruSnapshot.docs.slice(0, 5).forEach(doc => {
+                        const dataGuru = doc.data();
+                        const row = `
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${dataGuru.nama || 'N/A'}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${dataGuru.mata_pelajaran || 'Umum'}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${dataGuru.email || 'N/A'}</td>
+                            </tr>
+                        `;
+                        guruListElement.innerHTML += row;
+                        count++;
+                    });
+                }
+
+                // C. Data Siswa dan Kelas (Contoh: Di sini Anda akan menambahkan query untuk koleksi 'siswa' dan 'kelas')
+                // Misalnya, query siswa juga harus difilter berdasarkan id_sekolah
+                document.getElementById('total-siswa').textContent = '50'; // Placeholder
+                document.getElementById('total-kelas').textContent = '4'; // Placeholder
+                document.getElementById('siswa-nonaktif').textContent = '3'; // Placeholder
+
+            } catch (e) {
+                console.error("❌ Kesalahan saat mengambil data Firestore:", e);
+                document.getElementById('dashboard-error-msg').textContent = `Terjadi kesalahan dalam memuat data: ${e.message || 'Unknown Error'}. Ini seringkali karena pelanggaran Security Rules.`;
+                document.getElementById('dashboard-error-msg').classList.remove('hidden');
+            }
         }
 
         /**
-         * Menginisialisasi event listener untuk sidebar (mobile toggle).
+         * Logika inisialisasi utama
+         * (Mengambil alih initializeDashboardLogic lama)
          */
-        function initializeSidebarEvents() {
+        async function initializeAdminLogic() {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const loadingError = document.getElementById('loading-error');
+
+            // 1. Pastikan overlay loading muncul sebelum proses
+            if (loadingOverlay) {
+                 loadingOverlay.classList.remove('hidden');
+            }
+            
+            try {
+                // Autentikasi dilakukan di onAuthStateChanged
+                // Kita hanya menunggu Auth siap dan mendapatkan user
+                
+                await new Promise((resolve, reject) => {
+                    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+                        unsubscribe(); // Hentikan listener setelah mendapatkan status awal
+
+                        if (user) {
+                            adminUID = user.uid;
+
+                            // Tampilkan Info User
+                            document.getElementById('user-display').textContent = user.email || 'Admin Sekolah';
+                            document.getElementById('user-uid').textContent = adminUID;
+                            
+                            // 2. Muat Data Dashboard
+                            await loadDashboardData(adminUID);
+                            
+                            resolve(); // Lanjutkan
+                        } else {
+                            // Jika tidak ada user, redirect ke halaman login
+                            console.log("User tidak terautentikasi. Redirect ke login.");
+                            window.location.href = '/login.html';
+                            // Kita tidak perlu memanggil reject() karena redirect akan menghentikan alur
+                        }
+                    }, (error) => {
+                        // Jika ada error dalam onAuthStateChanged (misal: token expired/invalid)
+                        reject(error);
+                    });
+                });
+                
+            } catch (e) {
+                // Tangani Error Inisialisasi/Data
+                console.error("Kesalahan kritis saat inisialisasi dashboard:", e);
+                loadingError.textContent = `Gagal memuat: ${e.message}. Mengarahkan ke login.`;
+                loadingError.classList.remove('hidden');
+                
+                // Beri waktu sebentar sebelum redirect, agar user bisa melihat error
+                setTimeout(() => {
+                    window.location.href = '/login.html';
+                }, 3000);
+                
+            } finally {
+                // *** BAGIAN PENTING: Selalu sembunyikan overlay setelah selesai ***
+                if (loadingOverlay) {
+                    loadingOverlay.classList.add('hidden');
+                }
+            }
+        }
+
+        /**
+         * Logika UI (Sidebar & Logout)
+         */
+        function setupUI() {
             const sidebar = document.getElementById('sidebar');
-            const toggleBtn = document.getElementById('sidebar-toggle-btn');
             const overlay = document.getElementById('sidebar-overlay');
+            const toggleButton = document.getElementById('sidebar-toggle');
+            const logoutButton = document.getElementById('logout-button');
+            const copyButton = document.getElementById('copy-uid-dash');
+            const copyStatus = document.getElementById('copy-status-dash');
             
-            if (!sidebar || !toggleBtn || !overlay) return;
-
-            // Fungsi untuk membuka/menutup sidebar
+            // Toggle Sidebar
             const toggleSidebar = () => {
-                const isHidden = !sidebar.classList.toggle('open');
-                overlay.classList.toggle('open', !isHidden);
-                overlay.classList.toggle('hidden', isHidden);
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('open');
+                overlay.classList.toggle('pointer-events-none');
             };
 
-            // Event listener
-            toggleBtn.addEventListener('click', toggleSidebar);
-            overlay.addEventListener('click', toggleSidebar);
-        }
+            toggleButton.addEventListener('click', toggleSidebar);
+            overlay.addEventListener('click', toggleSidebar); // Tutup saat klik overlay
 
-        /**
-         * Menginisialisasi otentikasi, tampilan user, dan logika spesifik dashboard.
-         */
-        // Ganti fungsi initializeDashboardLogic() yang ada
-async function initializeDashboardLogic() {
-    
-    // Pastikan variabel-variabel ada sebelum digunakan
-    const userDisplay = document.getElementById('user-display');
-    const loadingOverlay = document.getElementById('loading-overlay');
-    const initialAuthToken = new URLSearchParams(window.location.search).get('auth');
-
-    try {
-        if (auth) {
-            
-            // 1. Coba Otentikasi
-            if (initialAuthToken) {
-                // Mencoba sign-in dengan token dari URL
-                await signInWithCustomToken(auth, initialAuthToken);
-            } else {
-                // Jika tidak ada token, coba sign-in Anonymous (sesuai logika asli Anda)
-                await signInAnonymously(auth);
+            // Logout
+            if (logoutButton) {
+                logoutButton.addEventListener('click', async () => {
+                    try {
+                        await signOut(auth);
+                        window.location.href = '/login.html';
+                    } catch (e) {
+                        console.error("Gagal logout:", e);
+                        alert("Gagal logout. Silakan coba lagi.");
+                    }
+                });
             }
 
-            // Listener untuk memperbarui UI saat status berubah
-            // (Listener ini tetap penting untuk otentikasi berkelanjutan, tapi BUKAN untuk menghilangkan loading awal)
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    const userId = user.uid;
-                    userDisplay.textContent = `User ID: ${userId.substring(0, 8)}...`;
-                } else {
-                    userDisplay.textContent = 'Guest/Signed Out';
-                    // Opsional: Redirect ke login jika sudah sign-out
-                    // window.location.href = '../login.html';
-                }
-            });
-
-            // 2. Logika Logout dan Copy Key
-            // Dipindahkan ke dalam try agar hanya diinisialisasi jika Auth objek tersedia
-            
-            const logoutBtn = document.getElementById('logout-btn');
-            logoutBtn.addEventListener('click', () => {
-                signOut(auth).then(() => {
-                    console.log('Logout berhasil.');
-                    window.location.href = '../login.html';
-                }).catch((error) => {
-                    console.error('Logout gagal:', error);
-                });
-            });
-
-            const copyBtnDash = document.getElementById('copy-key-button-dash');
-            // ... (Kode Copy Key yang sudah ada di file Anda) ...
-            if (copyBtnDash) {
-                const copyStatusDash = document.getElementById('copy-status-dash');
-                copyBtnDash.addEventListener('click', () => {
-                    const secretKey = document.getElementById('secret-key-display').textContent;
+            // Copy UID
+            if (copyButton) {
+                copyButton.addEventListener('click', () => {
+                    const uidText = document.getElementById('user-uid').textContent;
                     
-                    navigator.clipboard.writeText(secretKey)
-                        .then(() => {
-                            copyStatusDash.textContent = 'Kode berhasil disalin!';
-                            setTimeout(() => { copyStatusDash.textContent = '' }, 2000);
-                        })
-                        .catch(err => {
-                            console.error("Gagal menyalin menggunakan Clipboard API:", err);
-                            copyStatusDash.textContent = 'Gagal menyalin. Salin manual!';
-                            setTimeout(() => { copyStatusDash.textContent = '' }, 3000);
-                        });
+                    // Fallback menggunakan document.execCommand('copy') untuk kompatibilitas iFrame
+                    const tempInput = document.createElement('input');
+                    document.body.appendChild(tempInput);
+                    tempInput.value = uidText;
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                    
+                    copyStatus.textContent = 'Tersalin!';
+                    setTimeout(() => { copyStatus.textContent = '' }, 3000);
                 });
             }
-
-        } else {
-            userDisplay.textContent = 'Firebase Auth Error';
-        }
-        
-    } catch (e) {
-         // Blok ini menangkap error inisialisasi otentikasi (misal: token tidak valid)
-         console.error("Kesalahan saat inisialisasi otentikasi:", e);
-         userDisplay.textContent = 'Error Auth';
-         
-    } finally {
-        // *** BAGIAN PENTING: Selalu sembunyikan overlay setelah TRY atau CATCH selesai ***
-        if (loadingOverlay) {
-            loadingOverlay.classList.add('hidden');
-        }
-    }
-}        
-        console.error("Kesalahan saat inisialisasi otentikasi:", e);
-                 document.getElementById('user-display').textContent = 'Error Auth';
-            }
         }
 
-        // Event listener utama (Sesuai sistem di main_admin.txt)
+        // Event listener utama
         document.addEventListener('DOMContentLoaded', () => {
-            // 1. Memuat sidebar (Fungsi yang disinkronkan)
-            loadSidebar();
+            // 1. Muat setup UI (seperti sidebar dan tombol)
+            setupUI();
 
-            // 2. Menginisialisasi fungsionalitas spesifik dashboard
-            initializeDashboardLogic();
+            // 2. Muat Logika Admin (termasuk Auth dan Data)
+            initializeAdminLogic();
         });
 
     </script>
