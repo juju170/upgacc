@@ -46,6 +46,7 @@ function waitForElement(selector, callback, interval = 100, timeout = 5000) {
 }
 
 function initializeSidebarFunctionality(container) {
+function initializeSidebarFunctionality(container) {
   const sidebar = container.querySelector('#sidebar');
   const toggleButton = document.getElementById('sidebar-toggle');
   const overlay = document.getElementById('sidebar-overlay');
@@ -54,19 +55,26 @@ function initializeSidebarFunctionality(container) {
   // Sidebar hidden by default in mobile
   sidebar.classList.add('-translate-x-full');
 
+  // 🔹 Pastikan tombol toggle tetap bisa diklik di HP
+  toggleButton.style.position = 'relative';
+  toggleButton.style.zIndex = '60';
+
   // Toggle sidebar
   toggleButton.addEventListener('click', (e) => {
     e.stopPropagation();
-    sidebar.classList.toggle('-translate-x-full');
-    overlay.classList.toggle('hidden');
+    setTimeout(() => {
+      sidebar.classList.toggle('-translate-x-full');
+      overlay.classList.toggle('hidden');
+    }, 50); // jeda kecil biar animasi mobile lebih smooth
   });
 
-  // Click outside closes sidebar
+  // Klik overlay menutup sidebar
   overlay.addEventListener('click', () => {
     sidebar.classList.add('-translate-x-full');
     overlay.classList.add('hidden');
   });
 
+  // Klik di luar sidebar menutup (khusus mobile)
   document.addEventListener('click', (e) => {
     if (window.innerWidth < 768 &&
         !sidebar.contains(e.target) &&
@@ -76,6 +84,7 @@ function initializeSidebarFunctionality(container) {
     }
   });
 
+  // 🔹 Tutup/buka otomatis saat resize (desktop <-> mobile)
   window.addEventListener('resize', () => {
     if (window.innerWidth >= 768) {
       sidebar.classList.remove('-translate-x-full');
@@ -85,7 +94,7 @@ function initializeSidebarFunctionality(container) {
     }
   });
 }
-
+  
 function setActiveLink(container) {
   const currentPage = window.location.pathname.split('/').pop();
   const sidebarLinks = container.querySelectorAll('nav a');
