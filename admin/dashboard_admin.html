@@ -156,10 +156,30 @@
         import { getAuth, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-        // --- KONFIGURASI GLOBAL (Disediakan oleh Lingkungan Canvas) ---
+        // --- PENGAMBILAN KONFIGURASI GLOBAL (WAJIB ADA) ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        let firebaseConfig = {};
+
+        try {
+            // Coba parsing konfigurasi
+            if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                firebaseConfig = JSON.parse(__firebase_config);
+            }
+        } catch(e) {
+            console.error("ERROR PARSING FIREBASE CONFIG:", e);
+            // Ini akan ditangkap oleh blok try/catch utama
+        }
+
+        // --- PENTING: PENCEGAHAN ERROR FATAL JIKA KONFIGURASI HILANG ---
+        if (!firebaseConfig || !firebaseConfig.apiKey) {
+            console.error("FIREBASE ERROR: Konfigurasi Firebase TIDAK LENGKAP atau hilang. Hentikan loading.");
+            // Tampilkan pesan error di UI dan hentikan eksekusi
+            document.getElementById('loading-overlay').classList.add('hidden');
+            document.body.innerHTML = '<div class="flex items-center justify-center h-screen"><div class="p-8 text-center bg-red-100 border border-red-400 text-red-700 rounded-lg shadow-xl"><h2>ERROR FATAL</h2><p class="mt-2">Konfigurasi Firebase TIDAK DITEMUKAN. Pastikan Anda menjalankan ini di lingkungan yang menyediakan konfigurasi ($__firebase_config).</p><a href="login.html" class="mt-4 inline-block text-blue-600 underline">Kembali ke Halaman Login</a></div></div>';
+            throw new Error("Missing Firebase Configuration"); // Menghentikan eksekusi script lebih lanjut
+        }
+
 
         // Inisialisasi Firebase
         const app = initializeApp(firebaseConfig);
@@ -185,7 +205,12 @@
         function toggleSidebar() {
             sidebar.classList.toggle('open');
             sidebarOverlay.classList.toggle('open');
-            sidebarOverlay.classList.toggle('hidden');
+            // Toggle 'hidden' pada overlay agar pointer-events bekerja
+            if (sidebar.classList.contains('open')) {
+                 sidebarOverlay.classList.remove('hidden');
+            } else {
+                 setTimeout(() => sidebarOverlay.classList.add('hidden'), 300); // Tunda hide agar transisi terlihat
+            }
         }
 
         menuButton.addEventListener('click', toggleSidebar);
@@ -194,12 +219,14 @@
         // Logout Logic
         document.getElementById('logout-button').addEventListener('click', async () => {
             try {
+                // Selalu hapus loading overlay sebelum redirect
+                loadingOverlay.classList.remove('hidden'); 
                 await signOut(auth);
-                // Setelah logout, arahkan kembali ke halaman login
+                // Arahkan kembali ke halaman login
                 window.location.href = 'login.html';
             } catch (error) {
                 console.error("Gagal logout:", error);
-                alert("Gagal keluar. Coba lagi."); // Gunakan modal kustom di aplikasi nyata
+                // Gunakan notifikasi UI kustom, bukan alert()
             }
         });
 
@@ -207,102 +234,98 @@
         // FUNGSI UTAMA: INTI LOGIKA DASHBOARD
         // ----------------------------------------------------------------
         async function initializeDashboardLogic() {
+            let user = null;
+            
             try {
-                // 1. TUNGGU AUTENTIKASI DARI TOKEN (Jika ada)
+                // 1. TUNGGU AUTENTIKASI DARI TOKEN ATAU SESI
                 if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
+                    // Coba sign in dengan token kustom (dari halaman login)
+                    const userCredential = await signInWithCustomToken(auth, initialAuthToken);
+                    user = userCredential.user;
                 } else {
-                    // Jika tidak ada token (misal: dibuka langsung dari URL), cek status auth
-                    // Jika tidak ada user, redirect ke login.
-                    await new Promise((resolve) => {
-                         onAuthStateChanged(auth, (user) => {
-                             if (!user) {
-                                 // Jika tidak ada sesi, redirect.
-                                 window.location.href = 'login.html';
-                             }
-                             resolve();
+                    // Jika tidak ada token (misal: refresh page), tunggu sesi auth
+                    user = await new Promise((resolve) => {
+                         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+                             unsubscribe(); // Hentikan listener setelah mendapatkan status awal
+                             resolve(currentUser);
                          });
                     });
                 }
                 
-                const user = auth.currentUser;
+                if (!user) {
+                    // Jika tidak ada user setelah semua pengecekan, redirect
+                    console.warn("Tidak ada pengguna terautentikasi. Redirect ke Login.");
+                    window.location.href = 'login.html';
+                    return; 
+                }
 
-                if (user) {
-                    const currentUserId = user.uid;
-                    userDisplay.textContent = 'ID: ' + currentUserId;
+                const currentUserId = user.uid;
+                userDisplay.textContent = 'ID: ' + currentUserId;
 
-                    // 2. AMBIL DATA SEKOLAH DARI FIRESTORE
-                    // Dokumen Admin/Sekolah disimpan di /sekolah/{userId}
-                    const sekolahDocRef = doc(db, 'sekolah', currentUserId);
-                    const sekolahDocSnap = await getDoc(sekolahDocRef);
+                // 2. AMBIL DATA SEKOLAH DARI FIRESTORE
+                // Dokumen Admin/Sekolah disimpan di /sekolah/{userId}
+                const sekolahDocRef = doc(db, 'sekolah', currentUserId);
+                const sekolahDocSnap = await getDoc(sekolahDocRef);
 
-                    if (sekolahDocSnap.exists()) {
-                        const dataSekolah = sekolahDocSnap.data();
-                        
-                        // Cek Peran (Pastikan Admin ini sudah diverifikasi)
-                        if (dataSekolah.status_verifikasi !== 'terverifikasi') {
-                            // Walaupun login berhasil, jika belum terverifikasi, kita kirim ke halaman login lagi atau pesan khusus
-                            console.warn("Akun ini belum diverifikasi. Redirect ke Login.");
-                            await signOut(auth);
-                            // Sembunyikan loading agar pesan notif sempat terlihat jika ada
-                            loadingOverlay.classList.add('hidden'); 
-                            alert("Akun Anda belum selesai diverifikasi oleh Developer. Silakan coba lagi nanti."); // Ganti dengan modal!
-                            window.location.href = 'login.html';
-                            return; 
-                        }
-                        
-                        // 3. TAMPILKAN DATA DI DASHBOARD
-                        const registrationDateObj = dataSekolah.created_at?.toDate ? dataSekolah.created_at.toDate() : new Date();
-                        const formattedDate = registrationDateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-
-                        schoolNameSidebar.textContent = dataSekolah.nama_sekolah || 'Sekolah Baru';
-                        adminNameEl.textContent = 'Nama Admin: ' + (dataSekolah.nama_lengkap || 'Admin');
-                        schoolNameCard.textContent = 'Nama Sekolah: ' + (dataSekolah.nama_sekolah || 'Tidak Diketahui');
-                        registrationDate.textContent = 'Tanggal Daftar: ' + formattedDate;
-
-                        // 4. TAMPILKAN UUID (KUNCI PENGHUBUNG GURU)
-                        uuidDisplay.textContent = dataSekolah.uuid_sekolah || 'UUID TIDAK DITEMUKAN';
-
-                        // 5. Setup Tombol Salin UUID
-                        copyUuidButton.addEventListener('click', () => {
-                            const uuid = uuidDisplay.textContent;
-                            navigator.clipboard.writeText(uuid)
-                                .then(() => {
-                                    copyStatusDash.textContent = 'UUID berhasil disalin!';
-                                    setTimeout(() => { copyStatusDash.textContent = '' }, 3000);
-                                })
-                                .catch(err => {
-                                    console.error("Gagal menyalin menggunakan Clipboard API:", err);
-                                    copyStatusDash.textContent = 'Gagal menyalin. Salin manual!';
-                                    setTimeout(() => { copyStatusDash.textContent = '' }, 3000);
-                                });
-                        });
-
-                    } else {
-                        // Jika dokumen sekolah tidak ditemukan, kembalikan ke login
-                        console.error("Dokumen data sekolah tidak ditemukan untuk UID:", currentUserId);
+                if (sekolahDocSnap.exists()) {
+                    const dataSekolah = sekolahDocSnap.data();
+                    
+                    // Cek Peran (Pastikan Admin ini sudah diverifikasi)
+                    if (dataSekolah.status_verifikasi !== 'terverifikasi') {
+                        console.warn("Akun ini belum diverifikasi. Redirect ke Login.");
                         await signOut(auth);
+                        // Tampilkan pesan error di UI sementara
                         loadingOverlay.classList.add('hidden'); 
-                        alert("Data Admin tidak valid. Silakan coba login ulang."); // Ganti dengan modal!
-                        window.location.href = 'login.html';
+                        document.querySelector('header').innerHTML = `<h1 class="text-4xl font-extrabold text-yellow-600">Akun Belum Diverifikasi</h1><p class="text-yellow-500">Akun Anda sedang dalam proses peninjauan oleh Developer. Silakan coba lagi nanti.</p><a href="login.html" class="mt-4 inline-block text-blue-600 underline">Kembali ke Halaman Login</a>`;
+                        return; 
                     }
+                    
+                    // 3. TAMPILKAN DATA DI DASHBOARD
+                    const registrationDateObj = dataSekolah.created_at?.toDate ? dataSekolah.created_at.toDate() : new Date();
+                    const formattedDate = registrationDateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+                    schoolNameSidebar.textContent = dataSekolah.nama_sekolah || 'Sekolah Baru';
+                    adminNameEl.textContent = 'Nama Admin: ' + (dataSekolah.nama_lengkap || 'Admin');
+                    schoolNameCard.textContent = 'Nama Sekolah: ' + (dataSekolah.nama_sekolah || 'Tidak Diketahui');
+                    registrationDate.textContent = 'Tanggal Daftar: ' + formattedDate;
+
+                    // 4. TAMPILKAN UUID (KUNCI PENGHUBUNG GURU)
+                    uuidDisplay.textContent = dataSekolah.uuid_sekolah || 'UUID TIDAK DITEMUKAN';
+
+                    // 5. Setup Tombol Salin UUID
+                    copyUuidButton.addEventListener('click', () => {
+                        const uuid = uuidDisplay.textContent;
+                        // Menggunakan document.execCommand('copy') sebagai fallback di lingkungan iFrame
+                        const el = document.createElement('textarea');
+                        el.value = uuid;
+                        document.body.appendChild(el);
+                        el.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(el);
+
+                        copyStatusDash.textContent = 'UUID berhasil disalin!';
+                        setTimeout(() => { copyStatusDash.textContent = '' }, 3000);
+                    });
+
 
                 } else {
-                    userDisplay.textContent = 'Firebase Auth Error';
-                    // Jika user tidak terautentikasi (seharusnya dicek di awal, tapi sebagai fallback)
-                    window.location.href = 'login.html';
+                    // Jika dokumen sekolah tidak ditemukan, kembalikan ke login
+                    console.error("Dokumen data sekolah tidak ditemukan untuk UID:", currentUserId);
+                    await signOut(auth);
+                    loadingOverlay.classList.add('hidden'); 
+                    document.querySelector('header').innerHTML = `<h1 class="text-4xl font-extrabold text-red-600">Data Admin Hilang</h1><p class="text-red-500">Data pendaftaran admin Anda tidak ditemukan. Silakan <a href="login.html" class="text-blue-500 underline">Login Ulang</a>.</p>`;
+                    // Jangan redirect otomatis, biarkan user membaca pesan error.
                 }
                 
             } catch (e) {
-                 // Blok ini menangkap error inisialisasi otentikasi (misal: token tidak valid)
-                 console.error("Kesalahan saat inisialisasi otentikasi atau data:", e);
-                 userDisplay.textContent = 'Error Auth/Data';
-                 // Opsi: redirect ke halaman error atau login
-                 loadingOverlay.classList.add('hidden');
-                 document.querySelector('header').innerHTML = `<h1 class="text-4xl font-extrabold text-red-600">Terjadi Kesalahan Fatal</h1><p class="text-red-500">Periksa konsol untuk detailnya atau coba <a href="login.html" class="text-blue-500 underline">Login Kembali</a>.</p>`;
+                 // Blok ini menangkap error inisialisasi, auth, atau data fetching
+                 console.error("Kesalahan saat inisialisasi/autentikasi/data:", e);
+                 userDisplay.textContent = 'Error: Lihat Konsol';
+                 
+                 document.querySelector('header').innerHTML = `<h1 class="text-4xl font-extrabold text-red-600">Terjadi Kesalahan Fatal</h1><p class="text-red-500">Terjadi kesalahan teknis. Periksa konsol untuk detailnya atau coba <a href="login.html" class="text-blue-500 underline">Login Kembali</a>.</p>`;
                  
             } finally {
-                // *** BAGIAN PENTING: Selalu sembunyikan overlay setelah TRY atau CATCH selesai ***
+                // *** JAMINAN: Selalu sembunyikan overlay setelah logic selesai/gagal ***
                 if (loadingOverlay) {
                     loadingOverlay.classList.add('hidden');
                 }
@@ -310,10 +333,7 @@
         }        
 
         // Event listener utama
-        document.addEventListener('DOMContentLoaded', () => {
-            // Memulai logika utama dashboard
-            initializeDashboardLogic();
-        });
+        document.addEventListener('DOMContentLoaded', initializeDashboardLogic);
 
     </script>
 </body>
