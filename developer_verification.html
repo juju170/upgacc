@@ -25,6 +25,29 @@
     .info:hover:not(:disabled){background:#dbeafe}
     .status-pending{color:#f59e0b; font-weight:700;}
     .status-verified{color:#059669; font-weight:700;}
+
+    /* Modal Styling */
+    #devLoginModal{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;display:flex;align-items:center;justify-content:center;}
+    
+    /* Document Preview Modal */
+    #docPreviewModal {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.85); z-index: 200; display: none;
+      align-items: center; justify-content: center;
+    }
+    #docPreviewContent {
+      position: relative; max-width: 90%; max-height: 90%; 
+      background: white; padding: 10px; border-radius: 8px;
+    }
+    #docPreviewClose {
+      position: absolute; top: -10px; right: -10px; 
+      background: white; border-radius: 50%; padding: 5px 10px; 
+      font-size: 16px; font-weight: bold; cursor: pointer;
+    }
+    #docPreviewViewer {
+      max-width: 100%; max-height: 80vh; 
+      object-fit: contain; /* Agar gambar tidak terpotong */
+    }
   </style>
 </head>
 <body>
@@ -40,28 +63,51 @@
 
   <div id="errorMsg" class="hidden mt-4 p-4 bg-red-100 text-red-700 border border-red-400 rounded-lg"></div>
 
+  <!-- Developer Login Modal -->
+  <div id="devLoginModal" class="hidden">
+    <div class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full">
+      <h3 class="text-xl font-bold mb-4 text-red-700">Akses Dibatasi</h3>
+      <div id="devLoginMsg" class="text-sm text-gray-700 mb-3">Anda harus login sebagai Developer UID yang disyaratkan: **W9ombzh6y0Mj1AAJEFxL53H1YAR2**</div>
+      <label class="block mb-3">Email
+        <input id="devEmail" type="email" placeholder="Email Developer" class="rounded-lg">
+      </label>
+      <label class="block mb-4">Password
+        <input id="devPass" type="password" placeholder="Password Developer" class="rounded-lg">
+      </label>
+      <button id="devLoginBtn" class="w-full bg-red-600 text-white p-2 rounded-lg font-semibold hover:bg-red-700">Login Developer</button>
+    </div>
+  </div>
+
+  <!-- Document Preview Modal -->
+  <div id="docPreviewModal" style="display: none;">
+    <div id="docPreviewContent">
+      <span id="docPreviewClose">X</span>
+      <div id="docPreviewViewer" class="bg-gray-100 p-2 rounded-lg"></div>
+    </div>
+  </div>
+
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, updateDoc, deleteDoc, collection, query, onSnapshot, setLogLevel } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, setPersistence, browserSessionPersistence, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, doc, updateDoc, deleteDoc, collection, query, onSnapshot, setLogLevel, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // --- GLOBAL VARIABLES (MANDATORY FOR CANVAS ENVIRONMENT) ---
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-  // Ganti dengan konfigurasi Anda jika Anda tidak menggunakan Canvas
+  // Config dummy jika tidak di Canvas
   apiKey: "AIzaSyA6zXOerKvdPJTmBp5Y6R2yFsy98xLDsKc",
   authDomain: "forumwidara.firebaseapp.com",
   projectId: "forumwidara",
   storageBucket: "forumwidara.appspot.com",
-  appId: "1:216895655168:web:59255f600fc3b3b44eb7e5",
+  appId: "1:216899999999:web:59255f600fc3b3b44eb7e5",
 };
+const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 setLogLevel('debug'); // Wajib untuk debugging firestore
 // --- END GLOBAL VARIABLES ---
 
 // --- CONFIG KHUSUS ---
-// Developer UID yang diizinkan sesuai security rules:
 const DEVELOPER_UID = "W9ombzh6y0Mj1AAJEFxL53H1YAR2";
-// Path koleksi yang dipantau (harus sama dengan rules)
 const VERIFICATION_COLLECTION_PATH = `artifacts/${appId}/public/data/sekolah`;
 // --- END CONFIG KHUSUS ---
 
@@ -73,8 +119,13 @@ const statusEl = document.getElementById('status');
 const loaderEl = document.getElementById('loader');
 const cardsEl = document.getElementById('cards');
 const errorMsgEl = document.getElementById('errorMsg');
+const devLoginModal = document.getElementById('devLoginModal');
+const devLoginBtn = document.getElementById('devLoginBtn');
+const devLoginMsg = document.getElementById('devLoginMsg');
+const docPreviewModal = document.getElementById('docPreviewModal');
+const docPreviewViewer = document.getElementById('docPreviewViewer');
+const docPreviewClose = document.getElementById('docPreviewClose');
 
-let isAuthReady = false;
 let currentUserId = null;
 
 function showError(message, error = null) {
@@ -83,71 +134,106 @@ function showError(message, error = null) {
     errorMsgEl.innerHTML = `<strong>ERROR:</strong> ${message} ${error ? `<br/>(${error.code || error.message})` : ''}`;
 }
 
-// 1. Inisialisasi Auth Listener
+// 0. Inisialisasi Auth Awal
+async function initializeAuth() {
+  if (initialAuthToken) {
+    try {
+      // Masuk menggunakan custom token Canvas
+      await signInWithCustomToken(auth, initialAuthToken);
+    } catch(e) {
+      console.error('Initial token sign-in failed:', e);
+    }
+  }
+}
+initializeAuth();
+
+
+// 1. Auth Listener Utama
 onAuthStateChanged(auth, (user) => {
-    isAuthReady = true;
     loaderEl.classList.add('hidden');
     
     if (user && user.uid === DEVELOPER_UID) {
         currentUserId = user.uid;
         statusEl.innerHTML = `<span class="text-green-600 font-bold">Authenticated as Developer: ${DEVELOPER_UID}</span>`;
-        // Panggil fungsi untuk mengambil data HANYA JIKA ini adalah Developer UID
+        devLoginModal.classList.add('hidden');
         fetchVerificationData();
     } else {
-        // Tampilkan pesan error jika bukan developer atau tidak login
-        statusEl.innerHTML = `<span class="text-red-600 font-bold">Unauthorized. UID required: ${DEVELOPER_UID}</span>`;
-        showError('Akses Ditolak. Anda harus login sebagai Developer UID yang disyaratkan.', { message: 'Unauthorized Access' });
-        
-        // Tampilkan prompt login jika belum login
-        if(!user) displayLoginPrompt();
+        // Tampilkan prompt login jika bukan developer
+        currentUserId = user ? user.uid : null;
+        statusEl.innerHTML = `<span class="text-red-600 font-bold">Unauthorized. Current UID: ${user ? user.uid : 'N/A'}</span>`;
+        displayLoginPrompt();
     }
 });
 
-// 2. Fungsi Login Developer Manual (Jika diperlukan)
-async function developerLogin(email, password) {
+// 2. Fungsi Login Developer Manual
+devLoginBtn.addEventListener('click', async () => {
+    const email = document.getElementById('devEmail').value;
+    const password = document.getElementById('devPass').value;
+    if(!email || !password) { devLoginMsg.textContent = 'Email dan password wajib diisi.'; return; }
+    
+    devLoginMsg.textContent = 'Mencoba login...';
+    devLoginBtn.disabled = true;
+
     try {
         await setPersistence(auth, browserSessionPersistence);
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        
         if (userCredential.user.uid === DEVELOPER_UID) {
-            alert('Login Berhasil. Dashboard akan di refresh.'); // Menggunakan alert karena ini adalah skenario developer/debug
-            window.location.reload();
+            // onAuthStateChanged akan menangani UI setelah login berhasil
+            devLoginMsg.textContent = 'Login Berhasil. Memuat Dashboard...';
         } else {
-            // Log out user yang salah
             await auth.signOut();
-            showError('Login Berhasil, tetapi UID tidak cocok dengan Developer UID yang disyaratkan.');
+            devLoginMsg.innerHTML = `<span class="text-red-700">Gagal: UID tidak cocok.</span>`;
         }
     } catch(err) {
-        showError('Gagal Login Developer.', err);
+        console.error(err);
+        devLoginMsg.innerHTML = `<span class="text-red-700">Gagal Login: ${err.message || err.code}</span>`;
+    } finally {
+        devLoginBtn.disabled = false;
     }
-}
+});
+
 
 function displayLoginPrompt() {
-    // Implementasi UI prompt sederhana untuk login developer
-    const loginDiv = document.createElement('div');
-    loginDiv.className = 'mt-4 p-4 bg-yellow-100 border border-yellow-400 rounded-lg max-w-sm';
-    loginDiv.innerHTML = `
-        <h4 class="font-bold text-yellow-800">Login Developer</h4>
-        <p class="text-xs text-gray-700 mb-2">Login sebagai ${DEVELOPER_UID} untuk melanjutkan.</p>
-        <input id="devEmail" type="email" placeholder="Email Developer" class="w-full p-2 border rounded-lg mb-2 text-sm">
-        <input id="devPass" type="password" placeholder="Password Developer" class="w-full p-2 border rounded-lg mb-4 text-sm">
-        <button id="devLoginBtn" class="w-full bg-yellow-600 text-white p-2 rounded-lg font-semibold hover:bg-yellow-700">Login</button>
-    `;
-    document.body.appendChild(loginDiv);
+    devLoginModal.style.display = 'flex';
+}
 
-    document.getElementById('devLoginBtn').addEventListener('click', () => {
-        const email = document.getElementById('devEmail').value;
-        const password = document.getElementById('devPass').value;
-        document.getElementById('devLoginBtn').textContent = 'Loading...';
-        developerLogin(email, password);
-    });
+// Menutup modal preview
+docPreviewClose.addEventListener('click', () => {
+    docPreviewModal.style.display = 'none';
+    docPreviewViewer.innerHTML = '';
+});
+
+// Fungsi untuk menampilkan dokumen/gambar di modal
+function showDocumentPreview(url, title) {
+    docPreviewViewer.innerHTML = '';
+    docPreviewModal.style.display = 'flex';
+
+    let content;
+    const isPdf = url.includes('.pdf') || url.includes('/pdf/');
+    
+    // Perbaikan: gunakan transformasi Cloudinary untuk optimasi bandwidth saat menampilkan gambar
+    const optimizedUrl = url.replace('/upload/', '/upload/q_auto,f_auto,w_800/');
+
+    if (isPdf) {
+        // Gunakan iframe untuk PDF
+        content = `<iframe src="${optimizedUrl}" class="w-full h-full" style="width: 80vw; height: 80vh; border: none;"></iframe>`;
+    } else {
+        // Gunakan tag img untuk gambar dengan batas ukuran
+        content = `<img src="${optimizedUrl}" alt="${title}" id="docPreviewImage" style="max-width: 80vw; max-height: 80vh;" class="object-contain mx-auto">`;
+    }
+
+    docPreviewViewer.innerHTML = content;
 }
 
 
 // 3. Fungsi Pengambilan Data
 function fetchVerificationData() {
+    // Karena data yang diambil adalah dokumen kecil dari Firestore (hanya link), 
+    // IndexedDB tidak diperlukan untuk optimasi bandwidth pada data ini.
+    // Fokus pada onSnapshot untuk real-time.
     const q = query(collection(db, VERIFICATION_COLLECTION_PATH));
 
-    // Gunakan onSnapshot untuk real-time update
     onSnapshot(q, (snapshot) => {
         cardsEl.innerHTML = ''; // Kosongkan tampilan
         
@@ -171,7 +257,9 @@ function fetchVerificationData() {
 
 // 4. Fungsi Pembuatan Kartu
 function createCard(docId, data) {
+    const statusText = data.status_verifikasi === 'terverifikasi' ? 'terverifikasi' : 'pending';
     const statusClass = data.status_verifikasi === 'terverifikasi' ? 'status-verified' : 'status-pending';
+    
     const card = document.createElement('div');
     card.className = 'card';
     card.id = `card-${docId}`;
@@ -179,32 +267,36 @@ function createCard(docId, data) {
         <h3 class="text-blue-700">${escapeHtml(data.nama_sekolah)}</h3>
         <p class="meta">Admin UID: ${escapeHtml(data.original_uid)}</p>
         <p class="meta">Dokumen ID: ${escapeHtml(docId)}</p>
-        <p class="mb-3">Status: <span class="${statusClass}">${escapeHtml(data.status_verifikasi || 'pending')}</span></p>
+        <p class="mb-3">Status: <span class="${statusClass}">${escapeHtml(statusText)}</span></p>
         
         <p><strong>Kepala:</strong> ${escapeHtml(data.nama_kepala)}</p>
         <p><strong>Email:</strong> ${escapeHtml(data.email_admin)}</p>
         <p><strong>Kode Sekolah:</strong> ${escapeHtml(data.kode_sekolah)}</p>
         <p class="text-xs text-gray-500 mt-2">Daftar: ${data.created_at ? new Date(data.created_at.seconds * 1000).toLocaleString() : 'N/A'}</p>
 
-        <div class="buttons mt-4">
-            <button class="info view-raw-btn">Lihat Raw</button>
-            <button class="success approve-btn" ${data.status_verifikasi === 'terverifikasi' ? 'disabled' : ''}>Verifikasi & Approve</button>
+        <div class="flex flex-wrap gap-2 mt-4 text-sm">
+            <button data-url="${escapeHtml(data.url_sk_pengangkatan)}" data-title="SK Pengangkatan" class="preview-doc-btn info">Preview SK</button>
+            <button data-url="${escapeHtml(data.url_bukti_pendirian)}" data-title="Bukti Pendirian" class="preview-doc-btn info">Preview Bukti</button>
+        </div>
+
+        <div class="buttons mt-4 pt-4 border-t border-gray-100">
+            <button class="success approve-btn" ${statusText === 'terverifikasi' ? 'disabled' : ''}>Verifikasi & Approve</button>
             <button class="danger delete-btn">Hapus/Tolak</button>
         </div>
     `;
 
     const approveBtn = card.querySelector('.approve-btn');
     const deleteBtn = card.querySelector('.delete-btn');
-    const viewRawBtn = card.querySelector('.view-raw-btn');
-
-    // Menampilkan Raw Data
-    const rawPre = document.createElement('pre');
-    rawPre.className = 'text-xs p-2 bg-gray-50 mt-2 rounded-lg overflow-auto';
-    rawPre.textContent = JSON.stringify(data, null, 2);
-    let rawVisible = false;
-    viewRawBtn.addEventListener('click', () => {
-        if (!rawVisible) { card.appendChild(rawPre); rawVisible = true; viewRawBtn.textContent = 'Sembunyikan Raw'; }
-        else { rawPre.remove(); rawVisible = false; viewRawBtn.textContent = 'Lihat Raw'; }
+    
+    // 5. Listener untuk Preview Dokumen
+    card.querySelectorAll('.preview-doc-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const url = e.target.getAttribute('data-url');
+            const title = e.target.getAttribute('data-title');
+            if (url) {
+                showDocumentPreview(url, title);
+            }
+        });
     });
 
     // Aksi Verifikasi
@@ -218,8 +310,7 @@ function createCard(docId, data) {
             // 1. Update status di koleksi verifikasi
             await updateDoc(verifDocRef, { status_verifikasi: 'terverifikasi', verified_by: currentUserId, verified_at: serverTimestamp() });
             
-            // 2. Update status di koleksi master (opsional, untuk cross-reference)
-            // Rules: allow update: if request.auth != null && (request.auth.uid == userId || request.auth.uid == DEVELOPER_UID)
+            // 2. Update status di koleksi master (Wajib dilakukan Developer UID)
             await updateDoc(masterDocRef, { status_verifikasi: 'terverifikasi', verified_by_dev: currentUserId, updated_at: serverTimestamp() });
 
             approveBtn.textContent = '✔️ Terverifikasi';
