@@ -1,341 +1,150 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Admin - Program Sekolah</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        .sidebar-item:hover { background-color: #3b82f6; }
-        /* Style untuk mobile sidebar agar bisa digeser keluar */
-        .sidebar {
-            /* Pastikan sidebar tersembunyi di mobile secara default */
-            transform: translateX(-100%);
-            position: fixed;
-            z-index: 40; /* Di atas konten lain, di bawah overlay */
-            height: 100vh;
-            transition: transform 0.3s ease-in-out;
-        }
-        .sidebar.open {
-            transform: translateX(0);
-        }
-        /* Style untuk overlay mobile */
-        .sidebar-overlay {
-            z-index: 30;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: none; /* Penting agar tidak menghalangi klik saat tersembunyi */
-        }
-        .sidebar-overlay.open {
-            opacity: 1;
-            pointer-events: auto;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Admin - UPGACC</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .sidebar-item:hover { background-color: #3b82f6; }
+  </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex">
-
-    <!-- Loading Overlay -->
-    <div id="loading-overlay" class="fixed inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300">
-        <div class="flex flex-col items-center">
-            <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <p class="mt-3 text-blue-600 font-medium">Memuat data Admin...</p>
-        </div>
+<body class="bg-gray-100">
+  <div id="loading-overlay" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+    <div class="text-center">
+      <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z"></path>
+      </svg>
+      <p class="text-sm text-gray-600 mt-3">Memuat dashboard...</p>
     </div>
+  </div>
 
-    <!-- Mobile Menu Button -->
-    <button id="menu-button" class="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-full bg-blue-600 text-white shadow-lg">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-    </button>
-    
-    <!-- Mobile Sidebar Overlay -->
-    <div id="sidebar-overlay" class="sidebar-overlay fixed inset-0 bg-black/50 hidden lg:hidden"></div>
-
+  <div class="flex h-screen">
     <!-- Sidebar -->
-    <nav id="sidebar" class="sidebar bg-blue-700 w-64 p-4 space-y-4 shadow-xl text-white lg:sticky lg:top-0 lg:left-0 lg:flex lg:flex-col lg:transform-none">
-        <div class="text-center">
-            <h2 class="text-xl font-bold">Admin Panel</h2>
-            <p id="school-name-sidebar" class="text-sm opacity-80 mt-1">Nama Sekolah</p>
-        </div>
-        <div class="h-0.5 bg-blue-600"></div>
-        
-        <div class="flex-grow space-y-2">
-            <a href="#" class="sidebar-item flex items-center p-3 rounded-lg font-medium bg-blue-800 transition-colors">
-                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                Dashboard Utama
-            </a>
-            <a href="#" class="sidebar-item flex items-center p-3 rounded-lg font-medium transition-colors">
-                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354l.707.707M12 18v-5.293m0 0l.707.707M12 12l.707.707m-1.414 0l.707-.707m-7.071 7.071l-.707-.707m0 0l-7-7 7-7"></path></svg>
-                Manajemen Guru
-            </a>
-            <a href="#" class="sidebar-item flex items-center p-3 rounded-lg font-medium transition-colors">
-                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20v-2a3 3 0 015.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M9 11a1 1 0 100-2 1 1 0 000 2zm6 0a1 1 0 100-2 1 1 0 000 2zm-7 4h2a2 2 0 002-2v-4a2 2 0 00-2-2H8a2 2 0 00-2 2v4a2 2 0 002 2z"></path></svg>
-                Data Siswa
-            </a>
-            <!-- Tambahkan menu lain di sini -->
-        </div>
-        
-        <!-- Footer Sidebar -->
-        <div class="pt-4 border-t border-blue-600">
-            <button id="logout-button" class="w-full flex items-center justify-center p-3 rounded-lg font-medium bg-red-600 hover:bg-red-700 transition-colors">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                Keluar
-            </button>
-            <p id="user-display" class="text-xs text-center mt-2 opacity-60 break-all">ID: Menunggu Auth...</p>
-        </div>
-    </nav>
+    <aside class="w-64 bg-indigo-900 text-white flex flex-col">
+      <div class="p-4 text-center font-bold text-lg border-b border-indigo-800">Admin Sekolah</div>
+      <nav class="flex-1 p-2 space-y-2">
+        <a href="#" class="block px-4 py-2 bg-indigo-700 rounded-md">Dashboard</a>
+        <a href="#" class="block px-4 py-2 hover:bg-indigo-700 rounded-md">Data Guru</a>
+        <a href="#" class="block px-4 py-2 hover:bg-indigo-700 rounded-md">Data Siswa</a>
+      </nav>
+      <button id="logout-btn" class="m-4 px-4 py-2 bg-red-500 rounded-md hover:bg-red-600">Logout</button>
+    </aside>
 
-    <!-- Main Content -->
-    <div class="flex-grow p-4 md:p-8">
-        <header class="mb-6">
-            <h1 class="text-3xl font-extrabold text-gray-900">Dashboard Sekolah</h1>
-            <p class="text-gray-500">Selamat datang, Admin. Mari kelola sekolah Anda hari ini.</p>
-        </header>
+    <!-- Konten utama -->
+    <main class="flex-1 overflow-y-auto p-6">
+      <h1 class="text-2xl font-bold text-gray-800 mb-4">Dashboard Admin</h1>
 
-        <!-- Kotak Informasi Penting -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <!-- Card 1: Data Utama -->
-            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-                <h3 class="text-xl font-semibold text-blue-700 mb-4">Informasi Admin</h3>
-                <p id="admin-name" class="text-gray-800 text-lg font-medium">Nama Admin: Memuat...</p>
-                <p id="school-name-card" class="text-gray-600 mt-1">Nama Sekolah: Memuat...</p>
-                <p id="registration-date" class="text-xs text-gray-400 mt-3">Tanggal Daftar: -</p>
-            </div>
-            
-            <!-- Card 2: UUID Sekolah (Penting untuk Guru) -->
-            <div class="bg-blue-50 p-6 rounded-xl shadow-lg border border-blue-200 lg:col-span-2">
-                <h3 class="text-xl font-semibold text-blue-700 mb-4">UUID Sekolah (Kode Guru)</h3>
-                <p class="text-sm text-gray-600 mb-3">Kode ini digunakan oleh guru-guru Anda saat mendaftar atau *login* agar mereka terhubung ke sekolah ini.</p>
-                
-                <div class="flex items-center space-x-3 bg-blue-100 p-3 rounded-lg border border-blue-300">
-                    <pre id="uuid-display" class="flex-grow text-blue-900 font-mono text-sm sm:text-base bg-transparent p-0 overflow-auto whitespace-nowrap">Memuat UUID...</pre>
-                    <button id="copy-uuid-button" class="flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150 shadow-md">
-                        Salin
-                    </button>
-                </div>
-                <p id="copy-status-dash" class="text-xs mt-2 text-green-600 font-medium"></p>
-            </div>
+      <!-- Info Admin -->
+      <div id="admin-info" class="bg-white p-6 rounded-xl shadow-lg border border-gray-100 mb-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-2">Informasi Sekolah</h2>
+        <p class="text-gray-700">Nama Sekolah: <span id="nama-sekolah" class="font-semibold">-</span></p>
+        <p class="text-gray-700">Nama Kepala: <span id="nama-kepala" class="font-semibold">-</span></p>
+        <p class="text-gray-700">Kode Sekolah (UUID):</p>
+        <div class="flex items-center space-x-2 mt-2">
+          <code id="uuid-display" class="bg-gray-100 text-sm p-2 rounded font-mono break-all">memuat...</code>
+          <button id="copy-key" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm">Salin</button>
+        </div>
+        <p id="copy-status" class="text-xs text-green-600 mt-1"></p>
+      </div>
+
+      <!-- Data Dummy -->
+      <div class="grid md:grid-cols-2 gap-6">
+        <!-- Data Guru -->
+        <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+          <h3 class="text-lg font-semibold mb-3 text-gray-800">Data Guru (Dummy)</h3>
+          <ul class="list-disc list-inside text-gray-600 space-y-1">
+            <li>Guru 1 - Bahasa Indonesia</li>
+            <li>Guru 2 - Matematika</li>
+            <li>Guru 3 - IPA</li>
+          </ul>
         </div>
 
-        <!-- Kotak Statistik (Placeholder) -->
-        <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-            <h3 class="text-xl font-semibold text-gray-800 mb-4">Statistik Singkat</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="p-4 bg-gray-50 rounded-lg text-center">
-                    <p class="text-2xl font-bold text-blue-600">0</p>
-                    <p class="text-sm text-gray-500">Total Guru</p>
-                </div>
-                <div class="p-4 bg-gray-50 rounded-lg text-center">
-                    <p class="text-2xl font-bold text-blue-600">0</p>
-                    <p class="text-sm text-gray-500">Total Siswa</p>
-                </div>
-                <div class="p-4 bg-gray-50 rounded-lg text-center">
-                    <p class="text-2xl font-bold text-blue-600">0</p>
-                    <p class="text-sm text-gray-500">Kelas Aktif</p>
-                </div>
-                <div class="p-4 bg-gray-50 rounded-lg text-center">
-                    <p class="text-2xl font-bold text-blue-600">0</p>
-                    <p class="text-sm text-gray-500">Pesan Baru</p>
-                </div>
-            </div>
+        <!-- Data Siswa -->
+        <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+          <h3 class="text-lg font-semibold mb-3 text-gray-800">Data Siswa (Dummy)</h3>
+          <ul class="list-disc list-inside text-gray-600 space-y-1">
+            <li>Siswa 1 - Kelas 9A</li>
+            <li>Siswa 2 - Kelas 8B</li>
+            <li>Siswa 3 - Kelas 7C</li>
+          </ul>
         </div>
-    </div>
+      </div>
+    </main>
+  </div>
 
-    <!-- Script Firebase dan Logika Aplikasi -->
-    <script type="module">
-        // Import modul Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        
-        // --- PENGAMBILAN KONFIGURASI GLOBAL (WAJIB ADA) ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        let firebaseConfig = {};
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        try {
-            // Coba parsing konfigurasi
-            if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-                firebaseConfig = JSON.parse(__firebase_config);
-            }
-        } catch(e) {
-            console.error("ERROR PARSING FIREBASE CONFIG:", e);
-            // Ini akan ditangkap oleh blok try/catch utama
-        }
+    const firebaseConfig = {
+      apiKey: "AIzaSyA6zXOerKvdPJTmBp5Y6R2yFsy98xLDsKc",
+      authDomain: "forumwidara.firebaseapp.com",
+      projectId: "forumwidara",
+      storageBucket: "forumwidara.appspot.com",
+      messagingSenderId: "216895655168",
+      appId: "1:216895655168:web:59255f600fc3b3b44eb7e5",
+    };
 
-        // --- PENTING: PENCEGAHAN ERROR FATAL JIKA KONFIGURASI HILANG ---
-        if (!firebaseConfig || !firebaseConfig.apiKey) {
-            console.error("FIREBASE ERROR: Konfigurasi Firebase TIDAK LENGKAP atau hilang. Hentikan loading.");
-            // Tampilkan pesan error di UI dan hentikan eksekusi
-            document.getElementById('loading-overlay').classList.add('hidden');
-            document.body.innerHTML = '<div class="flex items-center justify-center h-screen"><div class="p-8 text-center bg-red-100 border border-red-400 text-red-700 rounded-lg shadow-xl"><h2>ERROR FATAL</h2><p class="mt-2">Konfigurasi Firebase TIDAK DITEMUKAN. Pastikan Anda menjalankan ini di lingkungan yang menyediakan konfigurasi ($__firebase_config).</p><a href="login.html" class="mt-4 inline-block text-blue-600 underline">Kembali ke Halaman Login</a></div></div>';
-            throw new Error("Missing Firebase Configuration"); // Menghentikan eksekusi script lebih lanjut
-        }
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
+    const uuidDisplay = document.getElementById("uuid-display");
+    const namaSekolahEl = document.getElementById("nama-sekolah");
+    const namaKepalaEl = document.getElementById("nama-kepala");
+    const loadingOverlay = document.getElementById("loading-overlay");
+    const copyBtn = document.getElementById("copy-key");
+    const copyStatus = document.getElementById("copy-status");
+    const logoutBtn = document.getElementById("logout-btn");
 
-        // Inisialisasi Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        
-        // Elemen-elemen DOM
-        const loadingOverlay = document.getElementById('loading-overlay');
-        const userDisplay = document.getElementById('user-display');
-        const schoolNameSidebar = document.getElementById('school-name-sidebar');
-        const adminNameEl = document.getElementById('admin-name');
-        const schoolNameCard = document.getElementById('school-name-card');
-        const registrationDate = document.getElementById('registration-date');
-        const uuidDisplay = document.getElementById('uuid-display');
-        const copyUuidButton = document.getElementById('copy-uuid-button');
-        const copyStatusDash = document.getElementById('copy-status-dash');
-
-        // Navigasi Mobile
-        const sidebar = document.getElementById('sidebar');
-        const menuButton = document.getElementById('menu-button');
-        const sidebarOverlay = document.getElementById('sidebar-overlay');
-
-        function toggleSidebar() {
-            sidebar.classList.toggle('open');
-            sidebarOverlay.classList.toggle('open');
-            // Toggle 'hidden' pada overlay agar pointer-events bekerja
-            if (sidebar.classList.contains('open')) {
-                 sidebarOverlay.classList.remove('hidden');
-            } else {
-                 setTimeout(() => sidebarOverlay.classList.add('hidden'), 300); // Tunda hide agar transisi terlihat
-            }
-        }
-
-        menuButton.addEventListener('click', toggleSidebar);
-        sidebarOverlay.addEventListener('click', toggleSidebar);
-
-        // Logout Logic
-        document.getElementById('logout-button').addEventListener('click', async () => {
-            try {
-                // Selalu hapus loading overlay sebelum redirect
-                loadingOverlay.classList.remove('hidden'); 
-                await signOut(auth);
-                // Arahkan kembali ke halaman login
-                window.location.href = 'login.html';
-            } catch (error) {
-                console.error("Gagal logout:", error);
-                // Gunakan notifikasi UI kustom, bukan alert()
-            }
+    // Copy UUID
+    copyBtn.addEventListener("click", () => {
+      navigator.clipboard.writeText(uuidDisplay.textContent)
+        .then(() => {
+          copyStatus.textContent = "Kode berhasil disalin!";
+          setTimeout(() => copyStatus.textContent = "", 2000);
+        })
+        .catch(() => {
+          copyStatus.textContent = "Gagal menyalin.";
         });
+    });
 
-        // ----------------------------------------------------------------
-        // FUNGSI UTAMA: INTI LOGIKA DASHBOARD
-        // ----------------------------------------------------------------
-        async function initializeDashboardLogic() {
-            let user = null;
-            
-            try {
-                // 1. TUNGGU AUTENTIKASI DARI TOKEN ATAU SESI
-                if (initialAuthToken) {
-                    // Coba sign in dengan token kustom (dari halaman login)
-                    const userCredential = await signInWithCustomToken(auth, initialAuthToken);
-                    user = userCredential.user;
-                } else {
-                    // Jika tidak ada token (misal: refresh page), tunggu sesi auth
-                    user = await new Promise((resolve) => {
-                         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-                             unsubscribe(); // Hentikan listener setelah mendapatkan status awal
-                             resolve(currentUser);
-                         });
-                    });
-                }
-                
-                if (!user) {
-                    // Jika tidak ada user setelah semua pengecekan, redirect
-                    console.warn("Tidak ada pengguna terautentikasi. Redirect ke Login.");
-                    window.location.href = 'login.html';
-                    return; 
-                }
+    // Logout
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+      window.location.href = "../login.html";
+    });
 
-                const currentUserId = user.uid;
-                userDisplay.textContent = 'ID: ' + currentUserId;
+    // Load Data Sekolah
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "../login.html";
+        return;
+      }
 
-                // 2. AMBIL DATA SEKOLAH DARI FIRESTORE
-                // Dokumen Admin/Sekolah disimpan di /sekolah/{userId}
-                const sekolahDocRef = doc(db, 'sekolah', currentUserId);
-                const sekolahDocSnap = await getDoc(sekolahDocRef);
-
-                if (sekolahDocSnap.exists()) {
-                    const dataSekolah = sekolahDocSnap.data();
-                    
-                    // Cek Peran (Pastikan Admin ini sudah diverifikasi)
-                    if (dataSekolah.status_verifikasi !== 'terverifikasi') {
-                        console.warn("Akun ini belum diverifikasi. Redirect ke Login.");
-                        await signOut(auth);
-                        // Tampilkan pesan error di UI sementara
-                        loadingOverlay.classList.add('hidden'); 
-                        document.querySelector('header').innerHTML = `<h1 class="text-4xl font-extrabold text-yellow-600">Akun Belum Diverifikasi</h1><p class="text-yellow-500">Akun Anda sedang dalam proses peninjauan oleh Developer. Silakan coba lagi nanti.</p><a href="login.html" class="mt-4 inline-block text-blue-600 underline">Kembali ke Halaman Login</a>`;
-                        return; 
-                    }
-                    
-                    // 3. TAMPILKAN DATA DI DASHBOARD
-                    const registrationDateObj = dataSekolah.created_at?.toDate ? dataSekolah.created_at.toDate() : new Date();
-                    const formattedDate = registrationDateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-
-                    schoolNameSidebar.textContent = dataSekolah.nama_sekolah || 'Sekolah Baru';
-                    adminNameEl.textContent = 'Nama Admin: ' + (dataSekolah.nama_lengkap || 'Admin');
-                    schoolNameCard.textContent = 'Nama Sekolah: ' + (dataSekolah.nama_sekolah || 'Tidak Diketahui');
-                    registrationDate.textContent = 'Tanggal Daftar: ' + formattedDate;
-
-                    // 4. TAMPILKAN UUID (KUNCI PENGHUBUNG GURU)
-                    uuidDisplay.textContent = dataSekolah.uuid_sekolah || 'UUID TIDAK DITEMUKAN';
-
-                    // 5. Setup Tombol Salin UUID
-                    copyUuidButton.addEventListener('click', () => {
-                        const uuid = uuidDisplay.textContent;
-                        // Menggunakan document.execCommand('copy') sebagai fallback di lingkungan iFrame
-                        const el = document.createElement('textarea');
-                        el.value = uuid;
-                        document.body.appendChild(el);
-                        el.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(el);
-
-                        copyStatusDash.textContent = 'UUID berhasil disalin!';
-                        setTimeout(() => { copyStatusDash.textContent = '' }, 3000);
-                    });
-
-
-                } else {
-                    // Jika dokumen sekolah tidak ditemukan, kembalikan ke login
-                    console.error("Dokumen data sekolah tidak ditemukan untuk UID:", currentUserId);
-                    await signOut(auth);
-                    loadingOverlay.classList.add('hidden'); 
-                    document.querySelector('header').innerHTML = `<h1 class="text-4xl font-extrabold text-red-600">Data Admin Hilang</h1><p class="text-red-500">Data pendaftaran admin Anda tidak ditemukan. Silakan <a href="login.html" class="text-blue-500 underline">Login Ulang</a>.</p>`;
-                    // Jangan redirect otomatis, biarkan user membaca pesan error.
-                }
-                
-            } catch (e) {
-                 // Blok ini menangkap error inisialisasi, auth, atau data fetching
-                 console.error("Kesalahan saat inisialisasi/autentikasi/data:", e);
-                 userDisplay.textContent = 'Error: Lihat Konsol';
-                 
-                 document.querySelector('header').innerHTML = `<h1 class="text-4xl font-extrabold text-red-600">Terjadi Kesalahan Fatal</h1><p class="text-red-500">Terjadi kesalahan teknis. Periksa konsol untuk detailnya atau coba <a href="login.html" class="text-blue-500 underline">Login Kembali</a>.</p>`;
-                 
-            } finally {
-                // *** JAMINAN: Selalu sembunyikan overlay setelah logic selesai/gagal ***
-                if (loadingOverlay) {
-                    loadingOverlay.classList.add('hidden');
-                }
-            }
-        }        
-
-        // Event listener utama
-        document.addEventListener('DOMContentLoaded', initializeDashboardLogic);
-
-    </script>
+      try {
+        const docRef = doc(db, "sekolah", user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          namaSekolahEl.textContent = data.nama_sekolah || "(Tidak ada nama)";
+          namaKepalaEl.textContent = data.nama_kepala || "(Tidak ada data)";
+          uuidDisplay.textContent = data.kode_sekolah || "(Belum ada UUID)";
+        } else {
+          uuidDisplay.textContent = "(Data sekolah tidak ditemukan)";
+        }
+      } catch (err) {
+        console.error("Gagal mengambil data sekolah:", err);
+        uuidDisplay.textContent = "(Error membaca Firestore)";
+      } finally {
+        loadingOverlay.classList.add("hidden");
+      }
+    });
+  </script>
 </body>
 </html>
-
