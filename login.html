@@ -140,8 +140,10 @@
                     // Pengecekan Kunci: 'status_verifikasi'
                     if (dataSekolah.status_verifikasi === 'terverifikasi') {
                         console.log("Admin Sekolah ditemukan dan TERVERIFIKASI. Mengarahkan ke dashboard...");
-                        // Ganti dengan URL dashboard Admin Sekolah Anda yang sebenarnya
-                        window.location.href = './admin_dashboard.html'; 
+                        
+                        // --- PERUBAHAN PENTING DI SINI ---
+                        // Mengarahkan ke dashboard Admin Sekolah sesuai struktur file: admin/dashboard_admin.html
+                        window.location.href = './admin/dashboard_admin.html'; 
                         return;
 
                     } else {
