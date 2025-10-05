@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
  * Memuat sidebar_template.html secara dinamis.
  */
 function loadSidebar() {
-    const sidebarPath = 'sidebar_template.html'; 
+    const sidebarPath = './sidebar_template.html'; 
     const sidebarContainer = document.getElementById('sidebar-container');
 
     if (!sidebarContainer) return;
