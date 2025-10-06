@@ -10,7 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        /* Custom styling for form elements */
         input[type="email"], input[type="password"] {
             border-radius: 0.5rem; /* rounded-lg */
             border: 1px solid #d1d5db; /* border-gray-300 */
@@ -25,166 +24,209 @@
     <nav class="bg-white shadow-md sticky top-0 z-50">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <div class="flex-shrink-0">
-                    <a href="index.html" class="flex items-center space-x-2">
-                        <!-- Placeholder Logo/Icon -->
-                        <svg class="h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21.75l-4.5-4.5H3.75V3.75h16.5V17.25h-3.75l-4.5 4.5zM12 3.75l4.5 4.5h3.75V20.25h-16.5V8.25h3.75l4.5-4.5z" />
-                        </svg>
-                        <span class="text-xl font-bold text-gray-800">Sekolah UPGACC</span>
-                    </a>
-                </div>
+                <a href="#" class="flex-shrink-0 text-xl font-bold text-indigo-600">
+                    Sistem Informasi Sekolah
+                </a>
                 <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                    <a href="index.html" class="text-gray-500 hover:text-blue-600 px-3 py-2 text-sm font-medium">Beranda</a>
-                    <a href="pendaftaran_admin.html" class="text-gray-500 hover:text-blue-600 px-3 py-2 text-sm font-medium">Daftar Admin</a>
+                    <!-- Nav items here if needed -->
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <main class="flex-grow flex items-center justify-center p-4">
-        <div class="w-full max-w-md bg-white p-8 rounded-xl shadow-2xl">
-            <h2 class="text-3xl font-extrabold text-gray-900 mb-6 text-center">Masuk ke Akun Anda</h2>
-            <p class="text-center text-sm text-gray-600 mb-8">Masukkan email dan kata sandi Anda untuk mengakses dashboard.</p>
-
-            <!-- Error Notification -->
-            <div id="errorNotification" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded" role="alert">
-                <p id="errorMessage" class="font-medium"></p>
+    <div class="flex flex-grow items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="w-full max-w-md space-y-8 p-6 bg-white rounded-xl shadow-lg">
+            <div>
+                <h2 class="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+                    Masuk ke Akun Anda
+                </h2>
+                <p class="mt-2 text-center text-sm text-gray-600">
+                    Gunakan email dan kata sandi yang sudah terdaftar.
+                </p>
             </div>
+            
+            <!-- Area Notifikasi Error Utama -->
+            <div id="error-notification" class="hidden rounded-lg bg-red-100 p-4 mb-4" role="alert">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800">Terjadi Kesalahan</h3>
+                        <div class="mt-2 text-sm text-red-700">
+                            <p id="error-message">Pesan kesalahan akan muncul di sini.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <form id="loginForm" class="mt-8 space-y-6">
+                <div class="-space-y-px rounded-md shadow-sm">
+                    <div>
+                        <label for="email-address" class="sr-only">Alamat Email</label>
+                        <input id="email-address" name="email" type="email" autocomplete="email" required class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Alamat Email">
+                    </div>
+                    <div>
+                        <label for="password" class="sr-only">Kata Sandi</label>
+                        <input id="password" name="password" type="password" autocomplete="current-password" required class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Kata Sandi">
+                    </div>
+                </div>
 
-            <form id="loginForm" class="space-y-6">
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                    <input type="email" id="email" name="email" required autocomplete="email" placeholder="contoh@sekolah.edu" class="mt-1 block">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm">
+                        <!-- Link untuk lupa password bisa ditambahkan di sini -->
+                    </div>
                 </div>
-                
+
                 <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700">Kata Sandi</label>
-                    <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="minimal 6 karakter" class="mt-1 block">
+                    <button type="submit" id="loginButton" class="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        Masuk
+                    </button>
                 </div>
-                
-                <button type="submit" id="loginButton" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
-                    Masuk
-                </button>
             </form>
 
-            <div class="mt-6 text-center">
-                <a href="pendaftaran_admin.html" class="font-medium text-sm text-blue-600 hover:text-blue-500">
-                    Belum punya akun? Daftar di sini
-                </a>
+            <div class="text-center text-sm mt-4 space-y-2">
+                <!-- TAUTAN PENDAFTARAN ADMIN -->
+                <p class="text-gray-600">
+                    Belum punya akun **Admin Sekolah**? 
+                    <a href="./pendaftaran_admin.html" class="font-medium text-indigo-600 hover:text-indigo-500">
+                        Daftar Admin di sini.
+                    </a>
+                </p>
+                
+                <!-- TAUTAN PENDAFTARAN GURU -->
+                <p class="text-gray-600">
+                    Ingin mendaftar sebagai **Guru**? 
+                    <a href="./pendaftaran_guru.html" class="font-medium text-indigo-600 hover:text-indigo-500">
+                        Daftar Guru di sini.
+                    </a>
+                </p>
             </div>
         </div>
-    </main>
+    </div>
 
-    <!-- Footer -->
-    <footer class="bg-white border-t border-gray-200 mt-auto">
-        <div class="container mx-auto px-4 py-4 text-center text-sm text-gray-500">
-            &copy; 2024 Sekolah UPGACC. All rights reserved.
+    <!-- Footer (Opsional) -->
+    <footer class="bg-white border-t border-gray-200">
+        <div class="mx-auto max-w-7xl py-4 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-gray-500">&copy; 2024 Sistem Informasi Sekolah. All rights reserved.</p>
         </div>
     </footer>
 
+
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        // --- GLOBAL VARIABLES (MANDATORY FOR CANVAS ENVIRONMENT) ---
+        // Global variables for Firebase config (MANDATORY USE)
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            // Dummy config for local testing
-            apiKey: "AIzaSyA6zXOerKvdPJTmBp5Y6R2yFsy98xLDsKc",
-            authDomain: "forumwidara.firebaseapp.com",
-            projectId: "forumwidara",
-            storageBucket: "forumwidara.appspot.com",
-            appId: "1:216899999999:web:59255f600fc3b3b44eb7e5",
-        };
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        // --- END GLOBAL VARIABLES ---
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
 
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, setPersistence, browserSessionPersistence, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Inisialisasi Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-
-        // Inisialisasi Auth
-        if (initialAuthToken) {
-            signInWithCustomToken(auth, initialAuthToken).catch(e => console.error("Initial token sign-in failed:", e));
-        }
+        
+        // Atur log level (Hanya untuk debugging)
+        setLogLevel('debug');
 
         const loginForm = document.getElementById('loginForm');
         const loginButton = document.getElementById('loginButton');
-        const errorNotification = document.getElementById('errorNotification');
-        const errorMessage = document.getElementById('errorMessage');
+        const errorNotification = document.getElementById('error-notification');
+        const errorMessage = document.getElementById('error-message');
+
+        // Fungsi untuk menyembunyikan notifikasi error
+        function hideError() {
+            errorNotification.classList.add('hidden');
+            errorMessage.textContent = '';
+        }
+
+        // --- PENTING: LOGIC LOGIN TERPUSAT ---
 
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            errorNotification.classList.add('hidden');
-            loginButton.disabled = true;
-            loginButton.textContent = 'Memuat...';
+            hideError();
 
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            loginButton.disabled = true;
+            loginButton.textContent = 'Memproses...';
+
+            const email = loginForm['email-address'].value;
+            const password = loginForm['password'].value;
 
             try {
-                // 1. Lakukan Autentikasi Firebase
+                // 1. Set Persistent State (Penting untuk pengalaman pengguna)
+                await setPersistence(auth, browserSessionPersistence);
+
+                // 2. Autentikasi dengan Email dan Password
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
+
+                // 3. Ambil Data Peran dari Firestore
+                // Path: /artifacts/{appId}/users/{user.uid}/profile/data
+                const userProfileRef = doc(db, `artifacts/${appId}/users/${user.uid}/profile`, 'data');
+                const userDoc = await getDoc(userProfileRef);
                 
-                // 2. CEK STATUS VERIFIKASI DI KOLEKSI MASTER ADMIN SEKOLAH ('sekolah')
-                const sekolahDocRef = doc(db, 'sekolah', user.uid);
-                const sekolahDocSnap = await getDoc(sekolahDocRef);
+                if (!userDoc.exists()) {
+                    await signOut(auth);
+                    throw new Error("Login berhasil, tetapi data profil Anda tidak ditemukan. Akun Anda mungkin belum terdaftar sepenuhnya.");
+                }
 
-                if (sekolahDocSnap.exists()) {
-                    const dataSekolah = sekolahDocSnap.data();
-                    
-                    // Pengecekan Kunci: 'status_verifikasi'
-                    if (dataSekolah.status_verifikasi === 'terverifikasi') {
-                        console.log("Admin Sekolah ditemukan dan TERVERIFIKASI. Mengarahkan ke dashboard...");
-                        
-                        // --- PERUBAHAN PENTING DI SINI ---
-                        // Mengarahkan ke dashboard Admin Sekolah sesuai struktur file: admin/dashboard_admin.html
-                        window.location.href = './admin/dashboard_admin.html'; 
-                        return;
-
-                    } else {
-                        // Jika status BUKAN 'terverifikasi' (misal: 'pending' atau kosong)
-                        await signOut(auth); // Log out user yang tidak terverifikasi
-                        throw new Error("Akun Anda sedang dalam proses peninjauan oleh Developer. Mohon tunggu notifikasi.");
-                    }
+                const userData = userDoc.data();
+                const peran = userData.peran; // Ini adalah kunci: 'Admin Sekolah' atau 'Guru'
+                const status = userData.status; // Untuk cek apakah perlu persetujuan
+                
+                if (status === 'Menunggu Persetujuan') {
+                    await signOut(auth);
+                    throw new Error("Akun Anda sedang dalam proses peninjauan oleh Admin Sekolah.");
                 }
                 
-                // --- Logika untuk Peran Lain (Jika Ada) ---
-                
-                // Cek apakah user adalah Guru (di koleksi 'guru')
-                const guruQuery = query(collection(db, "guru"), where("uid_admin", "==", user.uid));
-                const guruQuerySnapshot = await getDocs(guruQuery);
-                
-                if (!guruQuerySnapshot.empty) {
-                    console.log("Guru ditemukan, mengarahkan ke dashboard guru...");
-                    window.location.href = './guru/dashboard_guru.html';
+                if (!peran) {
+                     await signOut(auth);
+                    throw new Error("Data peran Anda tidak ditemukan. Hubungi administrator.");
+                }
+
+                // 4. Redirect Berdasarkan Peran (Peran yang berbeda akan diarahkan ke Dashboard yang berbeda)
+                console.log("Login berhasil! Peran:", peran);
+
+                if (peran === 'Admin Sekolah') {
+                    // Redirect Admin Sekolah (Kepala Sekolah)
+                    window.location.href = './dashboard_admin.html';
+                    return;
+                } else if (peran === 'Guru') {
+                    // Redirect Guru
+                    window.location.href = './dashboard_guru.html';
+                    return;
+                } else if (peran === 'Siswa') {
+                    // Redirect Siswa (Jika nanti ada)
+                    window.location.href = './dashboard_siswa.html';
                     return;
                 }
                 
-                // ... Tambahkan pengecekan untuk peran lain (Pengelola, Admin Yayasan, dll.) di sini
-
-                // Jika tidak ada peran yang cocok dan bukan Admin Sekolah
+                // Jika peran tidak dikenali
                 await signOut(auth);
-                throw new Error("Login berhasil, tetapi data peran Anda tidak ditemukan. Hubungi administrator.");
+                throw new Error("Peran Anda tidak dikenali oleh sistem. Hubungi administrator.");
 
             } catch (error) {
                 console.error("Error saat login:", error);
                 
                 // Penanganan Error Tampilan
+                let errorMsg = "Terjadi kesalahan. Silakan coba lagi nanti.";
+
                 if (error.code === 'auth/invalid-credential') {
-                    errorMessage.textContent = "Email atau password salah. Silakan periksa kembali.";
+                    errorMsg = "Email atau password salah. Silakan periksa kembali.";
                 } else if (error.message.includes("Akun Anda sedang dalam proses peninjauan")) {
-                    errorMessage.textContent = error.message;
+                    errorMsg = error.message;
+                } else if (error.message.includes("data profil Anda tidak ditemukan")) {
+                    errorMsg = error.message;
                 } else if (error.code && error.code.startsWith('auth/')) {
-                    errorMessage.textContent = "Kesalahan Autentikasi: " + error.message;
+                    errorMsg = "Kesalahan Autentikasi: " + error.message;
                 } else {
-                    errorMessage.textContent = "Terjadi kesalahan. Silakan coba lagi nanti. (" + (error.message || 'Unknown Error') + ")";
+                    errorMsg += " (" + (error.message || 'Unknown Error') + ")";
                 }
                 
+                errorMessage.textContent = errorMsg;
                 errorNotification.classList.remove('hidden');
 
             } finally {
