@@ -26,65 +26,63 @@
   <!-- Overlay sidebar (HP/tablet) -->
   <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-30 hidden z-30 transition-opacity duration-300"></div>
 
-  <div class="flex h-screen">
-    <!-- Sidebar dimuat dinamis -->
-    <div id="sidebar-container"></div>
+  <!-- Sidebar dimuat dinamis, diposisikan secara FIX -->
+  <div id="sidebar-container"></div>
 
-    <!-- Konten utama -->
-    <div class="flex flex-col flex-1 overflow-y-auto">
-      <header class="h-16 bg-white shadow-md flex items-center justify-between px-6 sticky top-0 z-50">
-      <button id="sidebar-toggle" class="md:hidden text-gray-600">
-          <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-          </svg>
-        </button>
-        <div class="flex items-center">
-          <span class="text-lg font-semibold text-gray-700">Dashboard Admin</span>
+  <!-- Konten utama. Tambahkan ID dan class transisi di sini! -->
+  <div id="main-content-wrapper" class="flex flex-col flex-1 overflow-y-auto transition-all duration-300">
+    <header class="h-16 bg-white shadow-md flex items-center justify-between px-6 sticky top-0 z-50">
+    <button id="sidebar-toggle" class="md:hidden text-gray-600">
+        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+      <div class="flex items-center">
+        <span class="text-lg font-semibold text-gray-700">Dashboard Admin</span>
+      </div>
+      <button id="logout-btn" class="text-sm font-medium text-gray-600 hover:text-red-500">Logout</button>
+    </header>
+
+    <main class="p-6 sm:p-10 space-y-10">
+      <section>
+        <h1 class="text-3xl font-bold text-gray-800 mb-3">Selamat Datang di Dashboard Admin</h1>
+        <p class="text-gray-600">Kelola data sekolah Anda di sini. Semua informasi penting dapat dilihat di bawah.</p>
+      </section>
+
+      <!-- Info Sekolah -->
+      <section class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+        <h2 class="text-xl font-bold text-gray-900 mb-2">Informasi Sekolah</h2>
+        <p>Nama Sekolah: <span id="nama-sekolah" class="font-semibold">-</span></p>
+        <p>Nama Kepala: <span id="nama-kepala" class="font-semibold">-</span></p>
+        <p>Kode Sekolah (UUID):</p>
+        <div class="flex items-center space-x-2 mt-2">
+          <code id="uuid-display" class="bg-gray-100 text-sm p-2 rounded font-mono break-all">memuat...</code>
+          <button id="copy-key" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm">Salin</button>
         </div>
-        <button id="logout-btn" class="text-sm font-medium text-gray-600 hover:text-red-500">Logout</button>
-      </header>
+        <p id="copy-status" class="text-xs text-green-600 mt-1"></p>
+      </section>
 
-      <main class="p-6 sm:p-10 space-y-10">
-        <section>
-          <h1 class="text-3xl font-bold text-gray-800 mb-3">Selamat Datang di Dashboard Admin</h1>
-          <p class="text-gray-600">Kelola data sekolah Anda di sini. Semua informasi penting dapat dilihat di bawah.</p>
-        </section>
-
-        <!-- Info Sekolah -->
-        <section class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-          <h2 class="text-xl font-bold text-gray-900 mb-2">Informasi Sekolah</h2>
-          <p>Nama Sekolah: <span id="nama-sekolah" class="font-semibold">-</span></p>
-          <p>Nama Kepala: <span id="nama-kepala" class="font-semibold">-</span></p>
-          <p>Kode Sekolah (UUID):</p>
-          <div class="flex items-center space-x-2 mt-2">
-            <code id="uuid-display" class="bg-gray-100 text-sm p-2 rounded font-mono break-all">memuat...</code>
-            <button id="copy-key" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm">Salin</button>
-          </div>
-          <p id="copy-status" class="text-xs text-green-600 mt-1"></p>
-        </section>
-
-        <!-- Dummy data -->
-        <div class="grid md:grid-cols-2 gap-6">
-          <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-            <h3 class="text-lg font-semibold mb-3 text-gray-800">Data Guru (Dummy)</h3>
-            <ul class="list-disc list-inside text-gray-600 space-y-1">
-              <li>Guru 1 - Bahasa Indonesia</li>
-              <li>Guru 2 - Matematika</li>
-              <li>Guru 3 - IPA</li>
-            </ul>
-          </div>
-
-          <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-            <h3 class="text-lg font-semibold mb-3 text-gray-800">Data Siswa (Dummy)</h3>
-            <ul class="list-disc list-inside text-gray-600 space-y-1">
-              <li>Siswa 1 - Kelas 9A</li>
-              <li>Siswa 2 - Kelas 8B</li>
-              <li>Siswa 3 - Kelas 7C</li>
-            </ul>
-          </div>
+      <!-- Dummy data -->
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+          <h3 class="text-lg font-semibold mb-3 text-gray-800">Data Guru (Dummy)</h3>
+          <ul class="list-disc list-inside text-gray-600 space-y-1">
+            <li>Guru 1 - Bahasa Indonesia</li>
+            <li>Guru 2 - Matematika</li>
+            <li>Guru 3 - IPA</li>
+          </ul>
         </div>
-      </main>
-    </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+          <h3 class="text-lg font-semibold mb-3 text-gray-800">Data Siswa (Dummy)</h3>
+          <ul class="list-disc list-inside text-gray-600 space-y-1">
+            <li>Siswa 1 - Kelas 9A</li>
+            <li>Siswa 2 - Kelas 8B</li>
+            <li>Siswa 3 - Kelas 7C</li>
+          </ul>
+        </div>
+      </div>
+    </main>
   </div>
 
   <!-- Firebase Logic -->
@@ -115,8 +113,16 @@
     const loadingOverlay = document.getElementById("loading-overlay");
 
     copyBtn.addEventListener("click", () => {
-      navigator.clipboard.writeText(uuidDisplay.textContent)
-        .then(() => { copyStatus.textContent = "Kode disalin!"; setTimeout(() => copyStatus.textContent = "", 2000); });
+      // NOTE: Menggunakan document.execCommand('copy') sebagai fallback yang lebih aman di lingkungan iFrame/browser tertentu
+      const el = document.createElement('textarea');
+      el.value = uuidDisplay.textContent;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      
+      copyStatus.textContent = "Kode disalin!"; 
+      setTimeout(() => copyStatus.textContent = "", 2000); 
     });
 
     logoutBtn.addEventListener("click", async () => {
@@ -146,3 +152,4 @@
   <script src="./main_admin.js" defer></script>
 </body>
 </html>
+
