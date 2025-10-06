@@ -11,9 +11,9 @@
     <style>
         body { font-family: 'Inter', sans-serif; }
         input[type="email"], input[type="password"] {
-            border-radius: 0.5rem; /* rounded-lg */
-            border: 1px solid #d1d5db; /* border-gray-300 */
-            padding: 0.75rem; /* p-3 */
+            border-radius: 0.5rem; 
+            border: 1px solid #d1d5db; 
+            padding: 0.75rem; 
             width: 100%;
         }
     </style>
@@ -27,9 +27,6 @@
                 <a href="#" class="flex-shrink-0 text-xl font-bold text-indigo-600">
                     Sistem Informasi Sekolah
                 </a>
-                <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                    <!-- Nav items here if needed -->
-                </div>
             </div>
         </div>
     </nav>
@@ -74,12 +71,6 @@
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between">
-                    <div class="text-sm">
-                        <!-- Link untuk lupa password bisa ditambahkan di sini -->
-                    </div>
-                </div>
-
                 <div>
                     <button type="submit" id="loginButton" class="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                         Masuk
@@ -88,7 +79,6 @@
             </form>
 
             <div class="text-center text-sm mt-4 space-y-2">
-                <!-- TAUTAN PENDAFTARAN ADMIN -->
                 <p class="text-gray-600">
                     Belum punya akun **Admin Sekolah**? 
                     <a href="./pendaftaran_admin.html" class="font-medium text-indigo-600 hover:text-indigo-500">
@@ -96,7 +86,6 @@
                     </a>
                 </p>
                 
-                <!-- TAUTAN PENDAFTARAN GURU -->
                 <p class="text-gray-600">
                     Ingin mendaftar sebagai **Guru**? 
                     <a href="./pendaftaran_guru.html" class="font-medium text-indigo-600 hover:text-indigo-500">
@@ -137,13 +126,10 @@
         const errorNotification = document.getElementById('error-notification');
         const errorMessage = document.getElementById('error-message');
 
-        // Fungsi untuk menyembunyikan notifikasi error
         function hideError() {
             errorNotification.classList.add('hidden');
             errorMessage.textContent = '';
         }
-
-        // --- PENTING: LOGIC LOGIN TERPUSAT ---
 
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -156,26 +142,25 @@
             const password = loginForm['password'].value;
 
             try {
-                // 1. Set Persistent State (Penting untuk pengalaman pengguna)
+                // 1. Set Persistent State (Opsional tapi baik untuk UX)
                 await setPersistence(auth, browserSessionPersistence);
 
                 // 2. Autentikasi dengan Email dan Password
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
-                // 3. Ambil Data Peran dari Firestore
-                // Path: /artifacts/{appId}/users/{user.uid}/profile/data
+                // 3. Ambil Data Peran dari Firestore (KRITIS)
                 const userProfileRef = doc(db, `artifacts/${appId}/users/${user.uid}/profile`, 'data');
                 const userDoc = await getDoc(userProfileRef);
                 
                 if (!userDoc.exists()) {
                     await signOut(auth);
-                    throw new Error("Login berhasil, tetapi data profil Anda tidak ditemukan. Akun Anda mungkin belum terdaftar sepenuhnya.");
+                    throw new Error("Login berhasil, tetapi data peran Anda tidak ditemukan.");
                 }
 
                 const userData = userDoc.data();
-                const peran = userData.peran; // Ini adalah kunci: 'Admin Sekolah' atau 'Guru'
-                const status = userData.status; // Untuk cek apakah perlu persetujuan
+                const peran = userData.peran; // MENCARI FIELD INI
+                const status = userData.status; // MENCARI FIELD INI
                 
                 if (status === 'Menunggu Persetujuan') {
                     await signOut(auth);
@@ -184,44 +169,38 @@
                 
                 if (!peran) {
                      await signOut(auth);
-                    throw new Error("Data peran Anda tidak ditemukan. Hubungi administrator.");
+                    throw new Error("Data peran Anda tidak ditemukan. Silakan mendaftar ulang.");
                 }
 
-                // 4. Redirect Berdasarkan Peran (Peran yang berbeda akan diarahkan ke Dashboard yang berbeda)
+                // 4. Redirect Berdasarkan Peran
                 console.log("Login berhasil! Peran:", peran);
 
                 if (peran === 'Admin Sekolah') {
-                    // Redirect Admin Sekolah (Kepala Sekolah)
                     window.location.href = './dashboard_admin.html';
                     return;
                 } else if (peran === 'Guru') {
-                    // Redirect Guru
                     window.location.href = './dashboard_guru.html';
-                    return;
-                } else if (peran === 'Siswa') {
-                    // Redirect Siswa (Jika nanti ada)
-                    window.location.href = './dashboard_siswa.html';
                     return;
                 }
                 
-                // Jika peran tidak dikenali
                 await signOut(auth);
-                throw new Error("Peran Anda tidak dikenali oleh sistem. Hubungi administrator.");
+                throw new Error("Peran Anda tidak dikenali oleh sistem.");
 
             } catch (error) {
                 console.error("Error saat login:", error);
                 
-                // Penanganan Error Tampilan
                 let errorMsg = "Terjadi kesalahan. Silakan coba lagi nanti.";
 
                 if (error.code === 'auth/invalid-credential') {
                     errorMsg = "Email atau password salah. Silakan periksa kembali.";
                 } else if (error.message.includes("Akun Anda sedang dalam proses peninjauan")) {
                     errorMsg = error.message;
-                } else if (error.message.includes("data profil Anda tidak ditemukan")) {
-                    errorMsg = error.message;
+                } else if (error.message.includes("data peran Anda tidak ditemukan")) {
+                    errorMsg = error.message + " Pastikan Anda sudah mendaftar melalui halaman pendaftaran Admin/Guru, lalu coba login ulang.";
                 } else if (error.code && error.code.startsWith('auth/')) {
-                    errorMsg = "Kesalahan Autentikasi: " + error.message;
+                    errorMsg = "Kesalahan Autentikasi: " + error.code;
+                } else if (error.code === 'permission-denied') {
+                    errorMsg = 'Gagal membaca data peran. Kemungkinan **Firestore Security Rules** Anda memblokir akses.';
                 } else {
                     errorMsg += " (" + (error.message || 'Unknown Error') + ")";
                 }
