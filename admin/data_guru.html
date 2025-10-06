@@ -11,7 +11,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-    <style>
         body {
             font-family: 'Inter', sans-serif;
         }
@@ -19,267 +18,230 @@
         .modal {
             transition: opacity 0.25s ease;
         }
-        /* Hapus style lain yang tidak perlu */
     </style>
 </head>
 <body class="bg-gray-100">
 
-</head>
-<body class="bg-gray-100">
-
-  <div id="loading-overlay" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
-    <div class="text-center">
-      <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z"></path>
-      </svg>
-      <p class="text-sm text-gray-600 mt-3">Memuat data...</p>
-    </div>
-  </div>
-
-  <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-30 hidden z-30 transition-opacity duration-300"></div>
-
-    <div class="flex h-screen bg-gray-100">
-        <div id="sidebar-container"></div>
-        <!-- Main content -->
-        <div class="flex flex-col flex-1 overflow-y-auto">
-              <div id="main-content-wrapper" class="flex flex-col flex-1 overflow-y-auto transition-all duration-300">
-              <header class="h-16 bg-white shadow-md flex items-center justify-between px-6 sticky top-0 z-50">
-                <button id="sidebar-toggle" class="md:hidden text-gray-600">
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
-                </button>
-                <div class="flex items-center">
-                    <span class="text-lg font-semibold text-gray-700">Manajemen Guru</span>
-                </div>
-                <button id="logout-btn" class="text-sm font-medium text-gray-600 hover:text-red-500">Logout</button>
-            </header>            
-            <main class="p-6 sm:p-10 space-y-10">
-                <!-- Hero Section -->
-                <section>
-                    <div>
-                        <h1 class="text-3xl font-bold text-gray-800">Manajemen Data Guru</h1>
-                        <p class="text-gray-500 mt-1">Tambah, lihat, ubah, dan hapus data guru.</p>
-                    </div>
-                </section>
-
-                <!-- Konten Utama -->
-                <section class="bg-white p-6 rounded-xl shadow-lg">
-                    <!-- Tombol Aksi & Search -->
-                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-                        <div class="relative w-full sm:max-w-xs">
-                            <input type="text" placeholder="Cari guru..." class="w-full border rounded-md px-4 py-2 text-sm pl-10">
-                            <svg class="h-5 w-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg text-sm transition">Import</button>
-                            <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg text-sm transition">Export</button>
-                            <button id="add-teacher-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg text-sm transition">+ Tambah Guru</button>
-                        </div>
-                    </div>
-
-                    <!-- Tabel Data Guru -->
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left text-gray-500">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-100">
-                                <tr>
-                                    <th class="px-6 py-3">No</th>
-                                    <th class="px-6 py-3">NIP</th>
-                                    <th class="px-6 py-3">Nama Lengkap</th>
-                                    <th class="px-6 py-3">Mapel</th>
-                                    <th class="px-6 py-3">Email</th>
-                                    <th class="px-6 py-3 text-center">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="odd:bg-white even:bg-gray-50 border-b">
-                                    <td class="px-6 py-4">1</td>
-                                    <td class="px-6 py-4 font-medium text-gray-900">198505102010012001</td>
-                                    <td class="px-6 py-4 font-medium text-gray-900">Dra. Indah Puspitasari, M.Pd.</td>
-                                    <td class="px-6 py-4">Matematika, Fisika</td>
-                                    <td class="px-6 py-4">indah.p@sekolah.xyz</td>
-                                    <td class="px-6 py-4 text-center flex justify-center gap-2">
-                                        <button class="edit-btn text-blue-600 hover:text-blue-800" title="Edit"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd"></path></svg></button>
-                                        <button class="delete-btn text-red-600 hover:text-red-800" title="Hapus"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg></button>
-                                    </td>
-                                </tr>
-                                <tr class="odd:bg-white even:bg-gray-50 border-b">
-                                    <td class="px-6 py-4">2</td>
-                                    <td class="px-6 py-4 font-medium text-gray-900">199001152015031002</td>
-                                    <td class="px-6 py-4 font-medium text-gray-900">Bambang Wijoyo, S.Kom.</td>
-                                    <td class="px-6 py-4">TIK, Informatika</td>
-                                    <td class="px-6 py-4">bambang.w@sekolah.xyz</td>
-                                    <td class="px-6 py-4 text-center flex justify-center gap-2">
-                                        <button class="edit-btn text-blue-600 hover:text-blue-800" title="Edit"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd"></path></svg></button>
-                                        <button class="delete-btn text-red-600 hover:text-red-800" title="Hapus"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg></button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <footer class="text-center pt-10">
-                    <p class="text-sm text-gray-500">&copy; 2025 Sekolah XYZ. Semua Hak Cipta Dilindungi.</p>
-                </footer>
-            </main>
+    <!-- Overlay loading (Wajib ada untuk user experience dan mencegah klik saat memuat) -->
+    <div id="loading-overlay" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+        <div class="text-center">
+            <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z"></path>
+            </svg>
+            <p class="text-sm text-gray-600 mt-3">Memuat data...</p>
         </div>
     </div>
 
-    <!-- Modal Form Tambah/Edit Guru -->
-    <div id="form-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-gray-800">Tambah Data Guru Baru</h3>
-                <button class="modal-close text-gray-500 hover:text-gray-800">&times;</button>
+    <!-- 1. Overlay Sidebar (HP/tablet) - HARUS ADA DAN BERADA DI DEPAN SIDEBAR! -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-30 hidden z-30 transition-opacity duration-300"></div>
+
+    <!-- 2. Container Sidebar (Diisi dinamis) -->
+    <div id="sidebar-container"></div>
+
+    <!-- 3. Konten Utama - Wajib ID dan Class Transisi -->
+    <div id="main-content-wrapper" class="flex flex-col flex-1 overflow-y-auto transition-all duration-300">
+
+        <!-- Header/Navbar - Z-INDEX DITINGKATKAN MENJADI Z-50 -->
+        <header class="h-16 bg-white shadow-md flex items-center justify-between px-6 sticky top-0 z-50">
+            <button id="sidebar-toggle" class="md:hidden text-gray-600">
+                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+            <h1 class="text-xl font-bold text-gray-800">Data Guru</h1>
+            <button id="logout-btn" class="text-sm font-medium text-gray-600 hover:text-red-500">Logout</button>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="p-6 sm:p-10 space-y-6">
+            
+            <!-- Aksi Utama: Tambah Guru -->
+            <div class="flex justify-between items-center">
+                <p class="text-gray-600">Total 12 Guru Aktif</p>
+                <button id="add-teacher-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-md transition duration-150 flex items-center space-x-2">
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    <span>Tambah Guru</span>
+                </button>
             </div>
-            <form class="space-y-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="nip" class="block text-sm font-medium text-gray-700">NIP / ID Guru</label>
-                        <input type="text" id="nip" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                    </div>
-                     <div>
-                        <label for="nama" class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
-                        <input type="text" id="nama" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                    </div>
+
+            <!-- Tabel Data Guru -->
+            <div class="bg-white p-6 rounded-xl shadow-lg overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                NIP / ID
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Nama Guru
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Mata Pelajaran
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Aksi
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <!-- Data Dummy -->
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                198001012005011001
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                Budi Santoso, S.Pd
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                Matematika
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                                <button class="edit-btn text-blue-600 hover:text-blue-900">Edit</button>
+                                <button class="delete-btn text-red-600 hover:text-red-900">Hapus</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                198505152010012005
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                Susiati Dewi, M.Pd
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                Bahasa Inggris
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                                <button class="edit-btn text-blue-600 hover:text-blue-900">Edit</button>
+                                <button class="delete-btn text-red-600 hover:text-red-900">Hapus</button>
+                            </td>
+                        </tr>
+                        <!-- Akhir Data Dummy -->
+                    </tbody>
+                </table>
+            </div>
+            
+        </main>
+    </div> <!-- END: main-content-wrapper -->
+
+    <!-- Modal Tambah/Edit Guru -->
+    <div id="teacher-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none">
+        <div class="modal-content bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg transform scale-95 transition-all duration-300">
+            <h3 id="modal-title" class="text-xl font-bold mb-4 text-gray-800">Tambah Data Guru</h3>
+            <form id="teacher-form" class="space-y-4">
+                <div>
+                    <label for="teacher-nip" class="block text-sm font-medium text-gray-700">NIP / ID Guru</label>
+                    <input type="text" id="teacher-nip" class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500" required>
                 </div>
                 <div>
-                    <label for="mapel" class="block text-sm font-medium text-gray-700">Mata Pelajaran</label>
-                    <input type="text" id="mapel" placeholder="Pisahkan dengan koma, cth: Matematika, Fisika" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                    <label for="teacher-name" class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+                    <input type="text" id="teacher-name" class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500" required>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                        <input type="email" id="email" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                    </div>
-                     <div>
-                        <label for="telepon" class="block text-sm font-medium text-gray-700">Telepon</label>
-                        <input type="tel" id="telepon" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                    </div>
+                <div>
+                    <label for="teacher-subject" class="block text-sm font-medium text-gray-700">Mata Pelajaran</label>
+                    <input type="text" id="teacher-subject" class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500" required>
                 </div>
-                <div class="flex justify-end gap-3 pt-4">
-                    <button type="button" class="modal-cancel bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg">Batal</button>
-                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Simpan</button>
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" class="modal-cancel bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-lg hover:bg-gray-300 transition duration-150">Batal</button>
+                    <button type="submit" class="bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-150">Simpan Data</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Modal Konfirmasi Hapus -->
-    <div id="delete-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+    <!-- Modal Hapus Guru -->
+    <div id="delete-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none">
+        <div class="modal-content bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm transform scale-95 transition-all duration-300">
+            <h3 class="text-xl font-bold mb-4 text-red-600">Konfirmasi Hapus</h3>
+            <p class="text-gray-700 mb-6">Apakah Anda yakin ingin menghapus data guru ini?</p>
+            <div class="flex justify-end space-x-3">
+                <button type="button" class="modal-cancel bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-lg hover:bg-gray-300 transition duration-150">Batal</button>
+                <button id="confirm-delete-btn" class="bg-red-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-red-700 transition duration-150">Ya, Hapus</button>
+            </div>
         </div>
+    </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-        // *PASTIKAN* Menggunakan konfigurasi Firebase yang SAMA
-        const firebaseConfig = {
-            apiKey: "AIzaSyA6zXOerKvdPJTmBp5Y6R2yFsy98xLDsKc",
-            authDomain: "forumwidara.firebaseapp.com",
-            projectId: "forumwidara",
-            storageBucket: "forumwidara.appspot.com",
-            messagingSenderId: "216895655168",
-            appId: "1:216895655168:web:59255f600fc3b3b44eb7e5",
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-
-        const logoutBtn = document.getElementById("logout-btn");
-        const loadingOverlay = document.getElementById("loading-overlay");
-        
-        // Logika Logout
-        logoutBtn.addEventListener("click", async () => {
-          await signOut(auth);
-          window.location.href = "../login.html";
-        });
-
-        // Cek Status Login
-        onAuthStateChanged(auth, (user) => {
-          if (!user) { 
-            window.location.href = "../login.html"; 
-            return; 
-          }
-          // Sembunyikan loading setelah otentikasi selesai
-          loadingOverlay.classList.add("hidden");
-        });
-    </script>
-    
+    <!-- Logika JavaScript -->
     <script>
+        // Fungsi untuk mengelola tampilan modal
+        function showModal(modalElement) {
+            modalElement.classList.remove('opacity-0', 'pointer-events-none');
+            modalElement.querySelector('.modal-content').classList.remove('scale-95');
+        }
+        function hideModal(modalElement) {
+            modalElement.querySelector('.modal-content').classList.add('scale-95');
+            modalElement.classList.add('opacity-0', 'pointer-events-none');
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            // 1. Ambil elemen yang diperlukan
-            const addTeacherBtn = document.getElementById('add-teacher-btn');
-            const formModal = document.getElementById('form-modal');
-            const modalTitle = formModal.querySelector('h3');
-            const teacherForm = formModal.querySelector('form');
-            const cancelButtons = formModal.querySelectorAll('.modal-cancel, .modal-close');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const teacherModal = document.getElementById('teacher-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const teacherForm = document.getElementById('teacher-form');
+            const deleteModal = document.getElementById('delete-modal');
 
-            // 2. Fungsi untuk menampilkan modal (Perhatikan penggunaan class/style untuk transisi)
-            function showFormModal() {
-                formModal.classList.remove('hidden');
-                setTimeout(() => {
-                    formModal.style.opacity = '1';
-                }, 10);
-            }
+            // 1. Simulasi Loading
+            setTimeout(() => {
+                loadingOverlay.classList.add('hidden');
+            }, 500); 
 
-            // 3. Fungsi untuk menyembunyikan modal
-            function hideFormModal() {
-                formModal.style.opacity = '0';
-                setTimeout(() => {
-                    formModal.classList.add('hidden');
-                }, 250);
-            }
+            // 2. Logika Logout (Contoh)
+            document.getElementById('logout-btn').addEventListener('click', () => {
+                // NANTI: Tambahkan signOut Firebase di sini
+                alert('Anda telah logout (simulasi).');
+            });
 
-            // 4. Logika saat tombol "+ Tambah Guru" diklik
-            addTeacherBtn.addEventListener('click', () => {
+            // 3. Logika Modal
+            // Tombol Batal untuk Modal Form dan Delete
+            teacherModal.querySelectorAll('.modal-cancel').forEach(btn => {
+                btn.addEventListener('click', () => { hideModal(teacherModal); });
+            });
+            deleteModal.querySelector('.modal-cancel').addEventListener('click', () => { hideModal(deleteModal); });
+
+            // Tombol Tambah
+            document.getElementById('add-teacher-btn').addEventListener('click', () => {
                 modalTitle.textContent = 'Tambah Data Guru Baru';
                 teacherForm.reset();
-                showFormModal();
+                showModal(teacherModal);
             });
 
-            // 5. Logika saat tombol Batal/Tutup (x) diklik
-            cancelButtons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    hideFormModal();
-                });
-            });
-
-            // Logika untuk Edit dan Hapus (Simulasi)
-            const deleteModal = document.getElementById('delete-modal');
+            // Tombol Edit (di dalam tabel)
             document.querySelectorAll('.edit-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
+                    // NANTI: Ambil data dari baris tabel dan isi form
                     modalTitle.textContent = 'Edit Data Guru';
-                    showFormModal();
+                    showModal(teacherModal);
                 });
             });
 
+            // Tombol Hapus (di dalam tabel)
             document.querySelectorAll('.delete-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    deleteModal.classList.remove('hidden');
-                    setTimeout(() => { deleteModal.style.opacity = '1'; }, 10);
+                    showModal(deleteModal);
                 });
             });
             
-            deleteModal.querySelector('.modal-cancel').addEventListener('click', () => {
-                deleteModal.style.opacity = '0';
-                setTimeout(() => { deleteModal.classList.add('hidden'); }, 250);
-            });
-            
+            // Konfirmasi Hapus
             document.getElementById('confirm-delete-btn').addEventListener('click', () => {
-                deleteModal.style.opacity = '0';
-                setTimeout(() => { deleteModal.classList.add('hidden'); }, 250);
+                hideModal(deleteModal);
                 alert('Data guru berhasil dihapus (simulasi).');
+                // NANTI: Tambahkan kode hapus Firebase
             });
 
+            // Submit Form
             teacherForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                hideFormModal();
-                alert('Data guru berhasil disimpan (simulasi).');
+                hideModal(teacherModal);
+                alert('Data guru berhasil disimpan/diperbarui (simulasi).');
+                // NANTI: Tambahkan kode simpan Firebase
             });
         });
     </script>
 
+    <!-- Sidebar Logic -->
     <script src="./main_admin.js" defer></script>
 </body>
 </html>
+
