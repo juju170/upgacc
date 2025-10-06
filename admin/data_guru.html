@@ -211,6 +211,102 @@
           // Di sini Anda bisa menambahkan kode untuk memuat data guru dari Firestore
         });
     </script>
+
+    <script>
+document.addEventListener('DOMContentLoaded', () => {
+  // 1. Ambil elemen yang diperlukan
+  const addTeacherBtn = document.getElementById('add-teacher-btn');
+  const formModal = document.getElementById('form-modal');
+  const modalTitle = formModal.querySelector('h3'); // Untuk mengubah judul
+  const teacherForm = formModal.querySelector('form');
+  const cancelButtons = formModal.querySelectorAll('.modal-cancel, .modal-close');
+
+  // 2. Fungsi untuk menampilkan modal
+  function showFormModal() {
+    formModal.classList.remove('hidden');
+    // Tambahkan kelas opacity-100 secara perlahan (jika diperlukan transisi, pastikan CSS modal sudah ada)
+    setTimeout(() => {
+        formModal.style.opacity = '1';
+    }, 10);
+  }
+
+  // 3. Fungsi untuk menyembunyikan modal
+  function hideFormModal() {
+    formModal.style.opacity = '0';
+    setTimeout(() => {
+        formModal.classList.add('hidden');
+    }, 250); // Sesuaikan dengan durasi transisi di CSS (0.25s)
+  }
+
+  // 4. Logika saat tombol "+ Tambah Guru" diklik
+  addTeacherBtn.addEventListener('click', () => {
+    modalTitle.textContent = 'Tambah Data Guru Baru'; // Set judul
+    teacherForm.reset(); // Kosongkan semua input
+    // Di sini Anda bisa mengatur ID guru (jika menggunakan hidden input)
+    showFormModal();
+  });
+
+  // 5. Logika saat tombol Batal/Tutup (x) diklik
+  cancelButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      hideFormModal();
+    });
+  });
+
+  // 6. (Opsional) Logika saat form disimpan (Simulasi)
+  teacherForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    hideFormModal();
+    alert('Data guru berhasil disimpan (simulasi).');
+    // NANTI: Di sinilah kode Firebase untuk menyimpan data akan ditambahkan
+  });
+
+  // Logika untuk tombol Edit (saat ini masih simulasi, perlu disesuaikan)
+  document.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        // Logika untuk mengisi data lama ke form saat tombol edit diklik
+        modalTitle.textContent = 'Edit Data Guru';
+        showFormModal();
+        // NANTI: Ambil data dari baris tabel dan masukkan ke input form
+    });
+  });
+
+  // Logika untuk tombol Hapus (menampilkan modal delete)
+  const deleteModal = document.getElementById('delete-modal');
+  const deleteCancelButtons = deleteModal.querySelectorAll('.modal-cancel');
+  
+  function showDeleteModal() {
+    deleteModal.classList.remove('hidden');
+    setTimeout(() => { deleteModal.style.opacity = '1'; }, 10);
+  }
+
+  function hideDeleteModal() {
+    deleteModal.style.opacity = '0';
+    setTimeout(() => { deleteModal.classList.add('hidden'); }, 250);
+  }
+
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        showDeleteModal();
+    });
+  });
+  
+  deleteCancelButtons.forEach(btn => {
+      btn.addEventListener('click', hideDeleteModal);
+  });
+  
+  // Konfirmasi Hapus (Simulasi)
+  document.getElementById('confirm-delete-btn').addEventListener('click', () => {
+      hideDeleteModal();
+      alert('Data guru berhasil dihapus (simulasi).');
+      // NANTI: Kode Firebase untuk menghapus data
+  });
+  
+});
+</script>
+
+<script src="./main_admin.js"></script>
+
     
     <script src="./main_admin.js"></script>
 </body>
