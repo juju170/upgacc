@@ -14,7 +14,15 @@
 </head>
 
 <body class="bg-gray-100">
-
+  <div id="loading-overlay" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+        <div class="text-center">
+            <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z"></path>
+            </svg>
+            <p class="text-sm text-gray-600 mt-3">Memuat data...</p>
+        </div>
+  </div>
   <!-- Overlay Sidebar -->
   <div id="sidebar-overlay"
     class="fixed inset-0 bg-black bg-opacity-40 hidden z-30 transition-opacity duration-300"></div>
