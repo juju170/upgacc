@@ -64,32 +64,13 @@
 
       <div class="flex gap-3 mt-4">
         <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-blue-700 transition" id="submitBtn">Daftar & Buat Kode Sekolah</button>
-        <button type="button" id="signInExisting" class="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-200 transition">Saya sudah punya akun — Login</button>
+           <a href="login.html" id="signInExistingLink" class="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-200 transition flex items-center justify-center">Saya sudah punya akun — Login</a>        
       </div>
 
       <div id="msg" class="mt-4"></div>
     </form>
 
     <div id="result" class="mt-8 hidden"></div>
-  </div>
-
-
-  <!-- Login Modal -->
-  <div id="loginModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden items-center justify-center">
-    <div class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full">
-      <h3 class="text-xl font-bold mb-4">Login Admin Sekolah</h3>
-      <div id="loginMsg" class="text-sm text-gray-600 mb-3"></div>
-      <label class="block mb-3">Email
-        <input id="loginEmail" type="email" placeholder="email@example.com" class="rounded-lg">
-      </label>
-      <label class="block mb-4">Password
-        <input id="loginPassword" type="password" placeholder="******" class="rounded-lg">
-      </label>
-      <div class="flex justify-end gap-2">
-        <button id="closeLogin" type="button" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">Batal</button>
-        <button id="doLogin" type="button" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Login</button>
-      </div>
-    </div>
   </div>
 
 <script type="module">
@@ -144,17 +125,10 @@ async function initializeAuth() {
 
 initializeAuth();
 
-
 const form = document.getElementById('regForm');
 const msg = document.getElementById('msg');
 const result = document.getElementById('result');
-const signInExisting = document.getElementById('signInExisting');
-const submitBtn = document.getElementById('submitBtn');
-const loginModal = document.getElementById('loginModal');
-const doLogin = document.getElementById('doLogin');
-const closeLogin = document.getElementById('closeLogin');
-const loginMsg = document.getElementById('loginMsg');
-
+  
 function showMsg(text, type='info'){
   if(!text){ msg.innerHTML=''; return; }
   let cls = 'p-3 rounded-lg mt-3 text-sm';
@@ -172,42 +146,6 @@ function uuidv4(){
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c){const r=Math.random()*16|0,v=c=='x'?r:(r&0x3|0x8);return v.toString(16);});
   }
 }
-
-// --- Login Modal Logic ---
-signInExisting.addEventListener('click', ()=>{
-  loginModal.classList.remove('hidden');
-  loginModal.style.display = 'flex';
-  loginMsg.textContent = 'Masukkan kredensial akun admin yang sudah terdaftar.';
-  document.getElementById('loginEmail').value = '';
-  document.getElementById('loginPassword').value = '';
-});
-closeLogin.addEventListener('click', ()=> {
-  loginModal.classList.add('hidden');
-  loginModal.style.display = 'none';
-});
-
-doLogin.addEventListener('click', async ()=>{
-  const email = document.getElementById('loginEmail').value.trim();
-  const password = document.getElementById('loginPassword').value;
-  if(!email || !password) { loginMsg.textContent = 'Email dan password wajib diisi.'; return; }
-
-  loginMsg.textContent = 'Mencoba login...';
-  doLogin.disabled = true;
-  try{
-    await signInWithEmailAndPassword(auth, email, password);
-    loginMsg.textContent = 'Berhasil login.';
-    loginModal.classList.add('hidden');
-    loginModal.style.display = 'none';
-    showMsg('Berhasil login. Anda dapat melanjutkan ke halaman admin atau dashboard.','ok');
-  }catch(err){
-    console.error(err);
-    loginMsg.innerHTML = `<span class="text-red-700">Gagal login: ${err.message || err.code}</span>`;
-  } finally {
-    doLogin.disabled = false;
-  }
-});
-// --- End Login Modal Logic ---
-
 
 form.addEventListener('submit', async (ev)=>{
   ev.preventDefault();
