@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Berita - Admin Panel</title>
+    <title>Data Program - Admin Panel</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts: Inter -->
@@ -49,7 +49,7 @@
                     <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
                 </button>
                 <div class="flex items-center">
-                    <span class="text-lg font-semibold text-gray-700">Manajemen Berita</span>
+                    <span class="text-lg font-semibold text-gray-700">Manajemen Program</span>
                 </div>
                 <button id="logout-btn" class="text-sm font-medium text-gray-600 hover:text-red-500">Logout</button>
             </header>
@@ -58,30 +58,32 @@
             <main class="p-4 md:p-6 lg:p-8">
                 <div class="bg-white p-6 rounded-xl shadow-lg">
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-bold text-gray-800">Daftar Berita dan Artikel</h2>
+                        <h2 class="text-xl font-bold text-gray-800">Daftar Program Unggulan</h2>
                         <button id="add-btn" class="flex items-center bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-150">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                            Tambah Berita
+                            Tambah Program
                         </button>
                     </div>
 
-                    <!-- Tabel Data Berita -->
+                    <!-- Tabel Data Program -->
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Judul Berita</th>
-                                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Posting</th>
-                                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penulis</th>
+                                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Judul Program</th>
+                                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penanggung Jawab</th>
+                                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                <!-- Data Berita Contoh -->
+                                <!-- Data Program Contoh -->
                                 <tr>
-                                    <td class="px-3 py-4 text-sm font-medium text-gray-900">Pembukaan Tahun Ajaran Baru 2024/2025</td>
-                                    <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">2024-07-15</td>
-                                    <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">Admin Sekolah</td>
+                                    <td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Program Tahfiz Quran</td>
+                                    <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">Ustadz Hasan</td>
+                                    <td class="px-3 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Aktif</span>
+                                    </td>
                                     <td class="px-3 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-center space-x-2">
                                         <button class="detail-btn text-blue-600 hover:text-blue-900 transition duration-150">Detail</button>
                                         <button class="edit-btn text-indigo-600 hover:text-indigo-900 transition duration-150">Edit</button>
@@ -96,32 +98,28 @@
         </div>
     </div>
     
-    <!-- Modal Tambah/Edit Berita -->
+    <!-- Modal Tambah/Edit Program -->
     <div id="form-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-40" style="opacity: 0;">
-        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-2xl">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-gray-800" id="modal-form-title">Tambah Berita Baru</h3>
+                <h3 class="text-xl font-bold text-gray-800" id="modal-form-title">Tambah Program Baru</h3>
                 <button type="button" class="modal-cancel modal-close text-gray-400 hover:text-gray-600">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
-            <form id="news-form">
+            <form id="program-form">
                 <div class="space-y-4">
-                    <!-- Input Judul -->
                     <div>
-                        <label for="news-title" class="block text-sm font-medium text-gray-700 mb-1">Judul Berita</label>
-                        <input type="text" id="news-title" name="news-title" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <label for="judul" class="block text-sm font-medium text-gray-700 mb-1">Judul Program</label>
+                        <input type="text" id="judul" name="judul" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
                     </div>
-                    <!-- Input Gambar (Penting untuk berita) -->
                     <div>
-                        <label for="news-image" class="block text-sm font-medium text-gray-700 mb-1">Gambar Utama</label>
-                        <input type="file" id="news-image" name="news-image" accept="image/*" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500">
-                        <p class="text-xs text-gray-500 mt-1">Gunakan gambar yang relevan. Nanti akan diupload ke Cloudinary.</p>
+                        <label for="penanggung_jawab" class="block text-sm font-medium text-gray-700 mb-1">Penanggung Jawab</label>
+                        <input type="text" id="penanggung_jawab" name="penanggung_jawab" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
                     </div>
-                    <!-- Input Konten -->
                     <div>
-                        <label for="news-content" class="block text-sm font-medium text-gray-700 mb-1">Konten Berita</label>
-                        <textarea id="news-content" name="news-content" rows="8" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required></textarea>
+                        <label for="deskripsi" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
+                        <textarea id="deskripsi" name="deskripsi" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"></textarea>
                     </div>
                 </div>
                 <div class="flex justify-end gap-3 pt-6">
@@ -132,23 +130,22 @@
         </div>
     </div>
 
-    <!-- Modal Detail Berita -->
+    <!-- Modal Detail Program (Menggunakan ID form-modal yang sama untuk memudahkan) -->
     <div id="detail-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-40" style="opacity: 0;">
-        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-gray-800">Detail Berita</h3>
+                <h3 class="text-xl font-bold text-gray-800">Detail Program</h3>
                 <button type="button" class="modal-cancel modal-close text-gray-400 hover:text-gray-600">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
-            <!-- Isi Detail Berita -->
-            <div class="space-y-4 text-gray-700">
-                <img id="detail-image" src="https://placehold.co/800x400/000000/FFFFFF?text=Gambar+Berita" alt="Gambar Utama Berita" class="w-full h-auto rounded-lg object-cover">
-                <h4 id="detail-judul" class="text-2xl font-bold text-gray-900 mt-4">Judul Berita Contoh</h4>
-                <p class="text-sm text-gray-500">Diposting oleh: <span id="detail-penulis">Admin Sekolah</span> pada <span id="detail-tanggal">2024-07-15</span></p>
-                <div id="detail-konten" class="prose max-w-none text-gray-800 pt-3 border-t border-gray-200">
-                    <p>Ini adalah isi lengkap dari artikel berita. Di sini Anda dapat melihat semua detail, termasuk paragraf, daftar, dan format teks lainnya yang relevan dengan konten berita.</p>
-                </div>
+            <!-- Isi Detail Program -->
+            <div class="space-y-3 text-gray-700">
+                <p><strong>Judul:</strong> <span id="detail-judul">Program Tahfiz Quran</span></p>
+                <p><strong>P. Jawab:</strong> <span id="detail-pj">Ustadz Hasan</span></p>
+                <p><strong>Status:</strong> <span id="detail-status" class="font-semibold text-green-600">Aktif</span></p>
+                <p class="mt-4"><strong>Deskripsi:</strong></p>
+                <p id="detail-deskripsi" class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-sm">Program intensif menghafal Al-Quran untuk siswa-siswi yang memiliki minat dan bakat khusus di bidang keagamaan.</p>
             </div>
             <div class="flex justify-end gap-3 pt-6">
                 <button type="button" class="modal-cancel bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg">Tutup</button>
@@ -160,10 +157,10 @@
     <div id="delete-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-40" style="opacity: 0;">
         <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm text-center">
             <h3 class="text-lg font-bold text-gray-800">Konfirmasi Hapus</h3>
-            <p class="text-gray-600 my-4">Apakah Anda yakin ingin menghapus berita/artikel ini? Tindakan ini tidak dapat dibatalkan.</p>
+            <p class="text-gray-600 my-4">Apakah Anda yakin ingin menghapus program ini?</p>
             <div class="flex justify-center gap-4">
                 <button class="modal-cancel bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg">Batal</button>
-                <button id="confirm-delete-btn-news" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">Hapus</button>
+                <button id="confirm-delete-btn-program" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">Hapus</button>
             </div>
         </div>
     </div>
@@ -229,18 +226,18 @@
 
             // --- Event Listeners ---
             
-            // Tombol Tambah Berita
+            // Tombol Tambah Program
             document.getElementById('add-btn').addEventListener('click', () => {
-                document.getElementById('modal-form-title').textContent = 'Tambah Berita Baru';
-                document.getElementById('news-form').reset();
+                document.getElementById('modal-form-title').textContent = 'Tambah Program Baru';
+                document.getElementById('program-form').reset();
                 showModal(formModal);
             });
 
             // Tombol Edit
             document.querySelectorAll('.edit-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    document.getElementById('modal-form-title').textContent = 'Edit Berita';
-                    // NANTI: Isi form dengan data berita yang dipilih
+                    document.getElementById('modal-form-title').textContent = 'Edit Program';
+                    // NANTI: Isi form dengan data program yang dipilih
                     showModal(formModal);
                 });
             });
@@ -248,7 +245,7 @@
             // Tombol Detail
             document.querySelectorAll('.detail-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    // NANTI: Isi detail modal dengan data berita yang dipilih
+                    // NANTI: Isi detail modal dengan data program yang dipilih
                     showModal(detailModal);
                 });
             });
@@ -268,17 +265,17 @@
             });
             
             // Konfirmasi Hapus (Simulasi)
-            document.getElementById('confirm-delete-btn-news').addEventListener('click', () => {
+            document.getElementById('confirm-delete-btn-program').addEventListener('click', () => {
                 hideModal(deleteModal);
-                alert('Berita berhasil dihapus (simulasi).');
+                alert('Program berhasil dihapus (simulasi).');
                 // NANTI: Logika Firebase Hapus
             });
             
             // Submit Form (Simulasi)
-            document.getElementById('news-form').addEventListener('submit', (e) => {
+            document.getElementById('program-form').addEventListener('submit', (e) => {
                 e.preventDefault();
                 hideModal(formModal);
-                alert('Data berita berhasil disimpan (simulasi).');
+                alert('Data program berhasil disimpan (simulasi).');
                 // NANTI: Logika Firebase Simpan/Update
             });
         });
@@ -289,3 +286,4 @@
 </body>
 </html>
 
+    
