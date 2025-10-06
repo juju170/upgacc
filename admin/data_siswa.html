@@ -196,9 +196,10 @@
       alert("Gagal logout: " + error.message);
       logoutBtn.disabled = false;
       logoutBtn.classList.remove("opacity-60", "cursor-not-allowed");
-    }
-  });
-</script>
+      loadingOverlay.classList.add("hidden");
+        });
+    </script>
+    
 
 <!-- Modal Logic -->
 <script>
